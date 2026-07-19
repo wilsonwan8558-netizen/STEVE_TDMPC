@@ -581,13 +581,16 @@ class SofaBeamAdapter(Simulation):
         self.camera = self.root.addObject(
             "Camera",
             name="camera",
-            lookAt=look_at,
-            position=position,
+            # NumPy 2 scalar reprs (for example ``np.float64(1.0)``) are not
+            # accepted by SOFA's data parser. Pass native Python values so
+            # SofaPygame works in the Python 3.10/NumPy 2 training env.
+            lookAt=[float(value) for value in look_at],
+            position=[float(value) for value in position],
             fieldOfView=field_of_view,
-            widthViewport=display_size[0],
-            heightViewport=display_size[1],
-            zNear=z_near,
-            zFar=z_far,
+            widthViewport=int(display_size[0]),
+            heightViewport=int(display_size[1]),
+            zNear=float(z_near),
+            zFar=float(z_far),
             fixedLookAt=False,
         )
 

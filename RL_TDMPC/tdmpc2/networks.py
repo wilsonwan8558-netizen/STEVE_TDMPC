@@ -1,0 +1,321 @@
+"""Core TD-MPC2 implicit world-model networks.
+
+This is a dependency-light single-task/state-only adaptation of the official
+TD-MPC2 implementation at commit e9f59321933cbc8e11a002b842adc7d4ffae8ff1.
+It retains SimNorm latents, distributional reward/value prediction, an
+ensemble of Q-functions, a learned dynamics model, and a Gaussian policy
+prior. Multi-task embeddings and pixel encoders are intentionally omitted.
+"""
+
+from __future__ import annotations
+
+from copy import deepcopy
+from typing import Dict, List, Optional, Tuple
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+def weight_init(module: nn.Module) -> None:
+    if isinstance(module, nn.Linear):
+        nn.init.trunc_normal_(module.weight, std=0.02)
+        if module.bias is not None:
+            nn.init.constant_(module.bias, 0.0)
+
+
+class SimNorm(nn.Module):
+    """Normalize groups of latent features onto probability simplices."""
+
+    def __init__(self, group_dim: int) -> None:
+        super().__init__()
+        self.group_dim = int(group_dim)
+
+    def forward(self, value: torch.Tensor) -> torch.Tensor:
+        if value.shape[-1] % self.group_dim != 0:
+            raise ValueError(
+                f"Latent dimension {value.shape[-1]} must be divisible by "
+                f"SimNorm group dimension {self.group_dim}."
+            )
+        shape = value.shape
+        value = value.reshape(*shape[:-1], -1, self.group_dim)
+        return F.softmax(value, dim=-1).reshape(shape)
+
+
+class NormedLinear(nn.Linear):
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        *,
+        dropout: float = 0.0,
+        activation: Optional[nn.Module] = None,
+    ) -> None:
+        super().__init__(in_features, out_features)
+        self.norm = nn.LayerNorm(out_features)
+        self.activation = activation or nn.Mish()
+        self.dropout = nn.Dropout(dropout) if dropout else nn.Identity()
+
+    def forward(self, value: torch.Tensor) -> torch.Tensor:
+        value = F.linear(value, self.weight, self.bias)
+        return self.activation(self.norm(self.dropout(value)))
+
+
+def mlp(
+    input_dim: int,
+    hidden_dims: List[int],
+    output_dim: int,
+    *,
+    output_activation: Optional[nn.Module] = None,
+    dropout: float = 0.0,
+) -> nn.Sequential:
+    dimensions = [input_dim, *hidden_dims, output_dim]
+    layers: List[nn.Module] = []
+    for index in range(len(dimensions) - 2):
+        layers.append(
+            NormedLinear(
+                dimensions[index],
+                dimensions[index + 1],
+                dropout=dropout if index == 0 else 0.0,
+            )
+        )
+    if output_activation is None:
+        layers.append(nn.Linear(dimensions[-2], dimensions[-1]))
+    else:
+        # Official TD-MPC2 uses a LayerNorm immediately before SimNorm for
+        # encoder and dynamics outputs.
+        layers.append(
+            NormedLinear(
+                dimensions[-2],
+                dimensions[-1],
+                activation=output_activation,
+            )
+        )
+    return nn.Sequential(*layers)
+
+
+def symlog(value: torch.Tensor) -> torch.Tensor:
+    return torch.sign(value) * torch.log1p(torch.abs(value))
+
+
+def symexp(value: torch.Tensor) -> torch.Tensor:
+    return torch.sign(value) * torch.expm1(torch.abs(value))
+
+
+def two_hot(
+    value: torch.Tensor, num_bins: int, value_min: float, value_max: float
+) -> torch.Tensor:
+    """Encode scalar targets using TD-MPC2's symlog two-hot representation."""
+
+    if num_bins == 0:
+        return value
+    if num_bins == 1:
+        return symlog(value)
+    value = torch.clamp(symlog(value), value_min, value_max).squeeze(-1)
+    bin_size = (value_max - value_min) / (num_bins - 1)
+    location = (value - value_min) / bin_size
+    lower = torch.floor(location).long().clamp(0, num_bins - 1)
+    upper = (lower + 1).clamp(max=num_bins - 1)
+    upper_weight = (location - lower.to(location.dtype)).unsqueeze(-1)
+    lower_weight = 1.0 - upper_weight
+    target = torch.zeros(
+        *value.shape, num_bins, device=value.device, dtype=value.dtype
+    )
+    target.scatter_add_(-1, lower.unsqueeze(-1), lower_weight)
+    target.scatter_add_(-1, upper.unsqueeze(-1), upper_weight)
+    return target
+
+
+def two_hot_inv(
+    logits: torch.Tensor, num_bins: int, value_min: float, value_max: float
+) -> torch.Tensor:
+    if num_bins == 0:
+        return logits
+    if num_bins == 1:
+        return symexp(logits)
+    bins = torch.linspace(
+        value_min, value_max, num_bins, device=logits.device, dtype=logits.dtype
+    )
+    value = (F.softmax(logits, dim=-1) * bins).sum(dim=-1, keepdim=True)
+    return symexp(value)
+
+
+def soft_cross_entropy(
+    logits: torch.Tensor,
+    target: torch.Tensor,
+    num_bins: int,
+    value_min: float,
+    value_max: float,
+) -> torch.Tensor:
+    encoded = two_hot(target, num_bins, value_min, value_max)
+    if num_bins <= 1:
+        return F.mse_loss(logits, encoded, reduction="none")
+    return -(encoded * F.log_softmax(logits, dim=-1)).sum(dim=-1, keepdim=True)
+
+
+class WorldModel(nn.Module):
+    """Single-task TD-MPC2 world model and target critic ensemble."""
+
+    def __init__(
+        self,
+        observation_dim: int,
+        action_dim: int,
+        config: Dict,
+    ) -> None:
+        super().__init__()
+        self.observation_dim = int(observation_dim)
+        self.action_dim = int(action_dim)
+        self.latent_dim = int(config["latent_dim"])
+        self.num_q = int(config["num_q"])
+        self.num_bins = int(config["num_bins"])
+        self.value_min = float(config["vmin"])
+        self.value_max = float(config["vmax"])
+
+        simnorm_dim = int(config["simnorm_dim"])
+        enc_dim = int(config["enc_dim"])
+        mlp_dim = int(config["mlp_dim"])
+        dropout = float(config.get("dropout", 0.0))
+        if self.latent_dim % simnorm_dim:
+            raise ValueError("model.latent_dim must be divisible by model.simnorm_dim")
+
+        self.encoder = mlp(
+            self.observation_dim,
+            [enc_dim] * max(int(config.get("num_enc_layers", 2)) - 1, 1),
+            self.latent_dim,
+            output_activation=SimNorm(simnorm_dim),
+        )
+        self.dynamics = mlp(
+            self.latent_dim + self.action_dim,
+            [mlp_dim, mlp_dim],
+            self.latent_dim,
+            output_activation=SimNorm(simnorm_dim),
+        )
+        self.reward_head = mlp(
+            self.latent_dim + self.action_dim,
+            [mlp_dim, mlp_dim],
+            max(self.num_bins, 1),
+        )
+        self.termination_head = mlp(
+            self.latent_dim, [mlp_dim, mlp_dim], 1
+        )
+        self.policy = mlp(
+            self.latent_dim, [mlp_dim, mlp_dim], 2 * self.action_dim
+        )
+        self.q_ensemble = nn.ModuleList(
+            [
+                mlp(
+                    self.latent_dim + self.action_dim,
+                    [mlp_dim, mlp_dim],
+                    max(self.num_bins, 1),
+                    dropout=dropout,
+                )
+                for _ in range(self.num_q)
+            ]
+        )
+        self.apply(weight_init)
+        nn.init.zeros_(self.reward_head[-1].weight)
+        nn.init.zeros_(self.reward_head[-1].bias)
+        for critic in self.q_ensemble:
+            nn.init.zeros_(critic[-1].weight)
+            nn.init.zeros_(critic[-1].bias)
+
+        self.target_q_ensemble = deepcopy(self.q_ensemble)
+        for parameter in self.target_q_ensemble.parameters():
+            parameter.requires_grad_(False)
+
+        self.register_buffer("log_std_min", torch.tensor(float(config["log_std_min"])))
+        self.register_buffer(
+            "log_std_range",
+            torch.tensor(float(config["log_std_max"]) - float(config["log_std_min"])),
+        )
+
+    def train(self, mode: bool = True):
+        """Keep target critics in evaluation mode, as in the official code."""
+
+        super().train(mode)
+        self.target_q_ensemble.train(False)
+        return self
+
+    def encode(self, observation: torch.Tensor) -> torch.Tensor:
+        return self.encoder(observation)
+
+    def next(self, latent: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        return self.dynamics(torch.cat([latent, action], dim=-1))
+
+    def reward(self, latent: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        return self.reward_head(torch.cat([latent, action], dim=-1))
+
+    def termination(
+        self, latent: torch.Tensor, *, logits: bool = False
+    ) -> torch.Tensor:
+        value = self.termination_head(latent)
+        return value if logits else torch.sigmoid(value)
+
+    def pi(
+        self, latent: torch.Tensor, *, deterministic: bool = False
+    ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        mean, raw_log_std = self.policy(latent).chunk(2, dim=-1)
+        log_std = self.log_std_min + 0.5 * self.log_std_range * (
+            torch.tanh(raw_log_std) + 1.0
+        )
+        noise = torch.zeros_like(mean) if deterministic else torch.randn_like(mean)
+        pre_tanh = mean + noise * log_std.exp()
+        action = torch.tanh(pre_tanh)
+        squashed_mean = torch.tanh(mean)
+
+        residual = -0.5 * noise.pow(2) - log_std - 0.9189385332046727
+        gaussian_log_prob = residual.sum(dim=-1, keepdim=True)
+        scaled_log_prob = gaussian_log_prob * self.action_dim
+        log_prob = gaussian_log_prob
+        log_prob = log_prob - torch.log(
+            torch.relu(1.0 - action.pow(2)) + 1e-6
+        ).sum(dim=-1, keepdim=True)
+        entropy = -log_prob
+        entropy_scale = scaled_log_prob / (log_prob + 1e-8)
+        return action, {
+            "mean": squashed_mean,
+            "log_std": log_std,
+            "entropy": entropy,
+            "scaled_entropy": entropy * entropy_scale,
+        }
+
+    def q_values(
+        self,
+        latent: torch.Tensor,
+        action: torch.Tensor,
+        *,
+        target: bool = False,
+    ) -> torch.Tensor:
+        features = torch.cat([latent, action], dim=-1)
+        ensemble = self.target_q_ensemble if target else self.q_ensemble
+        return torch.stack([critic(features) for critic in ensemble], dim=0)
+
+    def q(
+        self,
+        latent: torch.Tensor,
+        action: torch.Tensor,
+        *,
+        reduction: str = "min",
+        target: bool = False,
+    ) -> torch.Tensor:
+        all_logits = self.q_values(latent, action, target=target)
+        if reduction == "all":
+            return all_logits
+        indices = torch.randperm(self.num_q, device=latent.device)[
+            : min(2, self.num_q)
+        ]
+        values = two_hot_inv(
+            all_logits[indices], self.num_bins, self.value_min, self.value_max
+        )
+        if reduction == "min":
+            return values.min(dim=0).values
+        if reduction == "avg":
+            return values.mean(dim=0)
+        raise ValueError(f"Unknown Q reduction {reduction!r}")
+
+    @torch.no_grad()
+    def soft_update_target_q(self, tau: float) -> None:
+        for target_parameter, parameter in zip(
+            self.target_q_ensemble.parameters(), self.q_ensemble.parameters()
+        ):
+            target_parameter.lerp_(parameter, float(tau))

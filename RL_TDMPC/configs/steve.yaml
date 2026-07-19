@@ -1,0 +1,75 @@
+# stEVE task construction (mirrors examples/function_check.py)
+environment:
+  max_episode_steps: 200
+  vessel_seed: 30
+  image_frequency: 7.5
+  target_threshold: 5.0
+  target_branches: [lcca, rcca, lsa, rsa, bct, co]
+  friction: 0.001
+
+# Minimal state-only TD-MPC2 world model
+model:
+  latent_dim: 256
+  enc_dim: 256
+  mlp_dim: 256
+  num_enc_layers: 2
+  simnorm_dim: 8
+  num_q: 5
+  dropout: 0.01
+  num_bins: 101
+  vmin: -10.0
+  vmax: 10.0
+  log_std_min: -10.0
+  log_std_max: 2.0
+
+training:
+  total_steps: 1000000
+  seed_steps: 5000
+  initial_updates: 5000
+  updates_per_step: 1
+  batch_size: 256
+  replay_capacity: 1000000
+  horizon: 3
+  seed: 1
+  device: auto
+  lr: 0.0003
+  enc_lr_scale: 0.3
+  reward_coef: 0.1
+  value_coef: 0.1
+  termination_coef: 1.0
+  consistency_coef: 20.0
+  rho: 0.5
+  grad_clip_norm: 20.0
+  tau: 0.01
+  discount_denom: 5.0
+  discount_min: 0.95
+  discount_max: 0.995
+  entropy_coef: 0.0001
+  episodic: true
+
+planning:
+  mpc: true
+  horizon: 3
+  iterations: 6
+  num_samples: 512
+  num_elites: 64
+  num_pi_trajs: 24
+  min_std: 0.05
+  max_std: 2.0
+  temperature: 0.5
+
+logging:
+  directory: logs
+  update_interval: 100
+
+checkpoint:
+  directory: checkpoints
+  interval: 10000
+  save_replay: true
+  save_final: true
+
+evaluation:
+  episodes: 10
+  seed: 1000
+  log_directory: logs/evaluation
+

@@ -1,0 +1,8 @@
+# Install stEVE itself from the repository root first: python -m pip install -e .
+# PyTorch 2.4 is the last release line supporting Python 3.8.
+torch>=2.1,<2.5
+numpy>=1.23
+gymnasium>=0.29,<1.1
+PyYAML>=6.0
+# Used by evaluate.py to encode --video MP4 output. stEVE also depends on it.
+opencv-python>=4.5

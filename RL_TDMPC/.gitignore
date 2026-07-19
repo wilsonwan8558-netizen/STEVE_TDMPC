@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+checkpoints/*.pt
+checkpoints/*.tmp
+logs/*.csv
+logs/*.jsonl
+logs/evaluation/
+
