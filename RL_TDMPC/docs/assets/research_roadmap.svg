@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="2050" viewBox="0 0 1500 2050">
+  <defs>
+    <style>
+      .title { font-family: "Noto Sans CJK SC", sans-serif; font-size: 42px; font-weight: 700; fill: #17324d; }
+      .phase { font-family: "Noto Sans CJK SC", sans-serif; font-size: 28px; font-weight: 700; fill: #17324d; }
+      .desc { font-family: "Noto Sans CJK SC", sans-serif; font-size: 22px; font-weight: 400; fill: #415466; }
+      .tag { font-family: "Noto Sans CJK SC", sans-serif; font-size: 22px; font-weight: 700; fill: #ffffff; }
+      .box { stroke: #356789; stroke-width: 3; rx: 22; ry: 22; }
+      .arrow { stroke: #52758f; stroke-width: 5; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#52758f"/>
+    </marker>
+  </defs>
+
+  <rect width="1500" height="2050" fill="#ffffff"/>
+  <text x="750" y="65" text-anchor="middle" class="title">从当前 stEVE Baseline 到真实图像引导系统</text>
+
+  <rect x="250" y="110" width="1000" height="130" class="box" fill="#eef5fa"/>
+  <text x="750" y="160" text-anchor="middle" class="phase">阶段 0　固定血管、多目标任务定义</text>
+  <text x="750" y="202" text-anchor="middle" class="desc">固定解剖结构；医生指定不同目标分支和分支内目标点</text>
+
+  <path d="M750 240 L750 285" class="arrow"/>
+  <rect x="250" y="295" width="1000" height="145" class="box" fill="#fff0d9" stroke="#d9892b"/>
+  <rect x="1080" y="315" width="135" height="42" rx="18" fill="#d9892b"/>
+  <text x="1147" y="344" text-anchor="middle" class="tag">当前完成</text>
+  <text x="750" y="350" text-anchor="middle" class="phase">阶段 1　结构化 Tracking TD-MPC2 Baseline</text>
+  <text x="750" y="397" text-anchor="middle" class="desc">14维状态、2维连续动作、训练/恢复/评估/渲染/Checkpoint</text>
+
+  <path d="M750 440 L750 485" class="arrow"/>
+  <rect x="250" y="495" width="1000" height="145" class="box" fill="#e9f3ff" stroke="#3979b7"/>
+  <rect x="1080" y="515" width="135" height="42" rx="18" fill="#3979b7"/>
+  <text x="1147" y="544" text-anchor="middle" class="tag">下一步</text>
+  <text x="750" y="550" text-anchor="middle" class="phase">阶段 2　分支级评估与失败分析</text>
+  <text x="750" y="597" text-anchor="middle" class="desc">每个目标分支均衡测试；记录距离、错误分支、时间与失败原因</text>
+
+  <path d="M750 640 L750 685" class="arrow"/>
+  <rect x="250" y="695" width="1000" height="145" class="box" fill="#f1f6f9"/>
+  <text x="750" y="750" text-anchor="middle" class="phase">阶段 3　Tracking 噪声、延迟与控制扰动</text>
+  <text x="750" y="797" text-anchor="middle" class="desc">定位误差、漂移、丢点、图像延迟、动作延迟、摩擦与回差</text>
+
+  <path d="M750 840 L750 885" class="arrow"/>
+  <rect x="250" y="895" width="1000" height="145" class="box" fill="#f1f6f9"/>
+  <text x="750" y="950" text-anchor="middle" class="phase">阶段 4　模拟 X-ray 数据与标注</text>
+  <text x="750" y="997" text-anchor="middle" class="desc">导丝、尖端、Roadmap、背景、噪声、模糊、遮挡及真实标签</text>
+
+  <path d="M750 1040 L750 1085" class="arrow"/>
+  <rect x="250" y="1095" width="1000" height="145" class="box" fill="#f1f6f9"/>
+  <text x="750" y="1150" text-anchor="middle" class="phase">阶段 5　图像 → Tracking → TD-MPC2</text>
+  <text x="750" y="1197" text-anchor="middle" class="desc">视觉网络预测导丝关键点与置信度，复用现有导航策略</text>
+
+  <path d="M750 1240 L750 1285" class="arrow"/>
+  <rect x="250" y="1295" width="1000" height="145" class="box" fill="#f1f6f9"/>
+  <text x="750" y="1350" text-anchor="middle" class="phase">阶段 6　图像 + Tracking + 机器人状态混合策略</text>
+  <text x="750" y="1397" text-anchor="middle" class="desc">图像序列、目标热力图、关键点、动作历史与机器人传感器融合</text>
+
+  <path d="M750 1440 L750 1485" class="arrow"/>
+  <rect x="250" y="1495" width="1000" height="145" class="box" fill="#f1f6f9"/>
+  <text x="750" y="1550" text-anchor="middle" class="phase">阶段 7　真实 X-ray 与固定血管模型适配</text>
+  <text x="750" y="1597" text-anchor="middle" class="desc">患者特异数字模型、血管 Phantom、2D–3D 配准与视觉微调</text>
+
+  <path d="M750 1640 L750 1685" class="arrow"/>
+  <rect x="250" y="1695" width="1000" height="145" class="box" fill="#edf7ef" stroke="#4c8b5e"/>
+  <text x="750" y="1750" text-anchor="middle" class="phase">阶段 8　机器人闭环、安全层与台架验证</text>
+  <text x="750" y="1797" text-anchor="middle" class="desc">限速、力阈值、异常停止、医生接管、硬件在环和重复性测试</text>
+
+  <path d="M750 1840 L750 1885" class="arrow"/>
+  <rect x="250" y="1895" width="1000" height="125" class="box" fill="#e6f4ea" stroke="#4c8b5e"/>
+  <text x="750" y="1945" text-anchor="middle" class="phase">阶段 9　临床前验证与产品化</text>
+  <text x="750" y="1987" text-anchor="middle" class="desc">自主导航子任务、风险管理、人因验证与合规研究</text>
+</svg>

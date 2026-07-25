@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920">
+  <defs>
+    <style>
+      .title { font-family: "Noto Sans CJK SC", sans-serif; font-size: 42px; font-weight: 700; fill: #17324d; }
+      .heading { font-family: "Noto Sans CJK SC", sans-serif; font-size: 28px; font-weight: 700; fill: #17324d; }
+      .text { font-family: "Noto Sans CJK SC", sans-serif; font-size: 24px; font-weight: 500; fill: #253746; }
+      .small { font-family: "Noto Sans CJK SC", sans-serif; font-size: 21px; font-weight: 400; fill: #415466; }
+      .box { stroke: #356789; stroke-width: 3; rx: 18; ry: 18; }
+      .arrow { stroke: #356789; stroke-width: 5; fill: none; marker-end: url(#arrowhead); }
+      .feedback { stroke: #d06b32; stroke-width: 5; fill: none; marker-end: url(#arrowheadOrange); }
+    </style>
+    <marker id="arrowhead" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#356789"/>
+    </marker>
+    <marker id="arrowheadOrange" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#d06b32"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="920" fill="#ffffff"/>
+  <text x="800" y="65" text-anchor="middle" class="title">固定血管、多目标分支的图像引导闭环导航系统</text>
+
+  <text x="255" y="135" text-anchor="middle" class="heading">系统输入</text>
+  <rect x="55" y="165" width="400" height="130" class="box" fill="#eaf4fb"/>
+  <text x="255" y="215" text-anchor="middle" class="text">医生指定目标</text>
+  <text x="255" y="255" text-anchor="middle" class="small">目标分支 + 分支内精确目标点</text>
+
+  <rect x="55" y="335" width="400" height="130" class="box" fill="#eaf4fb"/>
+  <text x="255" y="385" text-anchor="middle" class="text">实时 X-ray / Roadmap</text>
+  <text x="255" y="425" text-anchor="middle" class="small">导丝形状、尖端与血管投影</text>
+
+  <rect x="55" y="505" width="400" height="130" class="box" fill="#eaf4fb"/>
+  <text x="255" y="555" text-anchor="middle" class="text">机器人自身状态</text>
+  <text x="255" y="595" text-anchor="middle" class="small">插入长度、旋转角、力与动作历史</text>
+
+  <rect x="570" y="195" width="430" height="150" class="box" fill="#f0ecfa"/>
+  <text x="785" y="250" text-anchor="middle" class="text">目标与视觉状态编码</text>
+  <text x="785" y="292" text-anchor="middle" class="small">目标热力图 / 分支 ID / Tracking</text>
+
+  <rect x="570" y="420" width="430" height="160" class="box" fill="#fff3dc"/>
+  <text x="785" y="480" text-anchor="middle" class="heading">目标条件化 TD-MPC2</text>
+  <text x="785" y="525" text-anchor="middle" class="small">根据当前状态预测并规划下一动作</text>
+
+  <rect x="1110" y="195" width="400" height="150" class="box" fill="#feeceb"/>
+  <text x="1310" y="250" text-anchor="middle" class="heading">独立安全控制器</text>
+  <text x="1310" y="292" text-anchor="middle" class="small">限速、力阈值、低置信度停止、接管</text>
+
+  <rect x="1110" y="420" width="400" height="160" class="box" fill="#eaf7ec"/>
+  <text x="1310" y="480" text-anchor="middle" class="heading">机器人执行</text>
+  <text x="1310" y="525" text-anchor="middle" class="small">导丝推进 / 后退 + 轴向旋转</text>
+
+  <rect x="570" y="700" width="940" height="125" class="box" fill="#edf6f2"/>
+  <text x="1040" y="752" text-anchor="middle" class="heading">固定血管内的导丝运动</text>
+  <text x="1040" y="792" text-anchor="middle" class="small">力学接触改变导丝形状，新图像反馈给策略，形成闭环</text>
+
+  <path d="M455 230 L570 250" class="arrow"/>
+  <path d="M455 400 L570 300" class="arrow"/>
+  <path d="M455 570 L570 500" class="arrow"/>
+  <path d="M785 345 L785 420" class="arrow"/>
+  <path d="M1000 500 C1060 500 1060 300 1110 280" class="arrow"/>
+  <path d="M1310 345 L1310 420" class="arrow"/>
+  <path d="M1310 580 L1310 700" class="arrow"/>
+  <path d="M700 762 C485 762 485 625 455 570" class="feedback"/>
+  <path d="M700 730 C490 700 475 455 455 400" class="feedback"/>
+
+  <text x="80" y="875" class="small" fill="#d06b32">橙色箭头：执行后的新状态与新影像反馈</text>
+</svg>
