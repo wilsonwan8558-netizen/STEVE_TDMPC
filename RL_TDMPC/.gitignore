@@ -4,5 +4,5 @@ checkpoints/*.pt
 checkpoints/*.tmp
 logs/*.csv
 logs/*.jsonl
+logs/*.json
 logs/evaluation/
-

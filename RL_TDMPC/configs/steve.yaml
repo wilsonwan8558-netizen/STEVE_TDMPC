@@ -29,6 +29,14 @@ safety:
   curvature_scale_mm_inv: 0.1
   translation_error_scale: 1.0
 
+# Lightweight Safety Head diagnostics. Curvature boundaries only partition
+# logged statistics; they are numerical analysis bins, not clinical thresholds.
+diagnostics:
+  validation_interval: 100
+  gradient_interval: 100
+  curvature_low_max_mm_inv: 0.05
+  curvature_medium_max_mm_inv: 0.1
+
 training:
   total_steps: 1000000
   seed_steps: 5000

@@ -178,6 +178,41 @@ class EpisodeReplayBuffer:
         torch.Tensor,
         torch.Tensor,
     ]:
+        """Sample the next training batch using the persistent training RNG."""
+
+        return self._sample_with_rng(device, self._rng)
+
+    def sample_diagnostics(
+        self,
+        device: torch.device,
+        *,
+        seed: int,
+    ) -> Tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+    ]:
+        """Sample a read-only diagnostic batch without advancing training RNG.
+
+        The temporary RNG preserves the distribution and sequence semantics of
+        ``sample()`` while making validation sampling independent.
+        """
+
+        return self._sample_with_rng(device, np.random.default_rng(int(seed)))
+
+    def _sample_with_rng(
+        self,
+        device: torch.device,
+        rng: np.random.Generator,
+    ) -> Tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+    ]:
         counts = np.asarray(
             [
                 max(0, episode["actions"].shape[0] - self.horizon + 1)
@@ -204,7 +239,7 @@ class EpisodeReplayBuffer:
             dtype=np.float32,
         )
         episodes = list(self._episodes)
-        sampled = self._rng.integers(0, total, size=self.batch_size)
+        sampled = rng.integers(0, total, size=self.batch_size)
         for batch_index, global_index in enumerate(sampled):
             episode_index = int(np.searchsorted(cumulative, global_index, side="right"))
             previous = 0 if episode_index == 0 else int(cumulative[episode_index - 1])

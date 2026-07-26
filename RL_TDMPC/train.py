@@ -5,7 +5,11 @@ from __future__ import annotations
 
 import argparse
 import copy
+import json
+import shlex
+import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
@@ -19,7 +23,9 @@ from tdmpc2.common import (
     PROJECT_DIR,
     MetricLogger,
     apply_cli_overrides,
+    atomic_json_save,
     atomic_torch_save,
+    build_diagnostics_agent_config,
     build_safety_agent_config,
     capture_rng_state,
     load_torch_checkpoint,
@@ -59,6 +65,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--iterations", type=int, default=None)
     parser.add_argument("--checkpoint-interval", type=int, default=None)
+    parser.add_argument(
+        "--safety-loss-coef",
+        type=float,
+        default=None,
+        help=(
+            "Override safety.loss_coef (for example 0.0, 0.1, or 1.0); "
+            "must be finite and nonnegative"
+        ),
+    )
     parser.add_argument("--device", type=str, default=None, help="auto, cpu, or cuda")
     return parser.parse_args()
 
@@ -73,6 +88,7 @@ def build_agent_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         **dict(config["training"]),
         **dict(config["planning"]),
         **build_safety_agent_config(config, SAFETY_COST_NAMES),
+        **build_diagnostics_agent_config(config),
     }
 
 
@@ -495,19 +511,69 @@ def save_checkpoint(
 class LossAccumulator:
     def __init__(self) -> None:
         self.sums: Dict[str, float] = {}
-        self.count = 0
+        self.counts: Dict[str, int] = {}
+        self.weighted_sums: Dict[str, float] = {}
+        self.weights: Dict[str, float] = {}
+        self.observed_keys = set()
 
     def add(self, metrics: Mapping[str, float]) -> None:
         for key, value in metrics.items():
-            self.sums[key] = self.sums.get(key, 0.0) + float(value)
-        self.count += 1
+            converted = float(value)
+            self.observed_keys.add(key)
+            # NaN represents an unavailable conditional diagnostic (for
+            # example, positive-target MAE when this batch has no positives).
+            # Ignore it when another batch supplies a defined value, but retain
+            # NaN when the metric was unavailable for the entire log window.
+            if np.isnan(converted):
+                continue
+            if key.endswith("_count"):
+                # Counts describe coverage over the complete logging window,
+                # so summing is more useful than a mean-per-batch count.
+                self.sums[key] = self.sums.get(key, 0.0) + converted
+                self.counts[key] = self.counts.get(key, 0) + 1
+                continue
+
+            # Conditional translation/curvature metrics have a sibling count.
+            # Weight them by their number of valid samples so rare/small groups
+            # are not overrepresented merely because batches are averaged.
+            count_key = None
+            for suffix in ("_mae", "_pred_mean", "_target_mean"):
+                if key.endswith(suffix):
+                    candidate = f"{key[:-len(suffix)]}_count"
+                    if candidate in metrics:
+                        count_key = candidate
+                        break
+            if count_key is not None:
+                weight = float(metrics[count_key])
+                if np.isfinite(weight) and weight > 0.0:
+                    self.weighted_sums[key] = (
+                        self.weighted_sums.get(key, 0.0)
+                        + converted * weight
+                    )
+                    self.weights[key] = self.weights.get(key, 0.0) + weight
+                continue
+
+            self.sums[key] = self.sums.get(key, 0.0) + converted
+            self.counts[key] = self.counts.get(key, 0) + 1
 
     def pop_means(self) -> Dict[str, float]:
-        if self.count == 0:
+        if not self.observed_keys:
             return {}
-        means = {key: value / self.count for key, value in self.sums.items()}
+        means: Dict[str, float] = {}
+        for key in self.observed_keys:
+            if key.endswith("_count") and self.counts.get(key, 0) > 0:
+                means[key] = self.sums[key]
+            elif self.weights.get(key, 0.0) > 0.0:
+                means[key] = self.weighted_sums[key] / self.weights[key]
+            elif self.counts.get(key, 0) > 0:
+                means[key] = self.sums[key] / self.counts[key]
+            else:
+                means[key] = float("nan")
         self.sums.clear()
-        self.count = 0
+        self.counts.clear()
+        self.weighted_sums.clear()
+        self.weights.clear()
+        self.observed_keys.clear()
         return means
 
 
@@ -522,6 +588,22 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         SAFETY_COST_NAMES,
         source="Environment",
     )
+    diagnostics_config = build_diagnostics_agent_config(config)
+    # Diagnostics are not part of the format-v3 Safety model schema. Materialize
+    # defaults here so Commit-4 checkpoints/configs remain loadable while every
+    # new run records its exact effective diagnostic settings.
+    config["diagnostics"] = copy.deepcopy(diagnostics_config)
+    agent_config = build_agent_config(config)
+    startup_configuration = {
+        "safety": copy.deepcopy(dict(config["safety"])),
+        "diagnostics": copy.deepcopy(diagnostics_config),
+        "safety_cost_names": list(safety_cost_names),
+        "safety_dim": int(agent_config["safety_dim"]),
+    }
+    print(
+        "Safety and diagnostics configuration:\n"
+        + json.dumps(startup_configuration, indent=2, sort_keys=True)
+    )
 
     env = make_steve_env(config["environment"])
     observation_dim = int(np.prod(env.observation_space.shape))
@@ -529,7 +611,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
     agent = TDMPC2Agent(
         observation_dim,
         action_dim,
-        build_agent_config(config),
+        agent_config,
         episode_length=int(config["environment"]["max_episode_steps"]),
         device=device,
     )
@@ -543,6 +625,30 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         seed=seed,
     )
     logger = MetricLogger(config["logging"]["directory"])
+    started_at_unix = time.time()
+    run_id = datetime.fromtimestamp(
+        started_at_unix,
+        tz=timezone.utc,
+    ).strftime("%Y%m%dT%H%M%S%fZ")
+    run_metadata = {
+        "run_id": run_id,
+        "algorithm": "TD-MPC2",
+        "checkpoint_format_version": CHECKPOINT_FORMAT_VERSION,
+        "started_at_unix": started_at_unix,
+        "started_at_utc": datetime.fromtimestamp(
+            started_at_unix,
+            tz=timezone.utc,
+        ).isoformat(),
+        "command": shlex.join([sys.executable, *sys.argv]),
+        "argv": list(sys.argv),
+        "resume_checkpoint": (
+            str(resume_path.expanduser().resolve())
+            if resume_path is not None
+            else None
+        ),
+        "device": str(device),
+        **startup_configuration,
+    }
 
     total_env_steps = 0
     episode_index = 0
@@ -574,6 +680,24 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
             f"Checkpoint is already at step {total_env_steps}, which is not below "
             f"training.total_steps={total_steps}. Use --steps with a larger value."
         )
+
+    run_metadata.update(
+        {
+            "initial_total_env_steps": total_env_steps,
+            "initial_update_count": agent.update_count,
+        }
+    )
+    metadata_path = atomic_json_save(
+        run_metadata,
+        logger.log_dir / f"run_metadata_{run_id}.json",
+    )
+    # Keep a convenient latest-run pointer without sacrificing the immutable
+    # per-run metadata needed for controlled coefficient comparisons.
+    atomic_json_save(
+        run_metadata,
+        logger.log_dir / "run_metadata.json",
+    )
+    print(f"Run metadata: {metadata_path}")
 
     checkpoint_dir = resolve_project_path(checkpoint_config["directory"])
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -666,6 +790,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                     if update_metrics:
                         update_metrics.update(
                             {
+                                "run_id": run_id,
                                 "total_env_steps": total_env_steps,
                                 "update_count": agent.update_count,
                                 "replay_size": len(replay),
@@ -703,6 +828,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
             successes += int(success)
             episode_index += 1
             episode_metrics = {
+                "run_id": run_id,
                 "total_env_steps": total_env_steps,
                 "episode": episode_index,
                 "episode_reward": episode_reward,
@@ -760,6 +886,7 @@ def main() -> None:
         total_steps=args.steps,
         checkpoint_interval=args.checkpoint_interval,
         device=args.device,
+        safety_loss_coef=args.safety_loss_coef,
     )
     if args.seed_steps is not None:
         config["training"]["seed_steps"] = args.seed_steps

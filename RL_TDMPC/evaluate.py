@@ -17,6 +17,7 @@ from train import validate_checkpoint_schema
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.common import (
     MetricLogger,
+    build_diagnostics_agent_config,
     build_safety_agent_config,
     load_config,
     load_torch_checkpoint,
@@ -67,6 +68,7 @@ def build_agent_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         **dict(config["training"]),
         **dict(config["planning"]),
         **build_safety_agent_config(config, SAFETY_COST_NAMES),
+        **build_diagnostics_agent_config(config),
     }
 
 

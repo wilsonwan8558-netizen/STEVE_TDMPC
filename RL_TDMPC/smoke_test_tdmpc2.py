@@ -12,11 +12,13 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+import evaluate_safety_head as safety_head_evaluation
 from envs.safety import SAFETY_COST_NAMES as ENV_SAFETY_COST_NAMES
 from evaluate import build_agent_config as build_evaluation_agent_config
 from train import (
     CHECKPOINT_FORMAT_VERSION,
     DEFAULT_CONFIG,
+    LossAccumulator,
     SAFETY_MODEL_SCHEMA_VERSION,
     build_agent_config,
     save_checkpoint,
@@ -24,13 +26,19 @@ from train import (
     validate_checkpoint_schema,
 )
 from tdmpc2.agent import TDMPC2Agent
-from tdmpc2.common import load_config, load_torch_checkpoint
+from tdmpc2.common import (
+    apply_cli_overrides,
+    load_config,
+    load_torch_checkpoint,
+    scalar_metrics,
+)
 from tdmpc2.replay_buffer import (
     LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES,
     REPLAY_SAFETY_COST_NAMES,
     SAFETY_COST_SCHEMA_VERSION,
     EpisodeReplayBuffer,
 )
+from tdmpc2.safety_diagnostics import safety_batch_diagnostics
 
 
 class FixedReplay:
@@ -45,6 +53,10 @@ class FixedReplay:
         if self.poison_safety:
             tensors[-1].fill_(float("nan"))
         return tuple(tensors)
+
+    def sample_diagnostics(self, device: torch.device, *, seed: int):
+        del seed
+        return self.sample(device)
 
 
 def _module_has_finite_nonzero_gradient(module: torch.nn.Module) -> bool:
@@ -69,6 +81,38 @@ def _assert_parameters_unchanged(
 
 
 def main() -> None:
+    assert scalar_metrics({"unavailable": float("nan")})["unavailable"] is None
+
+    accumulator = LossAccumulator()
+    accumulator.add(
+        {
+            "ordinary_loss": 1.0,
+            "safety_translation_error_positive_count": 2.0,
+            "safety_translation_error_positive_mae": 0.5,
+        }
+    )
+    accumulator.add(
+        {
+            "ordinary_loss": 3.0,
+            "safety_translation_error_positive_count": 1.0,
+            "safety_translation_error_positive_mae": 2.0,
+        }
+    )
+    accumulator.add(
+        {
+            "ordinary_loss": 5.0,
+            "safety_translation_error_positive_count": 0.0,
+            "safety_translation_error_positive_mae": float("nan"),
+        }
+    )
+    accumulated = accumulator.pop_means()
+    assert accumulated["ordinary_loss"] == 3.0
+    assert accumulated["safety_translation_error_positive_count"] == 3.0
+    np.testing.assert_allclose(
+        accumulated["safety_translation_error_positive_mae"],
+        1.0,
+    )
+
     assert tuple(ENV_SAFETY_COST_NAMES) == REPLAY_SAFETY_COST_NAMES
     safety_cost_names = REPLAY_SAFETY_COST_NAMES
     valid_transition_cost = np.asarray([0.25, 0.5], dtype=np.float32)
@@ -174,6 +218,10 @@ def main() -> None:
             "translation_error_scale": 1.0,
         }
     )
+    overridden_config = copy.deepcopy(full_config)
+    apply_cli_overrides(overridden_config, safety_loss_coef=0.1)
+    assert overridden_config["safety"]["loss_coef"] == 0.1
+    assert build_agent_config(overridden_config)["safety_loss_coef"] == 0.1
     config = build_agent_config(full_config)
     assert config == build_evaluation_agent_config(full_config)
     assert tuple(config["safety_cost_names"]) == tuple(
@@ -339,6 +387,31 @@ def main() -> None:
         sampled_safety_cost[..., 1], sampled_rewards[..., 0] + 1.0
     )
 
+    # A validation sample uses an independent RNG and must leave the next
+    # training sample exactly unchanged.
+    replay_before_diagnostics = copy.deepcopy(replay.state_dict())
+    diagnostic_batch = replay.sample_diagnostics(device, seed=777)
+    assert len(diagnostic_batch) == 5
+    assert (
+        replay.state_dict()["rng_state"]
+        == replay_before_diagnostics["rng_state"]
+    )
+    replay_without_diagnostics = EpisodeReplayBuffer(
+        100,
+        14,
+        2,
+        3,
+        4,
+        safety_cost_names=safety_cost_names,
+        seed=123,
+    )
+    replay_without_diagnostics.load_state_dict(replay_before_diagnostics)
+    for actual, expected in zip(
+        replay.sample(device),
+        replay_without_diagnostics.sample(device),
+    ):
+        torch.testing.assert_close(actual, expected)
+
     replay_state = replay.state_dict()
     assert replay_state["safety_cost_schema_version"] == SAFETY_COST_SCHEMA_VERSION
     assert replay_state["safety_cost_names"] == safety_cost_names
@@ -469,6 +542,122 @@ def main() -> None:
     )
     # The translation-error channel is intentionally not clipped at one.
     assert transformed_target[-1, 1] > np.log(2.0)
+
+    # Batch diagnostics preserve channel order, exact target>0 rare-event
+    # semantics, and the documented low/medium/high curvature partitions.
+    diagnostic_target = torch.tensor(
+        [
+            [0.01, 0.0],
+            [0.04, 0.0],
+            [0.05, 0.2],
+            [0.09, 0.0],
+            [0.10, 0.5],
+            [0.20, 0.0],
+        ],
+        dtype=torch.float32,
+    )
+    diagnostic_prediction = torch.tensor(
+        [
+            [0.02, 0.1],
+            [0.05, 0.2],
+            [0.07, 0.3],
+            [0.10, 0.4],
+            [0.13, 0.7],
+            [0.24, 0.6],
+        ],
+        dtype=torch.float32,
+    )
+    diagnostic_metrics = safety_batch_diagnostics(
+        agent.model.transform_safety_targets(diagnostic_prediction),
+        diagnostic_target,
+        agent.model,
+        curvature_boundaries=(0.05, 0.10),
+        safety_cost_names=safety_cost_names,
+    )
+    assert all(
+        torch.isfinite(value).all()
+        for value in diagnostic_metrics.values()
+    )
+    assert int(
+        diagnostic_metrics["safety_translation_error_positive_count"]
+    ) == 2
+    np.testing.assert_allclose(
+        float(
+            diagnostic_metrics[
+                "safety_translation_error_positive_fraction"
+            ]
+        ),
+        2.0 / 6.0,
+    )
+    np.testing.assert_allclose(
+        float(
+            diagnostic_metrics["safety_translation_error_zero_fraction"]
+        ),
+        4.0 / 6.0,
+    )
+    np.testing.assert_allclose(
+        float(
+            diagnostic_metrics[
+                "safety_translation_error_positive_mae"
+            ]
+        ),
+        0.15,
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        float(
+            diagnostic_metrics[
+                "safety_translation_error_zero_mae"
+            ]
+        ),
+        0.325,
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        float(
+            diagnostic_metrics[
+                "safety_translation_error_positive_pred_mean"
+            ]
+        ),
+        0.5,
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        float(
+            diagnostic_metrics[
+                "safety_translation_error_positive_target_mean"
+            ]
+        ),
+        0.35,
+        rtol=1e-6,
+    )
+    for curvature_group in ("low", "medium", "high"):
+        assert int(
+            diagnostic_metrics[
+                f"safety_curvature_{curvature_group}_count"
+            ]
+        ) == 2
+
+    no_positive_target = diagnostic_target.clone()
+    no_positive_target[:, 1].zero_()
+    no_positive_metrics = safety_batch_diagnostics(
+        agent.model.transform_safety_targets(diagnostic_prediction),
+        no_positive_target,
+        agent.model,
+        safety_cost_names=safety_cost_names,
+    )
+    assert int(
+        no_positive_metrics["safety_translation_error_positive_count"]
+    ) == 0
+    assert torch.isnan(
+        no_positive_metrics["safety_translation_error_positive_mae"]
+    )
+    assert torch.isnan(
+        no_positive_metrics[
+            "safety_translation_error_positive_pred_mean"
+        ]
+    )
+
     for dtype, tiny_value in (
         (torch.float16, 1.0e-5),
         (torch.float32, 1.0e-9),
@@ -568,6 +757,8 @@ def main() -> None:
     safety_only_config["safety_loss_coef"] = 1.5
     safety_only_config["safety_curvature_loss_coef"] = 2.0
     safety_only_config["safety_translation_error_loss_coef"] = 3.0
+    safety_only_config["validation_interval"] = 1
+    safety_only_config["gradient_interval"] = 1
     safety_only_config["grad_clip_norm"] = 1.0e6
     torch.manual_seed(11)
     safety_agent = TDMPC2Agent(
@@ -618,6 +809,56 @@ def main() -> None:
             ).mean(dim=(0, 1))
         )
 
+    validation_cost = fixed_safety_cost.clone()
+    validation_zero_mask = (
+        torch.arange(horizon * batch_size).reshape(horizon, batch_size) % 2
+        == 0
+    )
+    validation_cost[..., 1][validation_zero_mask] = 0.0
+    validation_batch = (
+        fixed_observations,
+        fixed_actions,
+        fixed_rewards,
+        fixed_terminated,
+        validation_cost,
+    )
+    validation_parameters_before = {
+        name: parameter.detach().clone()
+        for name, parameter in safety_agent.model.named_parameters()
+    }
+    safety_agent.model.train(True)
+    direct_validation_metrics = safety_agent.safety_validation_metrics(
+        validation_batch
+    )
+    assert safety_agent.model.training
+    _assert_parameters_unchanged(
+        validation_parameters_before,
+        safety_agent.model,
+    )
+    assert all(
+        parameter.grad is None
+        for parameter in safety_agent.model.parameters()
+    )
+    for key in (
+        "val_safety_loss",
+        "val_safety_curvature_loss",
+        "val_safety_translation_error_loss",
+        "val_safety_curvature_mae",
+        "val_safety_translation_error_mae",
+        "val_safety_translation_error_positive_mae",
+        "val_safety_translation_error_zero_mae",
+    ):
+        assert np.isfinite(float(direct_validation_metrics[key]))
+    assert (
+        int(
+            direct_validation_metrics[
+                "val_safety_translation_error_positive_count"
+            ]
+        )
+        == horizon * batch_size // 2
+    )
+    safety_agent.model.train(False)
+
     captured_alignment: dict[str, torch.Tensor] = {}
     original_compute_safety_loss = safety_agent._compute_safety_loss
 
@@ -645,7 +886,16 @@ def main() -> None:
     }
     torch.manual_seed(29)
     metrics = safety_agent.update(FixedReplay(fixed_batch))
-    assert all(np.isfinite(value) for value in metrics.values())
+    assert not any(np.isinf(value) for value in metrics.values())
+    for original_metric in (
+        "consistency_loss",
+        "reward_loss",
+        "value_loss",
+        "termination_loss",
+        "policy_loss",
+        "total_loss",
+    ):
+        assert np.isfinite(metrics[original_metric])
     torch.testing.assert_close(
         captured_alignment["latent"],
         expected_rollout_tensor[:-1],
@@ -688,12 +938,12 @@ def main() -> None:
         rtol=1e-6,
     )
     np.testing.assert_allclose(
-        metrics["safety_decoded_curvature_mean"],
+        metrics["safety_pred_curvature_mean"],
         float(expected_decoded_means[0]),
         rtol=1e-6,
     )
     np.testing.assert_allclose(
-        metrics["safety_decoded_translation_error_mean"],
+        metrics["safety_pred_translation_error_mean"],
         float(expected_decoded_means[1]),
         rtol=1e-6,
     )
@@ -701,12 +951,62 @@ def main() -> None:
         "safety_loss",
         "safety_curvature_loss",
         "safety_translation_error_loss",
-        "safety_decoded_curvature_mean",
+        "safety_pred_curvature_mean",
         "safety_target_curvature_mean",
-        "safety_decoded_translation_error_mean",
+        "safety_pred_curvature_max",
+        "safety_target_curvature_max",
+        "safety_pred_translation_error_mean",
         "safety_target_translation_error_mean",
+        "safety_pred_translation_error_max",
+        "safety_target_translation_error_max",
+        "safety_curvature_mae_transformed",
+        "safety_translation_error_mae_transformed",
+        "safety_curvature_mae",
+        "safety_translation_error_mae",
+        "safety_translation_error_positive_count",
+        "safety_translation_error_positive_fraction",
+        "safety_translation_error_zero_fraction",
+        "safety_translation_error_positive_mae",
+        "safety_translation_error_zero_mae",
+        "safety_translation_error_positive_pred_mean",
+        "safety_translation_error_positive_target_mean",
     }
     assert required_safety_metrics.issubset(metrics)
+    required_validation_metrics = {
+        f"val_{name}" for name in required_safety_metrics
+    }
+    assert required_validation_metrics.issubset(metrics)
+    for key in (
+        "val_safety_loss",
+        "val_safety_curvature_loss",
+        "val_safety_translation_error_loss",
+        "val_safety_curvature_mae",
+        "val_safety_translation_error_mae",
+    ):
+        assert np.isfinite(metrics[key])
+    required_gradient_metrics = {
+        "safety_grad_norm_trunk",
+        "safety_grad_norm_curvature_branch",
+        "safety_grad_norm_translation_error_branch",
+        "safety_grad_norm_encoder",
+        "safety_grad_norm_dynamics",
+    }
+    assert required_gradient_metrics.issubset(metrics)
+    assert all(
+        np.isfinite(metrics[key]) and metrics[key] > 0.0
+        for key in required_gradient_metrics
+    )
+    for shared_module in ("encoder", "dynamics"):
+        total_key = f"total_grad_norm_{shared_module}"
+        safety_key = f"safety_grad_norm_{shared_module}"
+        assert np.isfinite(metrics[total_key])
+        assert metrics[total_key] > 0.0
+        np.testing.assert_allclose(
+            metrics[total_key],
+            metrics[safety_key],
+            rtol=1e-5,
+            atol=1e-7,
+        )
     assert _module_has_finite_nonzero_gradient(
         safety_agent.model.safety_trunk
     )
@@ -752,9 +1052,17 @@ def main() -> None:
         maximum_finite_cost,
         weights,
     )
-    assert all(
-        torch.isfinite(value).all() for value in extreme_safety_info.values()
+    assert not any(
+        torch.isinf(value).any() for value in extreme_safety_info.values()
     )
+    for key in (
+        "safety_loss",
+        "safety_curvature_loss",
+        "safety_translation_error_loss",
+        "safety_curvature_mae",
+        "safety_translation_error_mae",
+    ):
+        assert torch.isfinite(extreme_safety_info[key])
 
     # Planning must stay isolated even while Safety prediction is enabled.
     with ExitStack() as enabled_planning_stack:
@@ -811,6 +1119,8 @@ def main() -> None:
     # Safety weights can affect baseline losses, shared updates, or planning.
     zero_config = copy.deepcopy(config)
     zero_config["safety_loss_coef"] = 0.0
+    zero_config["validation_interval"] = 1
+    zero_config["gradient_interval"] = 1
     torch.manual_seed(41)
     zero_agent_a = TDMPC2Agent(
         14, 2, zero_config, episode_length=200, device=device
@@ -887,9 +1197,23 @@ def main() -> None:
         assert safety_forward_spy.call_count == 0
         assert target_transform_spy.call_count == 0
         assert safety_decode_spy.call_count == 0
-        for key in required_safety_metrics:
+        for key in (
+            "safety_loss",
+            "safety_curvature_loss",
+            "safety_translation_error_loss",
+        ):
             assert zero_metrics_a[key] == 0.0
             assert zero_metrics_b[key] == 0.0
+        for key in required_safety_metrics - {
+            "safety_loss",
+            "safety_curvature_loss",
+            "safety_translation_error_loss",
+        }:
+            assert np.isnan(zero_metrics_a[key])
+            assert np.isnan(zero_metrics_b[key])
+        assert not any(
+            key.startswith("val_") for key in zero_metrics_a
+        )
         expected_zero_total_loss = (
             float(zero_config["consistency_coef"])
             * zero_metrics_a["consistency_loss"]
@@ -906,12 +1230,15 @@ def main() -> None:
             rtol=1e-6,
         )
         for key in zero_metrics_a:
-            np.testing.assert_allclose(
-                zero_metrics_a[key],
-                zero_metrics_b[key],
-                rtol=0.0,
-                atol=0.0,
-            )
+            if np.isnan(zero_metrics_a[key]):
+                assert np.isnan(zero_metrics_b[key])
+            else:
+                np.testing.assert_allclose(
+                    zero_metrics_a[key],
+                    zero_metrics_b[key],
+                    rtol=0.0,
+                    atol=0.0,
+                )
 
         shared_parameters_a = dict(zero_agent_a.model.named_parameters())
         shared_parameters_b = dict(zero_agent_b.model.named_parameters())
@@ -1055,6 +1382,13 @@ def main() -> None:
             "grad_clip_norm",
         ):
             checkpoint_config["training"][key] = safety_only_config[key]
+        for key in (
+            "validation_interval",
+            "gradient_interval",
+            "curvature_low_max_mm_inv",
+            "curvature_medium_max_mm_inv",
+        ):
+            checkpoint_config["diagnostics"][key] = safety_only_config[key]
         checkpoint_agent_config = build_agent_config(checkpoint_config)
         for key, value in safety_only_config.items():
             assert checkpoint_agent_config[key] == value
@@ -1076,6 +1410,12 @@ def main() -> None:
             checkpoint,
             config=checkpoint_config,
             source="Smoke-test checkpoint",
+        )
+        commit4_checkpoint = copy.deepcopy(checkpoint)
+        commit4_checkpoint["config"].pop("diagnostics")
+        validate_checkpoint_schema(
+            commit4_checkpoint,
+            source="Commit-4 format-v3 checkpoint",
         )
         assert checkpoint["format_version"] == CHECKPOINT_FORMAT_VERSION
         assert (
@@ -1118,6 +1458,138 @@ def main() -> None:
         )
         assert checkpoint_agent.update_count == safety_agent.update_count
         assert checkpoint_agent.model_optimizer.param_groups[-1]["name"] == "safety"
+
+        class FakeEvaluationEnv:
+            def __init__(self) -> None:
+                self.observation_space = type(
+                    "ObservationSpace",
+                    (),
+                    {"shape": (14,)},
+                )()
+                self.action_space = type(
+                    "ActionSpace",
+                    (),
+                    {"shape": (2,)},
+                )()
+                self.closed = False
+
+            def close(self) -> None:
+                self.closed = True
+
+        fake_evaluation_env = FakeEvaluationEnv()
+        with patch.object(
+            safety_head_evaluation,
+            "make_steve_env",
+            return_value=fake_evaluation_env,
+        ):
+            (
+                loaded_evaluation_checkpoint,
+                loaded_evaluation_config,
+                loaded_evaluation_env,
+                loaded_evaluation_agent,
+                loaded_evaluation_device,
+            ) = safety_head_evaluation.load_evaluation_components(
+                checkpoint_path,
+                requested_device="cpu",
+            )
+        assert (
+            loaded_evaluation_checkpoint["format_version"]
+            == CHECKPOINT_FORMAT_VERSION
+        )
+        assert loaded_evaluation_config == checkpoint_config
+        assert loaded_evaluation_env is fake_evaluation_env
+        assert loaded_evaluation_device == device
+        assert (
+            loaded_evaluation_agent.safety_cost_names
+            == safety_cost_names
+        )
+
+        evaluation_observation = np.linspace(
+            -1.0,
+            1.0,
+            14,
+            dtype=np.float32,
+        )
+        evaluation_action = np.asarray([0.25, -0.5], dtype=np.float32)
+        evaluation_action_before = evaluation_action.copy()
+        previous_mean_before = (
+            loaded_evaluation_agent.previous_mean.detach().clone()
+        )
+        evaluation_rng_before = torch.get_rng_state().clone()
+        forced_transformed_prediction = torch.tensor(
+            [[-0.75, 0.5]],
+            dtype=torch.float32,
+        )
+        expected_evaluation_prediction = (
+            loaded_evaluation_agent.model.decode_safety_transformed(
+                forced_transformed_prediction
+            )
+            .squeeze(0)
+            .detach()
+            .cpu()
+            .numpy()
+        )
+        with ExitStack() as evaluation_stack:
+            evaluation_plan_spy = evaluation_stack.enter_context(
+                patch.object(
+                    loaded_evaluation_agent,
+                    "_plan",
+                    side_effect=AssertionError(
+                        "Safety diagnostic prediction called MPC planning"
+                    ),
+                )
+            )
+            evaluation_stack.enter_context(
+                patch.object(
+                    loaded_evaluation_agent.model,
+                    "safety_transformed",
+                    return_value=forced_transformed_prediction,
+                )
+            )
+            (
+                evaluation_prediction,
+                evaluation_prediction_transformed,
+                evaluation_inference_ms,
+            ) = safety_head_evaluation.predict_safety_before_step(
+                loaded_evaluation_agent,
+                evaluation_observation,
+                evaluation_action,
+            )
+        assert evaluation_plan_spy.call_count == 0
+        np.testing.assert_array_equal(
+            evaluation_action,
+            evaluation_action_before,
+        )
+        np.testing.assert_allclose(
+            evaluation_prediction,
+            expected_evaluation_prediction,
+            rtol=0.0,
+            atol=0.0,
+        )
+        np.testing.assert_allclose(
+            evaluation_prediction_transformed,
+            forced_transformed_prediction.squeeze(0).numpy(),
+            rtol=0.0,
+            atol=0.0,
+        )
+        assert np.isfinite(evaluation_prediction).all()
+        assert np.isfinite(evaluation_prediction_transformed).all()
+        assert np.isfinite(evaluation_inference_ms)
+        assert evaluation_inference_ms >= 0.0
+        torch.testing.assert_close(
+            loaded_evaluation_agent.previous_mean,
+            previous_mean_before,
+            rtol=0.0,
+            atol=0.0,
+        )
+        torch.testing.assert_close(
+            torch.get_rng_state(),
+            evaluation_rng_before,
+            rtol=0.0,
+            atol=0.0,
+        )
+        loaded_evaluation_env.close()
+        assert fake_evaluation_env.closed
 
         old_checkpoint = copy.deepcopy(checkpoint)
         old_checkpoint["format_version"] = 2

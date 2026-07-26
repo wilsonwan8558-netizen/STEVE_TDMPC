@@ -16,6 +16,7 @@ import torch.nn.functional as F
 
 from .networks import WorldModel, soft_cross_entropy, two_hot_inv
 from .replay_buffer import REPLAY_SAFETY_COST_NAMES
+from .safety_diagnostics import safety_batch_diagnostics
 
 
 SAFETY_MODEL_SCHEMA_VERSION = 1
@@ -25,6 +26,12 @@ _SAFETY_CONFIG_KEYS = (
     "safety_translation_error_loss_coef",
     "safety_curvature_scale_mm_inv",
     "safety_translation_error_scale",
+)
+_DIAGNOSTIC_CONFIG_KEYS = (
+    "validation_interval",
+    "gradient_interval",
+    "curvature_low_max_mm_inv",
+    "curvature_medium_max_mm_inv",
 )
 
 
@@ -72,6 +79,7 @@ class TDMPC2Agent:
             "safety_cost_names",
             "safety_dim",
             *_SAFETY_CONFIG_KEYS,
+            *_DIAGNOSTIC_CONFIG_KEYS,
         }
         missing_safety_keys = sorted(required_safety_keys - self.config.keys())
         if missing_safety_keys:
@@ -124,6 +132,27 @@ class TDMPC2Agent:
         for name, value in scale_values.items():
             if not np.isfinite(value) or value <= 0.0:
                 raise ValueError(f"{name} must be finite and strictly positive")
+        self.validation_interval = int(self.config["validation_interval"])
+        self.gradient_interval = int(self.config["gradient_interval"])
+        if self.validation_interval <= 0 or self.gradient_interval <= 0:
+            raise ValueError(
+                "validation_interval and gradient_interval must be positive"
+            )
+        self.curvature_boundaries = (
+            float(self.config["curvature_low_max_mm_inv"]),
+            float(self.config["curvature_medium_max_mm_inv"]),
+        )
+        if (
+            not all(
+                np.isfinite(value) and value >= 0.0
+                for value in self.curvature_boundaries
+            )
+            or self.curvature_boundaries[0] >= self.curvature_boundaries[1]
+        ):
+            raise ValueError(
+                "Curvature diagnostic boundaries must be finite, nonnegative, "
+                "and strictly increasing"
+            )
         self.safety_training_enabled = self.safety_loss_coef > 0.0
         self.model = WorldModel(
             self.observation_dim, self.action_dim, self.config
@@ -422,42 +451,236 @@ class TDMPC2Agent:
         )
 
         with torch.no_grad():
-            decoded_prediction = self.model.decode_safety_transformed(
-                prediction_transformed.detach()
+            diagnostics = safety_batch_diagnostics(
+                prediction_transformed,
+                safety_cost,
+                self.model,
+                curvature_boundaries=self.curvature_boundaries,
+                safety_cost_names=self.safety_cost_names,
             )
-            if tuple(decoded_prediction.shape) != expected_cost_shape:
-                raise RuntimeError(
-                    "WorldModel.decode_safety_transformed returned shape "
-                    f"{tuple(decoded_prediction.shape)}; expected "
-                    f"{expected_cost_shape}"
-                )
-            decoded_mean = self._stable_nonnegative_channel_mean(
-                decoded_prediction
-            )
-            target_mean = self._stable_nonnegative_channel_mean(safety_cost)
 
         return {
             "safety_loss": safety_loss,
             "safety_curvature_loss": curvature_loss,
             "safety_translation_error_loss": translation_error_loss,
-            "safety_decoded_curvature_mean": decoded_mean[0],
-            "safety_target_curvature_mean": target_mean[0],
-            "safety_decoded_translation_error_mean": decoded_mean[1],
-            "safety_target_translation_error_mean": target_mean[1],
+            **diagnostics,
         }
 
-    @staticmethod
-    def _stable_nonnegative_channel_mean(value: torch.Tensor) -> torch.Tensor:
-        """Compute per-channel means without overflowing a finite dtype."""
+    @torch.no_grad()
+    def safety_validation_metrics(
+        self,
+        batch,
+        *,
+        prefix: str = "val_",
+    ) -> Dict[str, torch.Tensor]:
+        """Evaluate one independent replay batch without changing parameters."""
 
-        channel_max = value.amax(dim=(0, 1))
-        denominator = torch.where(
-            channel_max > 0.0,
-            channel_max,
-            torch.ones_like(channel_max),
+        if not isinstance(prefix, str):
+            raise TypeError("Validation metric prefix must be a string")
+        normalized_prefix = (
+            prefix if not prefix or prefix.endswith("_") else f"{prefix}_"
         )
-        normalized_mean = (value / denominator).mean(dim=(0, 1))
-        return normalized_mean * channel_max
+        observations, actions, _, _, safety_cost = batch
+        expected_observation_shape = (
+            self.horizon + 1,
+            actions.shape[1],
+            self.observation_dim,
+        )
+        expected_action_shape = (
+            self.horizon,
+            actions.shape[1],
+            self.action_dim,
+        )
+        expected_cost_shape = (
+            self.horizon,
+            actions.shape[1],
+            self.safety_dim,
+        )
+        if tuple(observations.shape) != expected_observation_shape:
+            raise ValueError(
+                "Validation observations must have shape "
+                f"{expected_observation_shape}, got {tuple(observations.shape)}"
+            )
+        if tuple(actions.shape) != expected_action_shape:
+            raise ValueError(
+                f"Validation actions must have shape {expected_action_shape}, "
+                f"got {tuple(actions.shape)}"
+            )
+        if tuple(safety_cost.shape) != expected_cost_shape:
+            raise ValueError(
+                f"Validation safety cost must have shape {expected_cost_shape}, "
+                f"got {tuple(safety_cost.shape)}"
+            )
+
+        was_training = self.model.training
+        self.model.train(False)
+        try:
+            latent = self.model.encode(observations[0])
+            rollout = [latent]
+            for step in range(self.horizon):
+                latent = self.model.next(latent, actions[step])
+                rollout.append(latent)
+            rollout_latent = torch.stack(rollout, dim=0)[:-1]
+            prediction_transformed = self.model.safety_transformed(
+                rollout_latent,
+                actions,
+            )
+            target_transformed = self.model.transform_safety_targets(
+                safety_cost
+            )
+            element_loss = F.smooth_l1_loss(
+                prediction_transformed,
+                target_transformed,
+                reduction="none",
+            )
+            weights = torch.pow(
+                torch.tensor(float(self.config["rho"]), device=self.device),
+                torch.arange(self.horizon, device=self.device),
+            )
+            channel_losses = (
+                element_loss.mean(dim=1) * weights.unsqueeze(-1)
+            ).sum(dim=0) / self.horizon
+            curvature_loss = channel_losses[0]
+            translation_error_loss = channel_losses[1]
+            combined_loss = (
+                self.safety_curvature_loss_coef * curvature_loss
+                + self.safety_translation_error_loss_coef
+                * translation_error_loss
+            )
+            diagnostics = safety_batch_diagnostics(
+                prediction_transformed,
+                safety_cost,
+                self.model,
+                prefix=normalized_prefix,
+                curvature_boundaries=self.curvature_boundaries,
+                safety_cost_names=self.safety_cost_names,
+            )
+            return {
+                f"{normalized_prefix}safety_loss": combined_loss,
+                f"{normalized_prefix}safety_curvature_loss": curvature_loss,
+                f"{normalized_prefix}safety_translation_error_loss": (
+                    translation_error_loss
+                ),
+                **diagnostics,
+            }
+        finally:
+            self.model.train(was_training)
+
+    def _gradient_diagnostics(
+        self,
+        safety_shared_gradients: Mapping[str, torch.Tensor],
+    ) -> Dict[str, torch.Tensor]:
+        """Return sparse pre-clipping Safety and total gradient norms."""
+
+        return {
+            "safety_grad_norm_trunk": self._module_gradient_norm(
+                self.model.safety_trunk
+            ),
+            "safety_grad_norm_curvature_branch": self._module_gradient_norm(
+                self.model.safety_curvature_head
+            ),
+            "safety_grad_norm_translation_error_branch": (
+                self._module_gradient_norm(
+                    self.model.safety_translation_error_head
+                )
+            ),
+            # These total shared-module norms make the auxiliary-only values
+            # below interpretable when checking whether Safety dominates.
+            "total_grad_norm_encoder": self._module_gradient_norm(
+                self.model.encoder
+            ),
+            "total_grad_norm_dynamics": self._module_gradient_norm(
+                self.model.dynamics
+            ),
+            **dict(safety_shared_gradients),
+        }
+
+    def _module_gradient_norm(self, module: torch.nn.Module) -> torch.Tensor:
+        squared_norm = torch.zeros((), device=self.device)
+        for parameter in module.parameters():
+            if parameter.grad is not None:
+                squared_norm = squared_norm + parameter.grad.detach().pow(2).sum()
+        return squared_norm.sqrt()
+
+    def _safety_shared_gradient_diagnostics(
+        self,
+        scaled_safety_loss: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        """Measure auxiliary-only encoder/dynamics gradients without mutation."""
+
+        encoder_parameters = list(self.model.encoder.parameters())
+        dynamics_parameters = list(self.model.dynamics.parameters())
+        parameters = encoder_parameters + dynamics_parameters
+        gradients = torch.autograd.grad(
+            scaled_safety_loss,
+            parameters,
+            retain_graph=True,
+            allow_unused=True,
+        )
+
+        def norm(values) -> torch.Tensor:
+            squared_norm = torch.zeros((), device=self.device)
+            for gradient in values:
+                if gradient is not None:
+                    squared_norm = (
+                        squared_norm + gradient.detach().pow(2).sum()
+                    )
+            return squared_norm.sqrt()
+
+        encoder_count = len(encoder_parameters)
+        return {
+            "safety_grad_norm_encoder": norm(
+                gradients[:encoder_count]
+            ),
+            "safety_grad_norm_dynamics": norm(
+                gradients[encoder_count:]
+            ),
+        }
+
+    def _disabled_safety_info(self) -> Dict[str, torch.Tensor]:
+        """Return stable loss keys without evaluating the disabled Safety Head."""
+
+        zero = torch.zeros((), device=self.device)
+        unavailable = torch.full((), float("nan"), device=self.device)
+        info: Dict[str, torch.Tensor] = {
+            "safety_loss": zero,
+            "safety_curvature_loss": zero,
+            "safety_translation_error_loss": zero,
+        }
+        for channel in ("curvature", "translation_error"):
+            for metric in (
+                "pred_mean",
+                "target_mean",
+                "pred_max",
+                "target_max",
+                "mae_transformed",
+                "mae",
+            ):
+                if metric.startswith(("pred_", "target_")):
+                    statistic, reduction = metric.split("_", 1)
+                    name = (
+                        f"safety_{statistic}_{channel}_{reduction}"
+                    )
+                else:
+                    name = f"safety_{channel}_{metric}"
+                info[name] = unavailable
+        for name in (
+            "safety_translation_error_positive_count",
+            "safety_translation_error_positive_fraction",
+            "safety_translation_error_zero_fraction",
+            "safety_translation_error_positive_mae",
+            "safety_translation_error_positive_pred_mean",
+            "safety_translation_error_positive_target_mean",
+            "safety_translation_error_zero_count",
+            "safety_translation_error_zero_mae",
+            "safety_translation_error_zero_pred_mean",
+            "safety_translation_error_zero_target_mean",
+        ):
+            info[name] = unavailable
+        for group in ("low", "medium", "high"):
+            for metric in ("count", "mae", "pred_mean", "target_mean"):
+                info[f"safety_curvature_{group}_{metric}"] = unavailable
+        return info
 
     def update(self, replay_buffer) -> Dict[str, float]:
         observations, actions, rewards, terminated, safety_cost = (
@@ -515,16 +738,7 @@ class TDMPC2Agent:
         termination_loss = F.binary_cross_entropy_with_logits(
             termination_logits, terminated
         )
-        zero_safety_loss = torch.zeros((), device=self.device)
-        safety_info: Dict[str, torch.Tensor] = {
-            "safety_loss": zero_safety_loss,
-            "safety_curvature_loss": zero_safety_loss,
-            "safety_translation_error_loss": zero_safety_loss,
-            "safety_decoded_curvature_mean": zero_safety_loss,
-            "safety_target_curvature_mean": zero_safety_loss,
-            "safety_decoded_translation_error_mean": zero_safety_loss,
-            "safety_target_translation_error_mean": zero_safety_loss,
-        }
+        safety_info = self._disabled_safety_info()
         if self.safety_training_enabled:
             safety_info = self._compute_safety_loss(
                 latent_rollout_tensor[:-1],
@@ -541,7 +755,28 @@ class TDMPC2Agent:
         )
 
         self.model_optimizer.zero_grad(set_to_none=True)
+        diagnostic_gradient_due = (
+            (self.update_count + 1) % self.gradient_interval == 0
+        )
+        safety_shared_gradients: Dict[str, torch.Tensor] = {}
+        if diagnostic_gradient_due and self.safety_training_enabled:
+            safety_shared_gradients = (
+                self._safety_shared_gradient_diagnostics(
+                    self.safety_loss_coef * safety_info["safety_loss"]
+                )
+            )
+        elif diagnostic_gradient_due:
+            zero = torch.zeros((), device=self.device)
+            safety_shared_gradients = {
+                "safety_grad_norm_encoder": zero,
+                "safety_grad_norm_dynamics": zero.clone(),
+            }
         total_loss.backward()
+        gradient_info: Dict[str, torch.Tensor] = {}
+        if diagnostic_gradient_due:
+            gradient_info = self._gradient_diagnostics(
+                safety_shared_gradients
+            )
         model_grad_norm = torch.nn.utils.clip_grad_norm_(
             [
                 parameter
@@ -555,7 +790,31 @@ class TDMPC2Agent:
         policy_info = self._update_policy(latent_rollout_tensor.detach())
         self.model.soft_update_target_q(float(self.config["tau"]))
         self.model.train(False)
-        self.update_count += 1
+        next_update_count = self.update_count + 1
+        validation_info: Dict[str, torch.Tensor] = {}
+        if (
+            self.safety_training_enabled
+            and next_update_count % self.validation_interval == 0
+        ):
+            diagnostic_sampler = getattr(
+                replay_buffer,
+                "sample_diagnostics",
+                None,
+            )
+            if not callable(diagnostic_sampler):
+                raise TypeError(
+                    "Replay buffer must implement sample_diagnostics() so "
+                    "validation cannot advance the training sampler"
+                )
+            validation_batch = diagnostic_sampler(
+                self.device,
+                seed=next_update_count,
+            )
+            validation_info = self.safety_validation_metrics(
+                validation_batch,
+                prefix="val_",
+            )
+        self.update_count = next_update_count
         return {
             "total_loss": float(total_loss.detach().cpu()),
             "consistency_loss": float(consistency_loss.detach().cpu()),
@@ -566,6 +825,14 @@ class TDMPC2Agent:
             **{
                 name: float(value.detach().cpu())
                 for name, value in safety_info.items()
+            },
+            **{
+                name: float(value.detach().cpu())
+                for name, value in gradient_info.items()
+            },
+            **{
+                name: float(value.detach().cpu())
+                for name, value in validation_info.items()
             },
             **policy_info,
         }

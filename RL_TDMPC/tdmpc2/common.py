@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import os
 import random
 from pathlib import Path
@@ -15,6 +16,12 @@ import yaml
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
+DEFAULT_DIAGNOSTICS_CONFIG = {
+    "validation_interval": 100,
+    "gradient_interval": 100,
+    "curvature_low_max_mm_inv": 0.05,
+    "curvature_medium_max_mm_inv": 0.1,
+}
 
 
 def load_config(path: os.PathLike) -> Dict[str, Any]:
@@ -120,6 +127,92 @@ def build_safety_agent_config(
     }
 
 
+def build_diagnostics_agent_config(
+    config: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Validate diagnostic controls and return their flat agent schema.
+
+    Curvature boundaries are used only to partition logged prediction
+    statistics. They are numerical analysis bins, not clinical safety limits.
+    """
+
+    diagnostics = config.get("diagnostics", DEFAULT_DIAGNOSTICS_CONFIG)
+    if not isinstance(diagnostics, Mapping):
+        raise TypeError("Configuration section 'diagnostics' must be a mapping")
+    expected_keys = {
+        "validation_interval",
+        "gradient_interval",
+        "curvature_low_max_mm_inv",
+        "curvature_medium_max_mm_inv",
+    }
+    unexpected_keys = sorted(set(diagnostics) - expected_keys)
+    if unexpected_keys:
+        raise ValueError(
+            "Configuration diagnostics section has unexpected keys: "
+            f"{unexpected_keys}"
+        )
+    missing_keys = sorted(expected_keys - set(diagnostics))
+    if missing_keys:
+        raise KeyError(
+            "Configuration diagnostics section is missing keys: "
+            f"{missing_keys}"
+        )
+
+    def positive_integer(key: str) -> int:
+        value = diagnostics[key]
+        if isinstance(value, bool):
+            raise TypeError(f"diagnostics.{key} must be an integer, not bool")
+        try:
+            numeric = float(value)
+            converted = int(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(
+                f"diagnostics.{key} must be a positive integer"
+            ) from exc
+        if (
+            not np.isfinite(numeric)
+            or numeric != converted
+            or converted <= 0
+        ):
+            raise ValueError(
+                f"diagnostics.{key} must be a positive integer"
+            )
+        return converted
+
+    def nonnegative_float(key: str) -> float:
+        value = diagnostics[key]
+        if isinstance(value, bool):
+            raise TypeError(
+                f"diagnostics.{key} must be a real number, not bool"
+            )
+        try:
+            converted = float(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(
+                f"diagnostics.{key} must be a real number"
+            ) from exc
+        if not np.isfinite(converted) or converted < 0.0:
+            raise ValueError(
+                f"diagnostics.{key} must be finite and nonnegative"
+            )
+        return converted
+
+    low_boundary = nonnegative_float("curvature_low_max_mm_inv")
+    medium_boundary = nonnegative_float("curvature_medium_max_mm_inv")
+    if low_boundary >= medium_boundary:
+        raise ValueError(
+            "diagnostics.curvature_low_max_mm_inv must be smaller than "
+            "diagnostics.curvature_medium_max_mm_inv"
+        )
+
+    return {
+        "validation_interval": positive_integer("validation_interval"),
+        "gradient_interval": positive_integer("gradient_interval"),
+        "curvature_low_max_mm_inv": low_boundary,
+        "curvature_medium_max_mm_inv": medium_boundary,
+    }
+
+
 def resolve_project_path(path: os.PathLike) -> Path:
     """Resolve paths relative to ``RL_TDMPC`` rather than the current shell."""
 
@@ -151,7 +244,7 @@ def select_device(requested: str) -> torch.device:
 
 
 def scalar_metrics(metrics: Mapping[str, Any]) -> Dict[str, Any]:
-    """Convert NumPy/PyTorch scalar values into JSON-safe Python values."""
+    """Convert scalar values into strict JSON, using null when unavailable."""
 
     output: Dict[str, Any] = {}
     for key, value in metrics.items():
@@ -159,6 +252,8 @@ def scalar_metrics(metrics: Mapping[str, Any]) -> Dict[str, Any]:
             value = value.detach().mean().cpu().item()
         elif isinstance(value, np.generic):
             value = value.item()
+        if isinstance(value, float) and not math.isfinite(value):
+            value = None
         if isinstance(value, (int, float, bool, str)) or value is None:
             output[key] = value
         else:
@@ -234,6 +329,34 @@ def atomic_torch_save(payload: Mapping[str, Any], destination: os.PathLike) -> P
     return destination
 
 
+def atomic_json_save(
+    payload: Mapping[str, Any],
+    destination: os.PathLike,
+) -> Path:
+    """Serialize strict JSON through a temporary file and atomically replace it."""
+
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    try:
+        with temporary.open("w", encoding="utf-8") as stream:
+            json.dump(
+                dict(payload),
+                stream,
+                indent=2,
+                sort_keys=True,
+                allow_nan=False,
+            )
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, destination)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+    return destination
+
+
 def load_torch_checkpoint(
     path: os.PathLike, *, map_location: Any = "cpu"
 ) -> Dict[str, Any]:
@@ -255,6 +378,7 @@ def apply_cli_overrides(
     total_steps: Optional[int] = None,
     checkpoint_interval: Optional[int] = None,
     device: Optional[str] = None,
+    safety_loss_coef: Optional[float] = None,
 ) -> MutableMapping[str, Any]:
     if total_steps is not None:
         config["training"]["total_steps"] = int(total_steps)
@@ -262,4 +386,6 @@ def apply_cli_overrides(
         config["checkpoint"]["interval"] = int(checkpoint_interval)
     if device is not None:
         config["training"]["device"] = device
+    if safety_loss_coef is not None:
+        config["safety"]["loss_coef"] = float(safety_loss_coef)
     return config
