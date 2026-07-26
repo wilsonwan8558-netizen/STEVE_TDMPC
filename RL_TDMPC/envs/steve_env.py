@@ -30,7 +30,9 @@ import eve  # noqa: E402  (must follow source-checkout path setup)
 OBSERVATION_KEYS: Tuple[str, ...] = ("position", "target", "rotation")
 _CURVATURE_EPSILON_MM = 1e-8
 _CURVATURE_MINIMUM_SPACING_FRACTION = 0.05
-_TRANSLATION_ACTION_TOLERANCE_MM_S = 1e-9
+_TRANSLATION_ACTION_TOLERANCE_MM_S = (
+    eve.intervention.TRANSLATION_MISMATCH_TOLERANCE_MM_S
+)
 
 
 class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
@@ -432,6 +434,29 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         )
         return requested_translation, applied_translation
 
+    def _read_translation_block_reason(self) -> Tuple[int, str]:
+        """Read and validate the primary device's intervention-time reason."""
+
+        expected_shape = (len(self._intervention.devices),)
+        reason_ids = np.asarray(
+            self._intervention.translation_block_reason_ids
+        )
+        if reason_ids.shape != expected_shape:
+            raise RuntimeError(
+                "MonoPlaneStatic.translation_block_reason_ids must have shape "
+                f"{expected_shape}, got {reason_ids.shape}"
+            )
+        reason_id_value = reason_ids[0]
+        if isinstance(reason_id_value, (bool, np.bool_)) or not np.issubdtype(
+            reason_ids.dtype, np.integer
+        ):
+            raise TypeError(
+                "MonoPlaneStatic translation-block reason IDs must be integers"
+            )
+        reason_id = int(reason_id_value)
+        reason = eve.intervention.translation_block_reason_name(reason_id)
+        return reason_id, reason
+
     def _build_safety_metrics(
         self,
         *,
@@ -450,6 +475,9 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         )
         requested_speed, applied_speed = (
             self._read_translation_action_targets()
+        )
+        translation_block_reason_id, translation_block_reason = (
+            self._read_translation_block_reason()
         )
 
         tip_speed = 0.0
@@ -501,6 +529,29 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         requested_applied_error = self._finite_float(
             abs(requested_speed - applied_speed)
         )
+        normalized_requested_applied_error = self._finite_float(
+            requested_applied_error / self._translation_speed_limit_mm_s
+        )
+        translation_action_blocked = bool(
+            abs(requested_speed) > _TRANSLATION_ACTION_TOLERANCE_MM_S
+            and requested_applied_error
+            > _TRANSLATION_ACTION_TOLERANCE_MM_S
+        )
+        if initial and (
+            translation_block_reason_id != 0
+            or translation_block_reason != "none"
+        ):
+            raise RuntimeError(
+                "Reset-time translation-block reason must be 0/'none'"
+            )
+        if translation_action_blocked == (
+            translation_block_reason_id == 0
+        ):
+            raise RuntimeError(
+                "Translation blockage flag and intervention reason disagree: "
+                f"blocked={translation_action_blocked}, "
+                f"reason={translation_block_reason!r}"
+            )
         # This is an observed kinematic mismatch only.  It is not confirmed
         # slippage, tissue force, or a learnable safety-cost channel.
         requested_observed_insertion_speed_error = self._finite_float(
@@ -513,14 +564,16 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
             ),
             "requested_translation_speed_mm_s": float(requested_speed),
             "applied_translation_speed_mm_s": float(applied_speed),
-            "translation_action_blocked": bool(
-                abs(requested_speed)
-                > _TRANSLATION_ACTION_TOLERANCE_MM_S
-                and requested_applied_error
-                > _TRANSLATION_ACTION_TOLERANCE_MM_S
+            "translation_action_blocked": translation_action_blocked,
+            "translation_block_reason_id": int(
+                translation_block_reason_id
             ),
+            "translation_block_reason": str(translation_block_reason),
             "requested_applied_translation_error_mm_s": float(
                 requested_applied_error
+            ),
+            "normalized_requested_applied_translation_error": float(
+                normalized_requested_applied_error
             ),
             "requested_observed_insertion_speed_error_mm_s": float(
                 requested_observed_insertion_speed_error

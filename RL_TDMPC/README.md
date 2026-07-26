@@ -140,6 +140,77 @@ sampling, one complete TD-MPC2 update, latent planning, and state restoration:
 python RL_TDMPC/smoke_test_tdmpc2.py
 ```
 
+The algorithm smoke test also runs the simulation-free Safety auxiliary replay
+checks. They can be run separately while developing the data layer:
+
+```bash
+python RL_TDMPC/smoke_test_safety_aux.py
+```
+
+## Safety auxiliary dataset
+
+`info["safety_metrics"]` exposes the intervention-time translation blockage
+reason as one canonical ID/name pair:
+
+```text
+0 none
+1 lower_insertion_boundary
+2 device_length_limit
+3 vessel_tree_end
+4 other
+```
+
+This metadata is not part of the 14-D observation, reward, termination, or
+two-channel Safety Head target. `SafetyAuxReplayBuffer` stores individual
+`(observation_t, normalized_action_t, safety_cost_t)` transitions and supports
+uniform, translation-balanced, curvature-balanced, and mixed sampling with an
+RNG independent from the main temporal replay.
+
+The auxiliary curvature strata are ordered as:
+
+```text
+0 low      curvature < 0.05 mm^-1
+1 medium   0.05 <= curvature < 0.10 mm^-1
+2 high     0.10 <= curvature < 0.25 mm^-1
+3 extreme  curvature >= 0.25 mm^-1
+```
+
+Collect all supported scenarios and write the dataset/report under `/tmp`:
+
+```bash
+python RL_TDMPC/collect_safety_dataset.py
+```
+
+Collect selected modes with reproducible seeds:
+
+```bash
+python RL_TDMPC/collect_safety_dataset.py \
+  --modes random lower-boundary vessel-tree-end curvature-coverage \
+  --random-episodes 5 \
+  --curvature-episodes 5 \
+  --seed 7 \
+  --output-dataset /tmp/steve_safety_aux_seed7.pt \
+  --output-report /tmp/steve_safety_aux_seed7.json
+```
+
+The collector computes a conservative storage upper bound before creating the
+SOFA environment and rejects an undersized `--capacity`; controlled records
+therefore cannot be silently overwritten by the ring buffer. Dataset and
+report paths must also be different. Tree-end and device-length attempts use
+independent `--tree-end-seed` and `--device-length-seed` controls.
+
+With the default controlled seed, the fixed vessel reaches a tree endpoint
+before the 450 mm J-shaped guidewire limit, so `device_length_limit` is
+reported as unsupported rather than fabricated. If an episode ends before any
+blocker is observed, the report says `not_observed` instead. Curvature strata
+are diagnostic sampling bins configured under `diagnostics`; they are not
+clinical safety thresholds.
+
+Normal training leaves `safety_aux.enabled: false`. If explicitly enabled, it
+collects and checkpoints the auxiliary replay but never samples it in
+`agent.update()`; main replay sampling, TD targets, losses, policy, and MPC
+remain unchanged.
+
 ## Training
 
 Start training with the main configuration:

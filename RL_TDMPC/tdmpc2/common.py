@@ -21,6 +21,13 @@ DEFAULT_DIAGNOSTICS_CONFIG = {
     "gradient_interval": 100,
     "curvature_low_max_mm_inv": 0.05,
     "curvature_medium_max_mm_inv": 0.1,
+    "curvature_high_max_mm_inv": 0.25,
+}
+DEFAULT_SAFETY_AUX_CONFIG = {
+    "enabled": False,
+    "capacity": 100000,
+    "translation_fraction": 0.5,
+    "curvature_fraction": 0.5,
 }
 
 
@@ -144,6 +151,7 @@ def build_diagnostics_agent_config(
         "gradient_interval",
         "curvature_low_max_mm_inv",
         "curvature_medium_max_mm_inv",
+        "curvature_high_max_mm_inv",
     }
     unexpected_keys = sorted(set(diagnostics) - expected_keys)
     if unexpected_keys:
@@ -151,7 +159,10 @@ def build_diagnostics_agent_config(
             "Configuration diagnostics section has unexpected keys: "
             f"{unexpected_keys}"
         )
-    missing_keys = sorted(expected_keys - set(diagnostics))
+    # The third boundary was added for auxiliary sampling. Older format-v3
+    # checkpoint configs remain valid and resolve it to the documented default.
+    required_keys = expected_keys - {"curvature_high_max_mm_inv"}
+    missing_keys = sorted(required_keys - set(diagnostics))
     if missing_keys:
         raise KeyError(
             "Configuration diagnostics section is missing keys: "
@@ -199,10 +210,24 @@ def build_diagnostics_agent_config(
 
     low_boundary = nonnegative_float("curvature_low_max_mm_inv")
     medium_boundary = nonnegative_float("curvature_medium_max_mm_inv")
+    high_boundary_configured = "curvature_high_max_mm_inv" in diagnostics
+    if high_boundary_configured:
+        high_boundary = nonnegative_float("curvature_high_max_mm_inv")
+    else:
+        high_boundary = float(
+            DEFAULT_DIAGNOSTICS_CONFIG["curvature_high_max_mm_inv"]
+        )
     if low_boundary >= medium_boundary:
         raise ValueError(
-            "diagnostics.curvature_low_max_mm_inv must be smaller than "
-            "diagnostics.curvature_medium_max_mm_inv"
+            "Diagnostics curvature boundaries must be strictly increasing: "
+            "curvature_low_max_mm_inv must be smaller than "
+            "curvature_medium_max_mm_inv"
+        )
+    if high_boundary_configured and medium_boundary >= high_boundary:
+        raise ValueError(
+            "Diagnostics curvature boundaries must be strictly increasing: "
+            "curvature_medium_max_mm_inv must be smaller than "
+            "curvature_high_max_mm_inv"
         )
 
     return {
@@ -210,6 +235,107 @@ def build_diagnostics_agent_config(
         "gradient_interval": positive_integer("gradient_interval"),
         "curvature_low_max_mm_inv": low_boundary,
         "curvature_medium_max_mm_inv": medium_boundary,
+        "curvature_high_max_mm_inv": high_boundary,
+    }
+
+
+def curvature_boundaries_from_diagnostics(
+    config: Mapping[str, Any],
+) -> tuple[float, ...]:
+    """Return the single configured source of auxiliary curvature boundaries."""
+
+    from envs.safety import validate_curvature_boundaries
+
+    diagnostics = build_diagnostics_agent_config(config)
+    return validate_curvature_boundaries(
+        (
+            diagnostics["curvature_low_max_mm_inv"],
+            diagnostics["curvature_medium_max_mm_inv"],
+            diagnostics["curvature_high_max_mm_inv"],
+        ),
+        source="Diagnostics curvature boundaries",
+    )
+
+
+def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
+    """Validate optional Safety auxiliary replay controls."""
+
+    safety_aux = config.get("safety_aux", DEFAULT_SAFETY_AUX_CONFIG)
+    if not isinstance(safety_aux, Mapping):
+        raise TypeError("Configuration section 'safety_aux' must be a mapping")
+    expected_keys = set(DEFAULT_SAFETY_AUX_CONFIG)
+    unexpected_keys = sorted(set(safety_aux) - expected_keys)
+    if unexpected_keys:
+        raise ValueError(
+            "Configuration safety_aux section has unexpected keys: "
+            f"{unexpected_keys}"
+        )
+    missing_keys = sorted(expected_keys - set(safety_aux))
+    if missing_keys:
+        raise KeyError(
+            "Configuration safety_aux section is missing keys: "
+            f"{missing_keys}"
+        )
+
+    enabled = safety_aux["enabled"]
+    if type(enabled) is not bool:
+        raise TypeError("safety_aux.enabled must be a bool")
+
+    capacity_value = safety_aux["capacity"]
+    if isinstance(capacity_value, bool):
+        raise TypeError("safety_aux.capacity must be an integer, not bool")
+    try:
+        numeric_capacity = float(capacity_value)
+        capacity = int(capacity_value)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise TypeError("safety_aux.capacity must be a positive integer") from exc
+    if (
+        not np.isfinite(numeric_capacity)
+        or numeric_capacity != capacity
+        or capacity <= 0
+    ):
+        raise ValueError("safety_aux.capacity must be a positive integer")
+
+    def nonnegative_fraction(key: str) -> float:
+        value = safety_aux[key]
+        if isinstance(value, bool):
+            raise TypeError(f"safety_aux.{key} must be a real number, not bool")
+        try:
+            converted = float(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(
+                f"safety_aux.{key} must be a real number"
+            ) from exc
+        if not np.isfinite(converted) or converted < 0.0:
+            raise ValueError(
+                f"safety_aux.{key} must be finite and nonnegative"
+            )
+        return converted
+
+    translation_fraction = nonnegative_fraction("translation_fraction")
+    curvature_fraction = nonnegative_fraction("curvature_fraction")
+
+    # Current configs explicitly carry the third auxiliary boundary and should
+    # always validate it. Older format-v3 checkpoint configs may contain only
+    # the two diagnostic boundaries; preserve those configs while auxiliary
+    # replay is disabled, but require a valid three-boundary schema before the
+    # auxiliary replay can be enabled.
+    diagnostics = config.get("diagnostics")
+    high_boundary_is_explicit = (
+        diagnostics is None
+        or (
+            isinstance(diagnostics, Mapping)
+            and "curvature_high_max_mm_inv" in diagnostics
+        )
+    )
+    build_diagnostics_agent_config(config)
+    if enabled or high_boundary_is_explicit:
+        curvature_boundaries_from_diagnostics(config)
+    return {
+        "enabled": enabled,
+        "capacity": capacity,
+        "translation_fraction": translation_fraction,
+        "curvature_fraction": curvature_fraction,
     }
 
 

@@ -6,3 +6,6 @@ logs/*.csv
 logs/*.jsonl
 logs/*.json
 logs/evaluation/
+safety_datasets/
+*.safety_aux.pt
+*.safety_aux.json

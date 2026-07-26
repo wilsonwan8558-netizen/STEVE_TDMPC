@@ -5,8 +5,15 @@ from __future__ import annotations
 import numpy as np
 from gymnasium.utils.env_checker import check_env
 
-from envs.safety import SAFETY_COST_NAMES, safety_cost_from_metrics
+from envs.safety import (
+    CURVATURE_STRATUM_NAMES,
+    SAFETY_COST_NAMES,
+    curvature_stratum_id,
+    curvature_stratum_name,
+    safety_cost_from_metrics,
+)
 from envs.steve_env import StEVEEnv
+from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 
 
 SAFETY_FLOAT_KEYS = {
@@ -15,6 +22,7 @@ SAFETY_FLOAT_KEYS = {
     "requested_translation_speed_mm_s",
     "applied_translation_speed_mm_s",
     "requested_applied_translation_error_mm_s",
+    "normalized_requested_applied_translation_error",
     "requested_observed_insertion_speed_error_mm_s",
     "filtered_max_curvature_mm_inv",
     "mean_filtered_curvature_mm_inv",
@@ -26,6 +34,8 @@ SAFETY_FLOAT_KEYS = {
 }
 SAFETY_KEYS = SAFETY_FLOAT_KEYS | {
     "translation_action_blocked",
+    "translation_block_reason_id",
+    "translation_block_reason",
     "curvature_valid_triplet_count",
     "curvature_skipped_triplet_count",
     "collision_association_detected",
@@ -41,6 +51,18 @@ def assert_safety_metrics(info) -> None:
         assert type(metrics[key]) is float
         assert np.isfinite(metrics[key])
     assert type(metrics["translation_action_blocked"]) is bool
+    assert type(metrics["translation_block_reason_id"]) is int
+    assert type(metrics["translation_block_reason"]) is str
+    reason_id = metrics["translation_block_reason_id"]
+    assert 0 <= reason_id < len(TRANSLATION_BLOCK_REASON_NAMES)
+    assert (
+        metrics["translation_block_reason"]
+        == TRANSLATION_BLOCK_REASON_NAMES[reason_id]
+    )
+    assert (
+        metrics["translation_action_blocked"]
+        == (metrics["translation_block_reason"] != "none")
+    )
     assert type(metrics["curvature_valid_triplet_count"]) is int
     assert metrics["curvature_valid_triplet_count"] >= 0
     assert type(metrics["curvature_skipped_triplet_count"]) is int
@@ -77,8 +99,11 @@ def assert_safety_cost(env: StEVEEnv, info, *, reset: bool = False) -> None:
     )
     np.testing.assert_allclose(
         cost_by_name["normalized_requested_applied_translation_error"],
-        metrics["requested_applied_translation_error_mm_s"]
-        / translation_limit,
+        metrics["normalized_requested_applied_translation_error"],
+    )
+    np.testing.assert_allclose(
+        metrics["normalized_requested_applied_translation_error"],
+        metrics["requested_applied_translation_error_mm_s"] / translation_limit,
     )
 
 
@@ -113,6 +138,38 @@ def legacy_unfiltered_max_curvature(positions: np.ndarray) -> float:
 
 
 def main() -> None:
+    assert TRANSLATION_BLOCK_REASON_NAMES == (
+        "none",
+        "lower_insertion_boundary",
+        "device_length_limit",
+        "vessel_tree_end",
+        "other",
+    )
+    assert CURVATURE_STRATUM_NAMES == (
+        "low",
+        "medium",
+        "high",
+        "extreme",
+    )
+    for curvature, expected_id in (
+        (0.0, 0),
+        (0.049, 0),
+        (0.05, 1),
+        (0.099, 1),
+        (0.10, 2),
+        (0.249, 2),
+        (0.25, 3),
+        (1.0, 3),
+    ):
+        stratum_id = curvature_stratum_id(
+            curvature,
+            (0.05, 0.10, 0.25),
+        )
+        assert stratum_id == expected_id
+        assert curvature_stratum_name(stratum_id) == CURVATURE_STRATUM_NAMES[
+            expected_id
+        ]
+
     (
         max_curvature,
         mean_curvature,
@@ -215,8 +272,14 @@ def main() -> None:
         assert reset_metrics["requested_translation_speed_mm_s"] == 0.0
         assert reset_metrics["applied_translation_speed_mm_s"] == 0.0
         assert not reset_metrics["translation_action_blocked"]
+        assert reset_metrics["translation_block_reason_id"] == 0
+        assert reset_metrics["translation_block_reason"] == "none"
         assert (
             reset_metrics["requested_applied_translation_error_mm_s"] == 0.0
+        )
+        assert (
+            reset_metrics["normalized_requested_applied_translation_error"]
+            == 0.0
         )
         assert (
             reset_metrics[
@@ -242,6 +305,8 @@ def main() -> None:
         assert info["safety_metrics"]["requested_translation_speed_mm_s"] == 50.0
         assert info["safety_metrics"]["applied_translation_speed_mm_s"] == 50.0
         assert not info["safety_metrics"]["translation_action_blocked"]
+        assert info["safety_metrics"]["translation_block_reason_id"] == 0
+        assert info["safety_metrics"]["translation_block_reason"] == "none"
         assert (
             info["safety_metrics"][
                 "requested_applied_translation_error_mm_s"
@@ -339,6 +404,16 @@ def main() -> None:
             == 0.0
         )
         assert blocked_info["safety_metrics"]["translation_action_blocked"]
+        assert (
+            blocked_info["safety_metrics"]["translation_block_reason_id"]
+            == TRANSLATION_BLOCK_REASON_NAMES.index(
+                "lower_insertion_boundary"
+            )
+        )
+        assert (
+            blocked_info["safety_metrics"]["translation_block_reason"]
+            == "lower_insertion_boundary"
+        )
         np.testing.assert_allclose(
             blocked_info["safety_metrics"][
                 "requested_applied_translation_error_mm_s"
@@ -370,6 +445,24 @@ def main() -> None:
             1.0,
             atol=1e-5,
         )
+        _, _, _, _, after_block_info = env.step(
+            np.zeros(2, dtype=np.float32)
+        )
+        assert (
+            after_block_info["safety_metrics"][
+                "translation_block_reason_id"
+            ]
+            == 0
+        )
+        assert (
+            after_block_info["safety_metrics"][
+                "translation_block_reason"
+            ]
+            == "none"
+        )
+        assert not after_block_info["safety_metrics"][
+            "translation_action_blocked"
+        ]
 
         # Seed 301 reaches the fixed vessel-tree end under maximum forward
         # insertion. The intervention must preserve the requested command while
@@ -392,6 +485,14 @@ def main() -> None:
         assert forward_blocked_metrics["requested_translation_speed_mm_s"] == 50.0
         assert forward_blocked_metrics["applied_translation_speed_mm_s"] == 0.0
         assert forward_blocked_metrics["translation_action_blocked"]
+        assert (
+            forward_blocked_metrics["translation_block_reason_id"]
+            == TRANSLATION_BLOCK_REASON_NAMES.index("vessel_tree_end")
+        )
+        assert (
+            forward_blocked_metrics["translation_block_reason"]
+            == "vessel_tree_end"
+        )
         np.testing.assert_allclose(
             forward_blocked_metrics[
                 "requested_applied_translation_error_mm_s"
@@ -407,6 +508,34 @@ def main() -> None:
             ],
             1.0,
         )
+
+        # The production 450 mm device limit is unreachable because the fixed
+        # tree ends first. Exercise the intervention mask itself with a
+        # temporary, test-only short maximum; no such sample enters a dataset.
+        _, reset_info = env.reset(seed=302)
+        assert reset_info["safety_metrics"]["translation_block_reason"] == "none"
+        device = env.intervention.devices[0]
+        original_length = device.length
+        try:
+            device.length = 0.5
+            _, _, _, _, device_limit_info = env.step(
+                np.asarray([1.0, 0.0], dtype=np.float32)
+            )
+        finally:
+            device.length = original_length
+        assert_safety_metrics(device_limit_info)
+        assert_safety_cost(env, device_limit_info)
+        assert (
+            device_limit_info["safety_metrics"]["translation_block_reason"]
+            == "device_length_limit"
+        )
+        assert (
+            device_limit_info["safety_metrics"]["translation_block_reason_id"]
+            == TRANSLATION_BLOCK_REASON_NAMES.index("device_length_limit")
+        )
+        _, reset_info = env.reset(seed=303)
+        assert reset_info["safety_metrics"]["translation_block_reason_id"] == 0
+        assert reset_info["safety_metrics"]["translation_block_reason"] == "none"
 
         seeded_observation, _ = env.reset(seed=123)
         repeated_observation, _ = env.reset(seed=123)

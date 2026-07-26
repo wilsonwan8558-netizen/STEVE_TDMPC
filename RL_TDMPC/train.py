@@ -16,7 +16,11 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 import numpy as np
 import torch
 
-from envs.safety import SAFETY_COST_NAMES
+from envs.safety import (
+    SAFETY_COST_NAMES,
+    curvature_stratum_id,
+    safety_aux_metadata_from_metrics,
+)
 from envs.steve_env import make_steve_env
 from tdmpc2.agent import SAFETY_MODEL_SCHEMA_VERSION, TDMPC2Agent
 from tdmpc2.common import (
@@ -27,7 +31,9 @@ from tdmpc2.common import (
     atomic_torch_save,
     build_diagnostics_agent_config,
     build_safety_agent_config,
+    build_safety_aux_config,
     capture_rng_state,
+    curvature_boundaries_from_diagnostics,
     load_torch_checkpoint,
     load_config,
     resolve_project_path,
@@ -40,6 +46,7 @@ from tdmpc2.replay_buffer import (
     EpisodeReplayBuffer,
     validate_safety_cost_names,
 )
+from tdmpc2.safety_aux_replay import SafetyAuxReplayBuffer
 
 
 DEFAULT_CONFIG = PROJECT_DIR / "configs" / "steve.yaml"
@@ -196,6 +203,15 @@ def validate_checkpoint_schema(
     if not isinstance(embedded_config, Mapping):
         raise TypeError(f"{source} embedded config must be a mapping")
     embedded_agent_config = build_agent_config(embedded_config)
+    embedded_safety_aux_config = build_safety_aux_config(embedded_config)
+    embedded_safety_aux_enabled = bool(
+        embedded_safety_aux_config["enabled"]
+    )
+    embedded_curvature_boundaries = (
+        curvature_boundaries_from_diagnostics(embedded_config)
+        if embedded_safety_aux_enabled
+        else None
+    )
     embedded_names = tuple(embedded_agent_config["safety_cost_names"])
     if embedded_names != checkpoint_names:
         raise ValueError(
@@ -261,6 +277,7 @@ def validate_checkpoint_schema(
 
     if config is not None:
         requested_agent_config = build_agent_config(config)
+        requested_safety_aux_config = build_safety_aux_config(config)
         requested_names = tuple(requested_agent_config["safety_cost_names"])
         if requested_names != checkpoint_names:
             raise ValueError(
@@ -297,6 +314,28 @@ def validate_checkpoint_schema(
                 f"{source} safety_config does not match the requested "
                 "config['safety']"
             )
+        requested_safety_aux_enabled = bool(
+            requested_safety_aux_config["enabled"]
+        )
+        if requested_safety_aux_enabled != embedded_safety_aux_enabled:
+            raise ValueError(
+                f"{source} safety_aux.enabled does not match the requested "
+                "config"
+            )
+        if embedded_safety_aux_enabled:
+            if requested_safety_aux_config != embedded_safety_aux_config:
+                raise ValueError(
+                    f"{source} resolved safety_aux config does not match the "
+                    "requested config"
+                )
+            requested_curvature_boundaries = (
+                curvature_boundaries_from_diagnostics(config)
+            )
+            if requested_curvature_boundaries != embedded_curvature_boundaries:
+                raise ValueError(
+                    f"{source} auxiliary curvature boundaries do not match the "
+                    "requested diagnostics config"
+                )
 
     agent_state = checkpoint.get("agent")
     if not isinstance(agent_state, Mapping):
@@ -360,6 +399,34 @@ def validate_checkpoint_schema(
     if dict(agent_safety_config) != expected_agent_safety_config:
         raise ValueError(
             f"{source} agent safety_config does not match its embedded config"
+        )
+
+    has_safety_aux_state = "safety_aux_replay" in checkpoint
+    safety_aux_state = checkpoint.get("safety_aux_replay")
+    if embedded_safety_aux_enabled:
+        if not isinstance(safety_aux_state, Mapping):
+            raise ValueError(
+                f"{source} enables safety_aux but is missing a valid "
+                "safety_aux_replay state"
+            )
+        auxiliary_replay = SafetyAuxReplayBuffer(
+            int(embedded_safety_aux_config["capacity"]),
+            exact_integer(
+                agent_state["observation_dim"], "agent observation_dim"
+            ),
+            exact_integer(agent_state["action_dim"], "agent action_dim"),
+            safety_cost_names=checkpoint_names,
+            curvature_boundaries_mm_inv=embedded_curvature_boundaries,
+        )
+        try:
+            auxiliary_replay.load_state_dict(safety_aux_state)
+        except (TypeError, ValueError, FloatingPointError) as exc:
+            raise type(exc)(
+                f"{source} has an invalid safety_aux_replay state: {exc}"
+            ) from exc
+    elif has_safety_aux_state:
+        raise ValueError(
+            f"{source} contains safety_aux_replay while safety_aux.enabled=false"
         )
 
     replay_state = checkpoint.get("replay")
@@ -452,6 +519,7 @@ def save_checkpoint(
     episode_index: int,
     success_count: int,
     include_replay: bool,
+    safety_aux_replay: Optional[SafetyAuxReplayBuffer] = None,
 ) -> Path:
     agent_config = build_agent_config(config)
     expected_names = validate_safety_cost_names(
@@ -475,6 +543,36 @@ def save_checkpoint(
     safety_config = config.get("safety")
     if not isinstance(safety_config, Mapping):
         raise TypeError("Checkpoint config safety section must be a mapping")
+    safety_aux_config = build_safety_aux_config(config)
+    safety_aux_enabled = bool(safety_aux_config["enabled"])
+    if safety_aux_enabled != (safety_aux_replay is not None):
+        raise ValueError(
+            "safety_aux.enabled and the checkpoint auxiliary replay disagree"
+        )
+    if safety_aux_replay is not None:
+        expected_boundaries = curvature_boundaries_from_diagnostics(config)
+        if safety_aux_replay.observation_dim != agent.observation_dim:
+            raise ValueError(
+                "Safety auxiliary replay observation dimension does not match "
+                "the agent"
+            )
+        if safety_aux_replay.action_dim != agent.action_dim:
+            raise ValueError(
+                "Safety auxiliary replay action dimension does not match the agent"
+            )
+        if safety_aux_replay.safety_cost_names != expected_names:
+            raise ValueError(
+                "Safety auxiliary replay safety-cost order does not match "
+                "the checkpoint config"
+            )
+        if (
+            safety_aux_replay.curvature_boundaries_mm_inv
+            != expected_boundaries
+        ):
+            raise ValueError(
+                "Safety auxiliary replay curvature boundaries do not match "
+                "diagnostics"
+            )
     payload: Dict[str, Any] = {
         "format_version": CHECKPOINT_FORMAT_VERSION,
         "algorithm": "TD-MPC2",
@@ -500,6 +598,8 @@ def save_checkpoint(
     }
     if include_replay:
         payload["replay"] = replay.state_dict()
+    if safety_aux_replay is not None:
+        payload["safety_aux_replay"] = safety_aux_replay.state_dict()
     validate_checkpoint_schema(
         payload,
         config=config,
@@ -588,15 +688,43 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         SAFETY_COST_NAMES,
         source="Environment",
     )
+    raw_diagnostics = config.get("diagnostics")
     diagnostics_config = build_diagnostics_agent_config(config)
+    safety_aux_config = build_safety_aux_config(config)
+    diagnostics_high_is_explicit = (
+        raw_diagnostics is None
+        or (
+            isinstance(raw_diagnostics, Mapping)
+            and "curvature_high_max_mm_inv" in raw_diagnostics
+        )
+    )
     # Diagnostics are not part of the format-v3 Safety model schema. Materialize
     # defaults here so Commit-4 checkpoints/configs remain loadable while every
     # new run records its exact effective diagnostic settings.
-    config["diagnostics"] = copy.deepcopy(diagnostics_config)
+    if diagnostics_high_is_explicit or bool(safety_aux_config["enabled"]):
+        config["diagnostics"] = copy.deepcopy(diagnostics_config)
+    else:
+        config["diagnostics"] = {
+            key: copy.deepcopy(value)
+            for key, value in diagnostics_config.items()
+            if key != "curvature_high_max_mm_inv"
+        }
+    config["safety_aux"] = copy.deepcopy(safety_aux_config)
+    curvature_boundaries = (
+        curvature_boundaries_from_diagnostics(config)
+        if bool(safety_aux_config["enabled"])
+        else None
+    )
     agent_config = build_agent_config(config)
     startup_configuration = {
         "safety": copy.deepcopy(dict(config["safety"])),
-        "diagnostics": copy.deepcopy(diagnostics_config),
+        "diagnostics": copy.deepcopy(dict(config["diagnostics"])),
+        "safety_aux": copy.deepcopy(safety_aux_config),
+        "curvature_stratum_boundaries_mm_inv": (
+            list(curvature_boundaries)
+            if curvature_boundaries is not None
+            else None
+        ),
         "safety_cost_names": list(safety_cost_names),
         "safety_dim": int(agent_config["safety_dim"]),
     }
@@ -623,6 +751,18 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         int(training["batch_size"]),
         safety_cost_names=safety_cost_names,
         seed=seed,
+    )
+    safety_aux_replay = (
+        SafetyAuxReplayBuffer(
+            int(safety_aux_config["capacity"]),
+            observation_dim,
+            action_dim,
+            safety_cost_names=safety_cost_names,
+            curvature_boundaries_mm_inv=curvature_boundaries,
+            seed=seed,
+        )
+        if bool(safety_aux_config["enabled"])
+        else None
     )
     logger = MetricLogger(config["logging"]["directory"])
     started_at_unix = time.time()
@@ -664,6 +804,8 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         agent.load_state_dict(checkpoint["agent"], load_optimizers=True)
         if "replay" in checkpoint:
             replay.load_state_dict(checkpoint["replay"])
+        if safety_aux_replay is not None:
+            safety_aux_replay.load_state_dict(checkpoint["safety_aux_replay"])
         total_env_steps = int(checkpoint["total_env_steps"])
         episode_index = int(checkpoint.get("episode_index", 0))
         successes = int(checkpoint.get("success_count", 0))
@@ -746,18 +888,36 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                 episode_observations.append(next_observation.copy())
                 episode_actions.append(action.copy())
                 episode_rewards.append(float(reward))
-                episode_safety_costs.append(
-                    validate_collected_safety_cost(
-                        info["safety_cost"],
-                        safety_cost_names=safety_cost_names,
-                    )
+                transition_safety_cost = validate_collected_safety_cost(
+                    info["safety_cost"],
+                    safety_cost_names=safety_cost_names,
                 )
+                episode_safety_costs.append(transition_safety_cost)
                 episode_terminated.append(bool(terminated))
                 episode_reward += float(reward)
                 success = success or bool(info.get("is_success", False))
                 simulation_error = simulation_error or bool(
                     info.get("simulation_error", False)
                 )
+                if safety_aux_replay is not None:
+                    reason_id, _ = safety_aux_metadata_from_metrics(
+                        info["safety_metrics"],
+                        curvature_boundaries,
+                    )
+                    stratum_id = curvature_stratum_id(
+                        float(transition_safety_cost[0]),
+                        curvature_boundaries,
+                    )
+                    safety_aux_replay.add(
+                        observation,
+                        action,
+                        transition_safety_cost,
+                        reason_id,
+                        stratum_id,
+                        terminated=bool(terminated),
+                        truncated=bool(truncated),
+                        episode_step=int(info["episode_step"]),
+                    )
                 observation = next_observation
 
                 episode_done = terminated or truncated or total_env_steps >= total_steps
@@ -822,6 +982,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                             successes + int(success) if episode_done else successes
                         ),
                         include_replay=bool(checkpoint_config["save_replay"]),
+                        safety_aux_replay=safety_aux_replay,
                     )
                     print(f"Saved checkpoint: {path}")
 
@@ -861,6 +1022,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                 episode_index=episode_index,
                 success_count=successes,
                 include_replay=bool(checkpoint_config["save_replay"]),
+                safety_aux_replay=safety_aux_replay,
             )
             print(f"Saved final checkpoint: {final_path}")
         env.close()

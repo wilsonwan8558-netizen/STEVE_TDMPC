@@ -36,6 +36,15 @@ diagnostics:
   gradient_interval: 100
   curvature_low_max_mm_inv: 0.05
   curvature_medium_max_mm_inv: 0.1
+  curvature_high_max_mm_inv: 0.25
+
+# Optional collection-only replay for future balanced Safety Head supervision.
+# Curvature strata use the three canonical boundaries in diagnostics above.
+safety_aux:
+  enabled: false
+  capacity: 100000
+  translation_fraction: 0.5
+  curvature_fraction: 0.5
 
 training:
   total_steps: 1000000

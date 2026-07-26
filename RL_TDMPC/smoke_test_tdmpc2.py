@@ -13,7 +13,9 @@ import torch
 import torch.nn.functional as F
 
 import evaluate_safety_head as safety_head_evaluation
+from smoke_test_safety_aux import main as run_safety_aux_smoke_tests
 from envs.safety import SAFETY_COST_NAMES as ENV_SAFETY_COST_NAMES
+from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 from evaluate import build_agent_config as build_evaluation_agent_config
 from train import (
     CHECKPOINT_FORMAT_VERSION,
@@ -28,6 +30,7 @@ from train import (
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.common import (
     apply_cli_overrides,
+    curvature_boundaries_from_diagnostics,
     load_config,
     load_torch_checkpoint,
     scalar_metrics,
@@ -39,6 +42,7 @@ from tdmpc2.replay_buffer import (
     EpisodeReplayBuffer,
 )
 from tdmpc2.safety_diagnostics import safety_batch_diagnostics
+from tdmpc2.safety_aux_replay import SafetyAuxReplayBuffer
 
 
 class FixedReplay:
@@ -81,6 +85,7 @@ def _assert_parameters_unchanged(
 
 
 def main() -> None:
+    run_safety_aux_smoke_tests()
     assert scalar_metrics({"unavailable": float("nan")})["unavailable"] is None
 
     accumulator = LossAccumulator()
@@ -1387,6 +1392,7 @@ def main() -> None:
             "gradient_interval",
             "curvature_low_max_mm_inv",
             "curvature_medium_max_mm_inv",
+            "curvature_high_max_mm_inv",
         ):
             checkpoint_config["diagnostics"][key] = safety_only_config[key]
         checkpoint_agent_config = build_agent_config(checkpoint_config)
@@ -1406,16 +1412,58 @@ def main() -> None:
             checkpoint_path,
             map_location=device,
         )
+        assert "safety_aux_replay" not in checkpoint
         validate_checkpoint_schema(
             checkpoint,
             config=checkpoint_config,
             source="Smoke-test checkpoint",
         )
+        disabled_aux_variant = copy.deepcopy(checkpoint_config)
+        disabled_aux_variant["safety_aux"].update(
+            {
+                "capacity": 17,
+                "translation_fraction": 4.0,
+                "curvature_fraction": 0.0,
+            }
+        )
+        disabled_aux_variant["diagnostics"][
+            "curvature_high_max_mm_inv"
+        ] = 0.30
+        validate_checkpoint_schema(
+            checkpoint,
+            config=disabled_aux_variant,
+            source="Disabled Safety auxiliary config variant",
+        )
+        forbidden_disabled_aux_state = copy.deepcopy(checkpoint)
+        forbidden_disabled_aux_state["safety_aux_replay"] = None
+        try:
+            validate_checkpoint_schema(
+                forbidden_disabled_aux_state,
+                source="Disabled checkpoint with auxiliary state key",
+            )
+        except ValueError as exc:
+            assert "safety_aux.enabled=false" in str(exc)
+        else:
+            raise AssertionError(
+                "Disabled checkpoint accepted a safety_aux_replay key"
+            )
         commit4_checkpoint = copy.deepcopy(checkpoint)
         commit4_checkpoint["config"].pop("diagnostics")
+        commit4_checkpoint["config"].pop("safety_aux")
         validate_checkpoint_schema(
             commit4_checkpoint,
             source="Commit-4 format-v3 checkpoint",
+        )
+        legacy_two_boundary_checkpoint = copy.deepcopy(checkpoint)
+        legacy_two_boundary_checkpoint["config"]["diagnostics"].pop(
+            "curvature_high_max_mm_inv"
+        )
+        legacy_two_boundary_checkpoint["config"]["diagnostics"][
+            "curvature_medium_max_mm_inv"
+        ] = 0.30
+        validate_checkpoint_schema(
+            legacy_two_boundary_checkpoint,
+            source="Legacy two-boundary format-v3 checkpoint",
         )
         assert checkpoint["format_version"] == CHECKPOINT_FORMAT_VERSION
         assert (
@@ -1458,6 +1506,84 @@ def main() -> None:
         )
         assert checkpoint_agent.update_count == safety_agent.update_count
         assert checkpoint_agent.model_optimizer.param_groups[-1]["name"] == "safety"
+
+        auxiliary_checkpoint_config = copy.deepcopy(checkpoint_config)
+        auxiliary_checkpoint_config["safety_aux"]["enabled"] = True
+        auxiliary_replay = SafetyAuxReplayBuffer(
+            100000,
+            14,
+            2,
+            safety_cost_names=safety_cost_names,
+            curvature_boundaries_mm_inv=(
+                curvature_boundaries_from_diagnostics(
+                    auxiliary_checkpoint_config
+                )
+            ),
+            seed=77,
+        )
+        auxiliary_replay.add(
+            observations[0].copy(),
+            actions[0].copy(),
+            safety_cost[0].copy(),
+            0,
+            0,
+            episode_step=1,
+        )
+        auxiliary_checkpoint_path = (
+            Path(temp_dir) / "schema_v3_with_safety_aux.pt"
+        )
+        save_checkpoint(
+            path=auxiliary_checkpoint_path,
+            config=auxiliary_checkpoint_config,
+            agent=safety_agent,
+            replay=replay,
+            total_env_steps=8,
+            episode_index=1,
+            success_count=0,
+            include_replay=True,
+            safety_aux_replay=auxiliary_replay,
+        )
+        auxiliary_checkpoint = load_torch_checkpoint(
+            auxiliary_checkpoint_path,
+            map_location=device,
+        )
+        validate_checkpoint_schema(
+            auxiliary_checkpoint,
+            config=auxiliary_checkpoint_config,
+            source="Safety auxiliary smoke-test checkpoint",
+        )
+        assert len(
+            auxiliary_checkpoint["safety_aux_replay"]["observation"]
+        ) == 1
+        missing_auxiliary_state = copy.deepcopy(auxiliary_checkpoint)
+        missing_auxiliary_state.pop("safety_aux_replay")
+        try:
+            validate_checkpoint_schema(
+                missing_auxiliary_state,
+                source="Missing Safety auxiliary replay checkpoint",
+            )
+        except ValueError as exc:
+            assert "missing" in str(exc)
+            assert "safety_aux_replay" in str(exc)
+        else:
+            raise AssertionError(
+                "Checkpoint validation accepted enabled safety_aux without state"
+            )
+        mismatched_auxiliary_state = copy.deepcopy(auxiliary_checkpoint)
+        mismatched_auxiliary_state["safety_aux_replay"][
+            "translation_block_reason_names"
+        ] = tuple(reversed(TRANSLATION_BLOCK_REASON_NAMES))
+        try:
+            validate_checkpoint_schema(
+                mismatched_auxiliary_state,
+                source="Reordered auxiliary reason checkpoint",
+            )
+        except ValueError as exc:
+            assert "reason order" in str(exc)
+        else:
+            raise AssertionError(
+                "Checkpoint validation accepted reordered auxiliary reasons"
+            )
 
         class FakeEvaluationEnv:
             def __init__(self) -> None:
