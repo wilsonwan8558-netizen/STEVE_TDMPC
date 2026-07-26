@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import Any, Deque, Dict, Mapping, Sequence, Tuple
+from typing import Any, Deque, Dict, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
@@ -25,15 +25,31 @@ class EpisodeReplayBuffer:
         horizon: int,
         batch_size: int,
         *,
+        safety_cost_names: Sequence[str],
         seed: int = 0,
     ) -> None:
         self.capacity = int(capacity)
         self.observation_dim = int(observation_dim)
         self.action_dim = int(action_dim)
+        self.safety_cost_names = tuple(str(name) for name in safety_cost_names)
+        self.safety_cost_dim = len(self.safety_cost_names)
         self.horizon = int(horizon)
         self.batch_size = int(batch_size)
-        if min(self.capacity, self.horizon, self.batch_size) <= 0:
-            raise ValueError("capacity, horizon, and batch_size must be positive")
+        if self.safety_cost_dim != 3:
+            raise ValueError("safety_cost_names must define exactly three channels")
+        if len(set(self.safety_cost_names)) != self.safety_cost_dim:
+            raise ValueError("safety_cost_names must be unique")
+        if (
+            min(
+                self.capacity,
+                self.horizon,
+                self.batch_size,
+            )
+            <= 0
+        ):
+            raise ValueError(
+                "capacity, horizon, and batch_size must be positive"
+            )
         self._episodes: Deque[Dict[str, np.ndarray]] = deque()
         self._size = 0
         self._rng = np.random.default_rng(seed)
@@ -61,11 +77,22 @@ class EpisodeReplayBuffer:
         actions: Sequence[np.ndarray],
         rewards: Sequence[float],
         terminated: Sequence[bool],
+        safety_cost: Optional[Sequence[np.ndarray]] = None,
     ) -> None:
+        if safety_cost is None:
+            raise ValueError(
+                "safety_cost is required and must contain one vector per action"
+            )
         observations_array = np.asarray(observations, dtype=np.float32)
         actions_array = np.asarray(actions, dtype=np.float32)
         rewards_array = np.asarray(rewards, dtype=np.float32)
         terminated_array = np.asarray(terminated, dtype=np.float32)
+        try:
+            safety_cost_array = np.asarray(safety_cost, dtype=np.float32)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "safety_cost must be a rectangular array of finite vectors"
+            ) from exc
         length = actions_array.shape[0]
         if observations_array.shape != (length + 1, self.observation_dim):
             raise ValueError(
@@ -79,6 +106,11 @@ class EpisodeReplayBuffer:
             )
         if rewards_array.shape != (length,) or terminated_array.shape != (length,):
             raise ValueError("rewards and terminated must contain one value per action")
+        self._validate_safety_cost_array(
+            safety_cost_array,
+            length,
+            source="episode",
+        )
         if not all(
             np.all(np.isfinite(array))
             for array in (observations_array, actions_array, rewards_array)
@@ -91,6 +123,7 @@ class EpisodeReplayBuffer:
             actions_array = actions_array[start:]
             rewards_array = rewards_array[start:]
             terminated_array = terminated_array[start:]
+            safety_cost_array = safety_cost_array[start:]
             length = self.capacity
 
         episode = {
@@ -98,6 +131,7 @@ class EpisodeReplayBuffer:
             "actions": actions_array.copy(),
             "rewards": rewards_array.copy(),
             "terminated": terminated_array.copy(),
+            "safety_cost": safety_cost_array.copy(),
         }
         while self._episodes and self._size + length > self.capacity:
             self._size -= self._episodes.popleft()["actions"].shape[0]
@@ -106,7 +140,13 @@ class EpisodeReplayBuffer:
 
     def sample(
         self, device: torch.device
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+    ]:
         counts = np.asarray(
             [
                 max(0, episode["actions"].shape[0] - self.horizon + 1)
@@ -128,6 +168,10 @@ class EpisodeReplayBuffer:
         )
         rewards = np.empty((self.horizon, self.batch_size, 1), dtype=np.float32)
         terminated = np.empty((self.horizon, self.batch_size, 1), dtype=np.float32)
+        safety_cost = np.empty(
+            (self.horizon, self.batch_size, self.safety_cost_dim),
+            dtype=np.float32,
+        )
         episodes = list(self._episodes)
         sampled = self._rng.integers(0, total, size=self.batch_size)
         for batch_index, global_index in enumerate(sampled):
@@ -140,10 +184,17 @@ class EpisodeReplayBuffer:
             actions[:, batch_index] = episode["actions"][start:end]
             rewards[:, batch_index, 0] = episode["rewards"][start:end]
             terminated[:, batch_index, 0] = episode["terminated"][start:end]
+            safety_cost[:, batch_index] = episode["safety_cost"][start:end]
 
         return tuple(
             torch.as_tensor(array, device=device)
-            for array in (observations, actions, rewards, terminated)
+            for array in (
+                observations,
+                actions,
+                rewards,
+                terminated,
+                safety_cost,
+            )
         )
 
     def state_dict(self) -> Dict[str, Any]:
@@ -151,6 +202,7 @@ class EpisodeReplayBuffer:
             "capacity": self.capacity,
             "observation_dim": self.observation_dim,
             "action_dim": self.action_dim,
+            "safety_cost_names": self.safety_cost_names,
             "horizon": self.horizon,
             "batch_size": self.batch_size,
             "episodes": list(self._episodes),
@@ -159,6 +211,18 @@ class EpisodeReplayBuffer:
         }
 
     def load_state_dict(self, state: Mapping[str, Any]) -> None:
+        if "safety_cost_names" not in state:
+            raise ValueError(
+                "Replay checkpoint predates the required safety_cost schema; "
+                "legacy replay data cannot be resumed without migration"
+            )
+        received_safety_names = tuple(state["safety_cost_names"])
+        if received_safety_names != self.safety_cost_names:
+            raise ValueError(
+                "Replay safety-cost channels "
+                f"{received_safety_names} do not match current "
+                f"{self.safety_cost_names}"
+            )
         expected = (
             self.observation_dim,
             self.action_dim,
@@ -173,6 +237,43 @@ class EpisodeReplayBuffer:
             raise ValueError(
                 f"Replay dimensions/horizon {received} do not match current {expected}"
             )
-        self._episodes = deque(state["episodes"])
+        episodes = list(state["episodes"])
+        for index, episode in enumerate(episodes):
+            if "safety_cost" not in episode:
+                raise ValueError(
+                    "Replay episode "
+                    f"{index} is missing required safety_cost transition data"
+                )
+            length = np.asarray(episode["actions"]).shape[0]
+            self._validate_safety_cost_array(
+                np.asarray(episode["safety_cost"]),
+                length,
+                source=f"replay episode {index}",
+            )
+        self._episodes = deque(episodes)
         self._size = int(state["size"])
         self._rng.bit_generator.state = state["rng_state"]
+
+    def _validate_safety_cost_array(
+        self,
+        safety_cost: np.ndarray,
+        length: int,
+        *,
+        source: str,
+    ) -> None:
+        expected_shape = (length, self.safety_cost_dim)
+        if safety_cost.shape != expected_shape:
+            raise ValueError(
+                f"{source} safety_cost must have shape {expected_shape}, "
+                f"got {safety_cost.shape}"
+            )
+        if safety_cost.dtype != np.float32:
+            raise TypeError(
+                f"{source} safety_cost must use float32, got {safety_cost.dtype}"
+            )
+        if not np.all(np.isfinite(safety_cost)):
+            raise FloatingPointError(
+                f"{source} safety_cost contains NaN or infinity"
+            )
+        if np.any(safety_cost < 0.0):
+            raise ValueError(f"{source} safety_cost values must be nonnegative")

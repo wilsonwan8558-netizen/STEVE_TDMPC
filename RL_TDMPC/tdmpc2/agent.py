@@ -247,7 +247,10 @@ class TDMPC2Agent:
         return reward + self.discount * (1.0 - terminated) * next_q
 
     def update(self, replay_buffer) -> Dict[str, float]:
-        observations, actions, rewards, terminated = replay_buffer.sample(self.device)
+        observations, actions, rewards, terminated, _safety_cost = (
+            replay_buffer.sample(self.device)
+        )
+        # Safety cost is collected for future work and intentionally unused here.
         rho = float(self.config["rho"])
         weights = torch.pow(
             torch.tensor(rho, device=self.device),

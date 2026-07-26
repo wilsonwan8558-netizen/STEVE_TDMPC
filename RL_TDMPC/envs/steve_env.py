@@ -16,6 +16,8 @@ from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 import gymnasium as gym
 import numpy as np
 
+from .safety import safety_cost_from_metrics, zero_safety_cost
+
 
 # Allow ``python RL_TDMPC/...`` from a source checkout before ``pip install -e .``.
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -168,6 +170,17 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
             raise RuntimeError(
                 "This adapter expects one device with translation/rotation actions; "
                 f"got raw action shape {self._env.action_space.shape}."
+            )
+        self._translation_speed_limit_mm_s = max(
+            abs(float(self._raw_action_low[0])),
+            abs(float(self._raw_action_high[0])),
+        )
+        if (
+            not np.isfinite(self._translation_speed_limit_mm_s)
+            or self._translation_speed_limit_mm_s <= 0.0
+        ):
+            raise ValueError(
+                "The physical translation-speed limit must be finite and positive"
             )
 
         self.action_space = gym.spaces.Box(
@@ -426,6 +439,7 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         output_info["safety_metrics"] = self._build_safety_metrics(
             0.0, initial=True
         )
+        output_info["safety_cost"] = zero_safety_cost()
         return self._flatten_observation(observation), output_info
 
     def step(
@@ -446,8 +460,13 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
         output_info["raw_action"] = raw_action.reshape(-1).copy()
         output_info["episode_step"] = self._episode_steps
-        output_info["safety_metrics"] = self._build_safety_metrics(
+        safety_metrics = self._build_safety_metrics(
             requested_translation_speed
+        )
+        output_info["safety_metrics"] = safety_metrics
+        output_info["safety_cost"] = safety_cost_from_metrics(
+            safety_metrics,
+            self._translation_speed_limit_mm_s,
         )
         return (
             self._flatten_observation(observation),

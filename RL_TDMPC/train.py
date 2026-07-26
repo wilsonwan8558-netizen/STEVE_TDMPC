@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Mapping, Optional
 import numpy as np
 import torch
 
+from envs.safety import SAFETY_COST_NAMES
 from envs.steve_env import make_steve_env
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.common import (
@@ -139,6 +140,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         action_dim,
         int(training["horizon"]),
         int(training["batch_size"]),
+        safety_cost_names=SAFETY_COST_NAMES,
         seed=seed,
     )
     logger = MetricLogger(config["logging"]["directory"])
@@ -185,6 +187,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
             episode_observations: List[np.ndarray] = [observation.copy()]
             episode_actions: List[np.ndarray] = []
             episode_rewards: List[float] = []
+            episode_safety_costs: List[np.ndarray] = []
             episode_terminated: List[bool] = []
             episode_reward = 0.0
             success = False
@@ -215,6 +218,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                 episode_observations.append(next_observation.copy())
                 episode_actions.append(action.copy())
                 episode_rewards.append(float(reward))
+                episode_safety_costs.append(info["safety_cost"].copy())
                 episode_terminated.append(bool(terminated))
                 episode_reward += float(reward)
                 success = success or bool(info.get("is_success", False))
@@ -230,6 +234,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                         episode_actions,
                         episode_rewards,
                         episode_terminated,
+                        safety_cost=episode_safety_costs,
                     )
 
                 if (
