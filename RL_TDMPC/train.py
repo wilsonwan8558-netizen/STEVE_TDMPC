@@ -7,7 +7,7 @@ import argparse
 import copy
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 import numpy as np
 import torch
@@ -28,10 +28,16 @@ from tdmpc2.common import (
     select_device,
     set_seed,
 )
-from tdmpc2.replay_buffer import EpisodeReplayBuffer
+from tdmpc2.replay_buffer import (
+    REPLAY_SAFETY_COST_NAMES,
+    SAFETY_COST_SCHEMA_VERSION,
+    EpisodeReplayBuffer,
+    validate_safety_cost_names,
+)
 
 
 DEFAULT_CONFIG = PROJECT_DIR / "configs" / "steve.yaml"
+CHECKPOINT_FORMAT_VERSION = 2
 
 
 def parse_args() -> argparse.Namespace:
@@ -69,6 +75,114 @@ def build_agent_config(config: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
+def validate_checkpoint_schema(
+    checkpoint: Mapping[str, Any], *, source: str = "Checkpoint"
+) -> None:
+    """Reject checkpoints that do not use the current safety replay schema."""
+
+    if "format_version" not in checkpoint:
+        raise ValueError(
+            f"{source} has no format_version and predates the required "
+            "two-channel safety-cost checkpoint schema"
+        )
+    format_version = int(checkpoint["format_version"])
+    if format_version != CHECKPOINT_FORMAT_VERSION:
+        raise ValueError(
+            f"{source} format_version {format_version} is unsupported; expected "
+            f"{CHECKPOINT_FORMAT_VERSION}. Older checkpoints predate the required "
+            f"two-channel safety-cost schema {REPLAY_SAFETY_COST_NAMES}"
+        )
+    if "safety_cost_names" not in checkpoint:
+        raise ValueError(
+            f"{source} is missing required safety_cost_names metadata"
+        )
+    validate_safety_cost_names(
+        checkpoint["safety_cost_names"],
+        source=source,
+    )
+    if "safety_cost_schema_version" not in checkpoint:
+        raise ValueError(
+            f"{source} is missing required safety_cost_schema_version metadata"
+        )
+    schema_version = int(checkpoint["safety_cost_schema_version"])
+    if schema_version != SAFETY_COST_SCHEMA_VERSION:
+        raise ValueError(
+            f"{source} safety_cost_schema_version {schema_version} is unsupported; "
+            f"expected {SAFETY_COST_SCHEMA_VERSION}"
+        )
+    replay_state = checkpoint.get("replay")
+    if replay_state is not None:
+        if not isinstance(replay_state, Mapping):
+            raise TypeError(f"{source} replay state must be a mapping")
+        if "safety_cost_names" not in replay_state:
+            raise ValueError(
+                f"{source} replay state is missing required safety_cost_names metadata"
+            )
+        replay_names = validate_safety_cost_names(
+            replay_state["safety_cost_names"],
+            source=f"{source} replay state",
+        )
+        if tuple(checkpoint["safety_cost_names"]) != replay_names:
+            raise ValueError(
+                f"{source} top-level and replay safety-cost schemas disagree"
+            )
+        replay_schema_version = replay_state.get("safety_cost_schema_version")
+        if replay_schema_version is None:
+            raise ValueError(
+                f"{source} replay state is missing required "
+                "safety_cost_schema_version metadata"
+            )
+        if int(replay_schema_version) != SAFETY_COST_SCHEMA_VERSION:
+            raise ValueError(
+                f"{source} replay safety_cost_schema_version "
+                f"{int(replay_schema_version)} is unsupported; expected "
+                f"{SAFETY_COST_SCHEMA_VERSION}"
+            )
+        replay_safety_dim = replay_state.get("safety_cost_dim")
+        if replay_safety_dim is None:
+            raise ValueError(
+                f"{source} replay state is missing required safety_cost_dim metadata"
+            )
+        if int(replay_safety_dim) != len(REPLAY_SAFETY_COST_NAMES):
+            raise ValueError(
+                f"{source} replay safety_cost_dim {int(replay_safety_dim)} does "
+                f"not match required dimension {len(REPLAY_SAFETY_COST_NAMES)}"
+            )
+
+
+def validate_collected_safety_cost(
+    value: Any,
+    *,
+    safety_cost_names: Sequence[str] = REPLAY_SAFETY_COST_NAMES,
+    source: str = "Environment info['safety_cost']",
+) -> np.ndarray:
+    """Validate and copy one environment transition's safety-cost vector."""
+
+    validated_names = validate_safety_cost_names(
+        safety_cost_names,
+        source=f"{source} names",
+    )
+    if not isinstance(value, np.ndarray):
+        raise TypeError(f"{source} must be a numpy.ndarray, got {type(value).__name__}")
+    expected_shape = (len(validated_names),)
+    if value.shape != expected_shape:
+        if value.shape == (len(REPLAY_SAFETY_COST_NAMES) + 1,):
+            raise ValueError(
+                f"{source} uses the unsupported legacy three-channel shape "
+                f"{value.shape}; expected {expected_shape}"
+            )
+        raise ValueError(
+            f"{source} must have shape {expected_shape}, got {value.shape}"
+        )
+    if value.dtype != np.float32:
+        raise TypeError(f"{source} must use float32, got {value.dtype}")
+    if not np.all(np.isfinite(value)):
+        raise FloatingPointError(f"{source} contains NaN or infinity")
+    if np.any(value < 0.0):
+        raise ValueError(f"{source} values must be nonnegative")
+    return value.copy()
+
+
 def save_checkpoint(
     *,
     path: Path,
@@ -80,10 +194,16 @@ def save_checkpoint(
     success_count: int,
     include_replay: bool,
 ) -> Path:
+    safety_cost_names = validate_safety_cost_names(
+        replay.safety_cost_names,
+        source="Replay buffer",
+    )
     payload: Dict[str, Any] = {
-        "format_version": 1,
+        "format_version": CHECKPOINT_FORMAT_VERSION,
         "algorithm": "TD-MPC2",
         "official_reference_commit": "e9f59321933cbc8e11a002b842adc7d4ffae8ff1",
+        "safety_cost_schema_version": SAFETY_COST_SCHEMA_VERSION,
+        "safety_cost_names": safety_cost_names,
         "config": copy.deepcopy(dict(config)),
         "agent": agent.state_dict(),
         "total_env_steps": int(total_env_steps),
@@ -123,6 +243,10 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
     set_seed(seed)
     device = select_device(training["device"])
     print(f"Device: {device}")
+    safety_cost_names = validate_safety_cost_names(
+        SAFETY_COST_NAMES,
+        source="Environment",
+    )
 
     env = make_steve_env(config["environment"])
     observation_dim = int(np.prod(env.observation_space.shape))
@@ -140,7 +264,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         action_dim,
         int(training["horizon"]),
         int(training["batch_size"]),
-        safety_cost_names=SAFETY_COST_NAMES,
+        safety_cost_names=safety_cost_names,
         seed=seed,
     )
     logger = MetricLogger(config["logging"]["directory"])
@@ -151,6 +275,10 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
     if resume_path is not None:
         resolved_resume = resume_path.expanduser().resolve()
         checkpoint = load_torch_checkpoint(resolved_resume, map_location=device)
+        validate_checkpoint_schema(
+            checkpoint,
+            source=f"Resume checkpoint {resolved_resume}",
+        )
         agent.load_state_dict(checkpoint["agent"], load_optimizers=True)
         if "replay" in checkpoint:
             replay.load_state_dict(checkpoint["replay"])
@@ -218,7 +346,12 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                 episode_observations.append(next_observation.copy())
                 episode_actions.append(action.copy())
                 episode_rewards.append(float(reward))
-                episode_safety_costs.append(info["safety_cost"].copy())
+                episode_safety_costs.append(
+                    validate_collected_safety_cost(
+                        info["safety_cost"],
+                        safety_cost_names=safety_cost_names,
+                    )
+                )
                 episode_terminated.append(bool(terminated))
                 episode_reward += float(reward)
                 success = success or bool(info.get("is_success", False))
@@ -337,6 +470,10 @@ def main() -> None:
         config = load_config(args.config)
     elif args.resume is not None:
         resume_metadata = load_torch_checkpoint(args.resume, map_location="cpu")
+        validate_checkpoint_schema(
+            resume_metadata,
+            source=f"Resume checkpoint {args.resume.expanduser().resolve()}",
+        )
         if "config" not in resume_metadata:
             raise KeyError("Resume checkpoint has no embedded config; pass --config")
         config = copy.deepcopy(resume_metadata["config"])

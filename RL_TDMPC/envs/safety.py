@@ -8,9 +8,8 @@ import numpy as np
 
 
 SAFETY_COST_NAMES: Tuple[str, ...] = (
-    "collision_association",
-    "max_curvature_mm_inv",
-    "normalized_command_motion_error",
+    "filtered_max_curvature_mm_inv",
+    "normalized_requested_applied_translation_error",
 )
 
 
@@ -32,18 +31,12 @@ def safety_cost_from_metrics(
             "translation_speed_limit_mm_s must be finite and strictly positive"
         )
 
-    collision_detected = safety_metrics["collision_association_detected"]
-    if type(collision_detected) is not bool:
-        raise TypeError(
-            "collision_association_detected must be a Python bool"
-        )
     components = {
-        "collision_association": float(collision_detected),
-        "max_curvature_mm_inv": float(
-            safety_metrics["max_curvature_mm_inv"]
+        "filtered_max_curvature_mm_inv": float(
+            safety_metrics["filtered_max_curvature_mm_inv"]
         ),
-        "normalized_command_motion_error": float(
-            safety_metrics["command_motion_error_mm_s"]
+        "normalized_requested_applied_translation_error": float(
+            safety_metrics["requested_applied_translation_error_mm_s"]
         )
         / speed_limit,
     }

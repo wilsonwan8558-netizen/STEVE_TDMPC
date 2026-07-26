@@ -29,6 +29,8 @@ import eve  # noqa: E402  (must follow source-checkout path setup)
 
 OBSERVATION_KEYS: Tuple[str, ...] = ("position", "target", "rotation")
 _CURVATURE_EPSILON_MM = 1e-8
+_CURVATURE_MINIMUM_SPACING_FRACTION = 0.05
+_TRANSLATION_ACTION_TOLERANCE_MM_S = 1e-9
 
 
 class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
@@ -253,19 +255,43 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         return converted if np.isfinite(converted) else float(default)
 
     @staticmethod
-    def _curvature_metrics(positions: np.ndarray) -> Tuple[float, float]:
-        """Compute circumcircle curvature over valid consecutive DOF triplets."""
+    def _curvature_metrics(
+        positions: np.ndarray,
+    ) -> Tuple[float, float, float, float, int, int]:
+        """Compute spacing-filtered circumcircle curvature over final 3-D DOFs.
+
+        SOFA can place consecutive inactive or compressed DOFs at nearly the
+        same position.  Direct circumcircle curvature over those triplets is
+        numerically unstable, so the filter derives a scale from the median
+        finite, positive adjacent spacing and rejects triplets containing a
+        segment shorter than five percent of that spacing.
+        """
 
         if (
             positions.ndim != 2
             or positions.shape[0] < 3
             or positions.shape[1] < 3
         ):
-            return 0.0, 0.0
+            return 0.0, 0.0, 0.0, 0.0, 0, 0
 
-        p0 = positions[:-2, :3]
-        p1 = positions[1:-1, :3]
-        p2 = positions[2:, :3]
+        positions_3d = positions[:, :3]
+        triplet_count = positions_3d.shape[0] - 2
+        adjacent = positions_3d[1:] - positions_3d[:-1]
+        adjacent_norms = np.linalg.norm(adjacent, axis=1)
+        valid_spacings = adjacent_norms[
+            np.isfinite(adjacent_norms) & (adjacent_norms > 0.0)
+        ]
+        if valid_spacings.size == 0:
+            return 0.0, 0.0, 0.0, 0.0, 0, int(triplet_count)
+
+        median_spacing = float(np.median(valid_spacings))
+        minimum_segment_length = float(
+            _CURVATURE_MINIMUM_SPACING_FRACTION * median_spacing
+        )
+
+        p0 = positions_3d[:-2]
+        p1 = positions_3d[1:-1]
+        p2 = positions_3d[2:]
         u = p1 - p0
         v = p2 - p1
         chord = p2 - p0
@@ -276,20 +302,63 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
             np.all(np.isfinite(p0), axis=1)
             & np.all(np.isfinite(p1), axis=1)
             & np.all(np.isfinite(p2), axis=1)
-            & (u_norm > _CURVATURE_EPSILON_MM)
-            & (v_norm > _CURVATURE_EPSILON_MM)
+            & np.isfinite(u_norm)
+            & np.isfinite(v_norm)
+            & np.isfinite(chord_norm)
+            & (u_norm > 0.0)
+            & (v_norm > 0.0)
+            # A segment exactly on the A5 threshold remains valid.
+            & ~(u_norm < minimum_segment_length)
+            & ~(v_norm < minimum_segment_length)
             & (chord_norm > _CURVATURE_EPSILON_MM)
         )
         if not np.any(valid):
-            return 0.0, 0.0
+            return (
+                0.0,
+                0.0,
+                median_spacing,
+                minimum_segment_length,
+                0,
+                int(triplet_count),
+            )
 
-        numerator = 2.0 * np.linalg.norm(np.cross(u[valid], v[valid]), axis=1)
-        denominator = u_norm[valid] * v_norm[valid] * chord_norm[valid]
-        curvatures = numerator / denominator
-        curvatures = curvatures[np.isfinite(curvatures)]
+        candidate_indices = np.flatnonzero(valid)
+        numerator = 2.0 * np.linalg.norm(
+            np.cross(u[candidate_indices], v[candidate_indices]), axis=1
+        )
+        denominator = (
+            u_norm[candidate_indices]
+            * v_norm[candidate_indices]
+            * chord_norm[candidate_indices]
+        )
+        with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+            candidate_curvatures = numerator / denominator
+        finite_curvature = (
+            np.isfinite(numerator)
+            & np.isfinite(denominator)
+            & (denominator > 0.0)
+            & np.isfinite(candidate_curvatures)
+        )
+        curvatures = candidate_curvatures[finite_curvature]
+        valid_triplet_count = int(curvatures.size)
+        skipped_triplet_count = int(triplet_count - valid_triplet_count)
         if curvatures.size == 0:
-            return 0.0, 0.0
-        return float(np.max(curvatures)), float(np.mean(curvatures))
+            return (
+                0.0,
+                0.0,
+                median_spacing,
+                minimum_segment_length,
+                0,
+                skipped_triplet_count,
+            )
+        return (
+            float(np.max(curvatures)),
+            float(np.mean(curvatures)),
+            median_spacing,
+            minimum_segment_length,
+            valid_triplet_count,
+            skipped_triplet_count,
+        )
 
     def _read_simulation_state(
         self,
@@ -333,9 +402,38 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
             rotation = 0.0
         return positions, current_tip, inserted_length, rotation
 
+    def _read_translation_action_targets(self) -> Tuple[float, float]:
+        """Read the intervention's physical pre-mask and post-mask targets."""
+
+        expected_shape = np.asarray(
+            self._intervention.velocity_limits
+        ).shape
+        requested_action = np.asarray(
+            self._intervention.requested_action, dtype=np.float64
+        )
+        applied_action = np.asarray(
+            self._intervention.applied_action, dtype=np.float64
+        )
+        if requested_action.shape != expected_shape:
+            raise RuntimeError(
+                "MonoPlaneStatic.requested_action must have shape "
+                f"{expected_shape}, got {requested_action.shape}"
+            )
+        if applied_action.shape != expected_shape:
+            raise RuntimeError(
+                "MonoPlaneStatic.applied_action must have shape "
+                f"{expected_shape}, got {applied_action.shape}"
+            )
+        requested_translation = self._finite_float(
+            requested_action.reshape(-1, 2)[0, 0]
+        )
+        applied_translation = self._finite_float(
+            applied_action.reshape(-1, 2)[0, 0]
+        )
+        return requested_translation, applied_translation
+
     def _build_safety_metrics(
         self,
-        requested_translation_speed: float,
         *,
         initial: bool = False,
     ) -> Dict[str, Any]:
@@ -350,10 +448,12 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         actual_time = self._finite_float(
             adapter_metrics.get("actual_simulation_time_s", 0.0)
         )
-        requested_speed = self._finite_float(requested_translation_speed)
+        requested_speed, applied_speed = (
+            self._read_translation_action_targets()
+        )
 
         tip_speed = 0.0
-        insertion_speed = 0.0
+        observed_insertion_speed = 0.0
         if (
             not initial
             and actual_time > 0.0
@@ -364,14 +464,22 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
                 np.linalg.norm(current_tip - self._previous_tip_position)
                 / actual_time
             )
-            insertion_speed = self._finite_float(
+            observed_insertion_speed = self._finite_float(
                 (inserted_length - self._previous_inserted_length)
                 / actual_time
             )
 
-        max_curvature, mean_curvature = self._curvature_metrics(positions)
+        (
+            filtered_max_curvature,
+            mean_filtered_curvature,
+            curvature_median_spacing,
+            curvature_minimum_segment_length,
+            curvature_valid_triplet_count,
+            curvature_skipped_triplet_count,
+        ) = self._curvature_metrics(positions)
         if initial:
             requested_speed = 0.0
+            applied_speed = 0.0
             collision_detected = False
             max_associations = 0
         else:
@@ -390,20 +498,57 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
             except (TypeError, ValueError, OverflowError):
                 max_associations = 0
 
-        # Motion error is only an inconsistency proxy, not confirmed slippage.
-        command_motion_error = self._finite_float(
-            abs(requested_speed - insertion_speed)
+        requested_applied_error = self._finite_float(
+            abs(requested_speed - applied_speed)
+        )
+        # This is an observed kinematic mismatch only.  It is not confirmed
+        # slippage, tissue force, or a learnable safety-cost channel.
+        requested_observed_insertion_speed_error = self._finite_float(
+            abs(requested_speed - observed_insertion_speed)
         )
         safety_metrics = {
             "tip_speed_mm_s": float(tip_speed),
-            "insertion_speed_mm_s": float(insertion_speed),
+            "observed_insertion_speed_mm_s": float(
+                observed_insertion_speed
+            ),
             "requested_translation_speed_mm_s": float(requested_speed),
-            "command_motion_error_mm_s": float(command_motion_error),
-            "max_curvature_mm_inv": float(max_curvature),
-            "mean_curvature_mm_inv": float(mean_curvature),
+            "applied_translation_speed_mm_s": float(applied_speed),
+            "translation_action_blocked": bool(
+                abs(requested_speed)
+                > _TRANSLATION_ACTION_TOLERANCE_MM_S
+                and requested_applied_error
+                > _TRANSLATION_ACTION_TOLERANCE_MM_S
+            ),
+            "requested_applied_translation_error_mm_s": float(
+                requested_applied_error
+            ),
+            "requested_observed_insertion_speed_error_mm_s": float(
+                requested_observed_insertion_speed_error
+            ),
+            "filtered_max_curvature_mm_inv": float(
+                filtered_max_curvature
+            ),
+            "mean_filtered_curvature_mm_inv": float(
+                mean_filtered_curvature
+            ),
+            "curvature_median_spacing_mm": float(
+                curvature_median_spacing
+            ),
+            "curvature_minimum_segment_length_mm": float(
+                curvature_minimum_segment_length
+            ),
+            "curvature_valid_triplet_count": int(
+                curvature_valid_triplet_count
+            ),
+            "curvature_skipped_triplet_count": int(
+                curvature_skipped_triplet_count
+            ),
             "inserted_length_mm": float(inserted_length),
             "rotation_rad": float(rotation),
-            # Coarse SOFA model association, not a physical contact count.
+            "actual_simulation_time_s": float(actual_time),
+            # Persistent collision-model association monitoring only.  This
+            # can survive retraction/reset in a reused SOFA scene; it is not a
+            # contact event, contact count, force, or learnable cost channel.
             "collision_association_detected": bool(collision_detected),
             "max_collision_model_associations": int(max_associations),
             "simulation_error": bool(self._simulation.simulation_error),
@@ -436,9 +581,7 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         output_info = dict(info)
         output_info["is_success"] = bool(output_info.get("is_success", False))
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
-        output_info["safety_metrics"] = self._build_safety_metrics(
-            0.0, initial=True
-        )
+        output_info["safety_metrics"] = self._build_safety_metrics(initial=True)
         output_info["safety_cost"] = zero_safety_cost()
         return self._flatten_observation(observation), output_info
 
@@ -446,7 +589,6 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         self, action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         raw_action = self._denormalize_action(action)
-        requested_translation_speed = float(raw_action.reshape(-1)[0])
         observation, reward, terminated, truncated, info = self._env.step(raw_action)
         self._episode_steps += 1
         reward = float(reward)
@@ -460,9 +602,7 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
         output_info["raw_action"] = raw_action.reshape(-1).copy()
         output_info["episode_step"] = self._episode_steps
-        safety_metrics = self._build_safety_metrics(
-            requested_translation_speed
-        )
+        safety_metrics = self._build_safety_metrics()
         output_info["safety_metrics"] = safety_metrics
         output_info["safety_cost"] = safety_cost_from_metrics(
             safety_metrics,

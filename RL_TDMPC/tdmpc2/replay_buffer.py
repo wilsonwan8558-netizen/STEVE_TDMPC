@@ -9,6 +9,38 @@ import numpy as np
 import torch
 
 
+SAFETY_COST_SCHEMA_VERSION = 2
+REPLAY_SAFETY_COST_NAMES: Tuple[str, str] = (
+    "filtered_max_curvature_mm_inv",
+    "normalized_requested_applied_translation_error",
+)
+LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES: Tuple[str, str, str] = (
+    "collision_association",
+    "max_curvature_mm_inv",
+    "normalized_command_motion_error",
+)
+
+
+def validate_safety_cost_names(
+    names: Sequence[str], *, source: str
+) -> Tuple[str, str]:
+    """Validate the exact ordered two-channel replay/checkpoint schema."""
+
+    received = tuple(names)
+    if received == LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES:
+        raise ValueError(
+            f"{source} uses the unsupported legacy three-channel safety-cost "
+            f"schema {received}; expected the two-channel schema "
+            f"{REPLAY_SAFETY_COST_NAMES} in this exact order"
+        )
+    if received != REPLAY_SAFETY_COST_NAMES:
+        raise ValueError(
+            f"{source} safety-cost channels {received} do not match the required "
+            f"two-channel schema {REPLAY_SAFETY_COST_NAMES} in this exact order"
+        )
+    return REPLAY_SAFETY_COST_NAMES
+
+
 class EpisodeReplayBuffer:
     """Store completed episodes and uniformly sample valid subsequences.
 
@@ -31,14 +63,13 @@ class EpisodeReplayBuffer:
         self.capacity = int(capacity)
         self.observation_dim = int(observation_dim)
         self.action_dim = int(action_dim)
-        self.safety_cost_names = tuple(str(name) for name in safety_cost_names)
+        self.safety_cost_names = validate_safety_cost_names(
+            safety_cost_names,
+            source="Replay configuration",
+        )
         self.safety_cost_dim = len(self.safety_cost_names)
         self.horizon = int(horizon)
         self.batch_size = int(batch_size)
-        if self.safety_cost_dim != 3:
-            raise ValueError("safety_cost_names must define exactly three channels")
-        if len(set(self.safety_cost_names)) != self.safety_cost_dim:
-            raise ValueError("safety_cost_names must be unique")
         if (
             min(
                 self.capacity,
@@ -88,7 +119,7 @@ class EpisodeReplayBuffer:
         rewards_array = np.asarray(rewards, dtype=np.float32)
         terminated_array = np.asarray(terminated, dtype=np.float32)
         try:
-            safety_cost_array = np.asarray(safety_cost, dtype=np.float32)
+            safety_cost_array = np.asarray(safety_cost)
         except (TypeError, ValueError) as exc:
             raise ValueError(
                 "safety_cost must be a rectangular array of finite vectors"
@@ -202,7 +233,9 @@ class EpisodeReplayBuffer:
             "capacity": self.capacity,
             "observation_dim": self.observation_dim,
             "action_dim": self.action_dim,
+            "safety_cost_schema_version": SAFETY_COST_SCHEMA_VERSION,
             "safety_cost_names": self.safety_cost_names,
+            "safety_cost_dim": self.safety_cost_dim,
             "horizon": self.horizon,
             "batch_size": self.batch_size,
             "episodes": list(self._episodes),
@@ -216,12 +249,31 @@ class EpisodeReplayBuffer:
                 "Replay checkpoint predates the required safety_cost schema; "
                 "legacy replay data cannot be resumed without migration"
             )
-        received_safety_names = tuple(state["safety_cost_names"])
-        if received_safety_names != self.safety_cost_names:
+        validate_safety_cost_names(
+            state["safety_cost_names"],
+            source="Replay checkpoint",
+        )
+        if "safety_cost_schema_version" not in state:
             raise ValueError(
-                "Replay safety-cost channels "
-                f"{received_safety_names} do not match current "
-                f"{self.safety_cost_names}"
+                "Replay checkpoint predates safety-cost schema version "
+                f"{SAFETY_COST_SCHEMA_VERSION}; legacy replay data cannot be resumed"
+            )
+        received_schema_version = int(state["safety_cost_schema_version"])
+        if received_schema_version != SAFETY_COST_SCHEMA_VERSION:
+            raise ValueError(
+                "Replay safety-cost schema version "
+                f"{received_schema_version} does not match required version "
+                f"{SAFETY_COST_SCHEMA_VERSION}"
+            )
+        if "safety_cost_dim" not in state:
+            raise ValueError(
+                "Replay checkpoint is missing required safety_cost_dim metadata"
+            )
+        received_safety_dim = int(state["safety_cost_dim"])
+        if received_safety_dim != self.safety_cost_dim:
+            raise ValueError(
+                f"Replay safety_cost_dim {received_safety_dim} does not match "
+                f"required dimension {self.safety_cost_dim}"
             )
         expected = (
             self.observation_dim,
@@ -263,6 +315,15 @@ class EpisodeReplayBuffer:
     ) -> None:
         expected_shape = (length, self.safety_cost_dim)
         if safety_cost.shape != expected_shape:
+            if safety_cost.shape == (
+                length,
+                len(LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES),
+            ):
+                raise ValueError(
+                    f"{source} uses the unsupported legacy three-channel "
+                    f"safety_cost shape {safety_cost.shape}; expected "
+                    f"{expected_shape} with channels {self.safety_cost_names}"
+                )
             raise ValueError(
                 f"{source} safety_cost must have shape {expected_shape}, "
                 f"got {safety_cost.shape}"
