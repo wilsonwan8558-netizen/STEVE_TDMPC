@@ -22,6 +22,13 @@ model:
   log_std_min: -10.0
   log_std_max: 2.0
 
+safety:
+  loss_coef: 1.0
+  curvature_loss_coef: 1.0
+  translation_error_loss_coef: 1.0
+  curvature_scale_mm_inv: 0.1
+  translation_error_scale: 1.0
+
 training:
   total_steps: 1000000
   seed_steps: 5000
@@ -72,4 +79,3 @@ evaluation:
   episodes: 10
   seed: 1000
   log_directory: logs/evaluation
-

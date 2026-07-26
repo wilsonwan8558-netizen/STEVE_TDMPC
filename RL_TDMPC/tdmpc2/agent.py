@@ -15,6 +15,17 @@ import torch
 import torch.nn.functional as F
 
 from .networks import WorldModel, soft_cross_entropy, two_hot_inv
+from .replay_buffer import REPLAY_SAFETY_COST_NAMES
+
+
+SAFETY_MODEL_SCHEMA_VERSION = 1
+_SAFETY_CONFIG_KEYS = (
+    "safety_loss_coef",
+    "safety_curvature_loss_coef",
+    "safety_translation_error_loss_coef",
+    "safety_curvature_scale_mm_inv",
+    "safety_translation_error_scale",
+)
 
 
 class RunningScale(torch.nn.Module):
@@ -57,6 +68,63 @@ class TDMPC2Agent:
         self.action_dim = int(action_dim)
         self.config = dict(config)
         self.device = device
+        required_safety_keys = {
+            "safety_cost_names",
+            "safety_dim",
+            *_SAFETY_CONFIG_KEYS,
+        }
+        missing_safety_keys = sorted(required_safety_keys - self.config.keys())
+        if missing_safety_keys:
+            raise ValueError(
+                "Agent config is missing required Safety-Aware keys: "
+                f"{missing_safety_keys}"
+            )
+        self.safety_cost_names = tuple(self.config["safety_cost_names"])
+        if self.safety_cost_names != REPLAY_SAFETY_COST_NAMES:
+            raise ValueError(
+                "Agent safety_cost_names "
+                f"{self.safety_cost_names} do not match required schema "
+                f"{REPLAY_SAFETY_COST_NAMES} in this exact order"
+            )
+        self.safety_dim = int(self.config["safety_dim"])
+        if self.safety_dim != len(REPLAY_SAFETY_COST_NAMES):
+            raise ValueError(
+                f"Agent safety_dim must be {len(REPLAY_SAFETY_COST_NAMES)}, "
+                f"got {self.safety_dim}"
+            )
+        self.safety_loss_coef = float(self.config["safety_loss_coef"])
+        self.safety_curvature_loss_coef = float(
+            self.config["safety_curvature_loss_coef"]
+        )
+        self.safety_translation_error_loss_coef = float(
+            self.config["safety_translation_error_loss_coef"]
+        )
+        self.safety_curvature_scale_mm_inv = float(
+            self.config["safety_curvature_scale_mm_inv"]
+        )
+        self.safety_translation_error_scale = float(
+            self.config["safety_translation_error_scale"]
+        )
+        coefficient_values = {
+            "safety_loss_coef": self.safety_loss_coef,
+            "safety_curvature_loss_coef": self.safety_curvature_loss_coef,
+            "safety_translation_error_loss_coef": (
+                self.safety_translation_error_loss_coef
+            ),
+        }
+        for name, value in coefficient_values.items():
+            if not np.isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be finite and nonnegative")
+        scale_values = {
+            "safety_curvature_scale_mm_inv": (
+                self.safety_curvature_scale_mm_inv
+            ),
+            "safety_translation_error_scale": self.safety_translation_error_scale,
+        }
+        for name, value in scale_values.items():
+            if not np.isfinite(value) or value <= 0.0:
+                raise ValueError(f"{name} must be finite and strictly positive")
+        self.safety_training_enabled = self.safety_loss_coef > 0.0
         self.model = WorldModel(
             self.observation_dim, self.action_dim, self.config
         ).to(device)
@@ -74,6 +142,29 @@ class TDMPC2Agent:
             {"params": self.model.termination_head.parameters()},
             {"params": self.model.q_ensemble.parameters()},
         ]
+        safety_head_parameters = list(self.model.safety_head_parameters())
+        if not safety_head_parameters:
+            raise RuntimeError("WorldModel returned no Safety head parameters")
+        if len({id(parameter) for parameter in safety_head_parameters}) != len(
+            safety_head_parameters
+        ):
+            raise RuntimeError("WorldModel Safety head parameters contain duplicates")
+        policy_parameter_ids = {
+            id(parameter) for parameter in self.model.policy.parameters()
+        }
+        if any(
+            id(parameter) in policy_parameter_ids
+            for parameter in safety_head_parameters
+        ):
+            raise RuntimeError(
+                "WorldModel Safety head parameters must not overlap policy parameters"
+            )
+        model_groups.append(
+            {
+                "params": safety_head_parameters,
+                "name": "safety",
+            }
+        )
         self.model_optimizer = torch.optim.Adam(model_groups, lr=learning_rate)
         self.policy_optimizer = torch.optim.Adam(
             self.model.policy.parameters(), lr=learning_rate, eps=1e-5
@@ -246,11 +337,132 @@ class TDMPC2Agent:
         )
         return reward + self.discount * (1.0 - terminated) * next_q
 
+    def _compute_safety_loss(
+        self,
+        rollout_latent: torch.Tensor,
+        actions: torch.Tensor,
+        safety_cost: torch.Tensor,
+        weights: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        """Compute aligned per-channel Safety losses for ``(z_t, a_t, c_t)``."""
+
+        if rollout_latent.ndim != 3:
+            raise ValueError(
+                "Safety rollout latent must have shape (H, B, latent_dim), "
+                f"got {tuple(rollout_latent.shape)}"
+            )
+        if actions.ndim != 3 or actions.shape[-1] != self.action_dim:
+            raise ValueError(
+                f"Safety actions must have shape (H, B, {self.action_dim}), "
+                f"got {tuple(actions.shape)}"
+            )
+        expected_prefix = (
+            self.horizon,
+            actions.shape[1],
+        )
+        if tuple(rollout_latent.shape[:2]) != expected_prefix:
+            raise ValueError(
+                "Safety rollout latent must have leading shape "
+                f"{expected_prefix}, got {tuple(rollout_latent.shape)}"
+            )
+        if tuple(actions.shape[:2]) != expected_prefix:
+            raise ValueError(
+                f"Safety actions must have leading shape {expected_prefix}, "
+                f"got {tuple(actions.shape)}"
+            )
+        expected_cost_shape = (*expected_prefix, self.safety_dim)
+        if tuple(safety_cost.shape) != expected_cost_shape:
+            raise ValueError(
+                f"Safety cost must have shape {expected_cost_shape}, "
+                f"got {tuple(safety_cost.shape)}"
+            )
+        if tuple(weights.shape) != (self.horizon,):
+            raise ValueError(
+                f"Safety weights must have shape ({self.horizon},), "
+                f"got {tuple(weights.shape)}"
+            )
+        if not torch.isfinite(safety_cost).all():
+            raise FloatingPointError("Safety cost contains NaN or infinity")
+        if torch.any(safety_cost < 0.0):
+            raise ValueError("Safety cost values must be nonnegative")
+
+        prediction_transformed = self.model.safety_transformed(
+            rollout_latent,
+            actions,
+        )
+        target_transformed = self.model.transform_safety_targets(safety_cost)
+        if tuple(prediction_transformed.shape) != expected_cost_shape:
+            raise RuntimeError(
+                "WorldModel.safety_transformed returned shape "
+                f"{tuple(prediction_transformed.shape)}; expected "
+                f"{expected_cost_shape}"
+            )
+        if tuple(target_transformed.shape) != expected_cost_shape:
+            raise RuntimeError(
+                "WorldModel.transform_safety_targets returned shape "
+                f"{tuple(target_transformed.shape)}; expected "
+                f"{expected_cost_shape}"
+            )
+
+        element_loss = F.smooth_l1_loss(
+            prediction_transformed,
+            target_transformed,
+            reduction="none",
+        )
+        # Mean over batch independently for each channel, then apply TD-MPC2's
+        # rho^t weighting and normalize by the fixed training horizon.
+        channel_losses = (
+            element_loss.mean(dim=1) * weights.unsqueeze(-1)
+        ).sum(dim=0) / self.horizon
+        curvature_loss = channel_losses[0]
+        translation_error_loss = channel_losses[1]
+        safety_loss = (
+            self.safety_curvature_loss_coef * curvature_loss
+            + self.safety_translation_error_loss_coef * translation_error_loss
+        )
+
+        with torch.no_grad():
+            decoded_prediction = self.model.decode_safety_transformed(
+                prediction_transformed.detach()
+            )
+            if tuple(decoded_prediction.shape) != expected_cost_shape:
+                raise RuntimeError(
+                    "WorldModel.decode_safety_transformed returned shape "
+                    f"{tuple(decoded_prediction.shape)}; expected "
+                    f"{expected_cost_shape}"
+                )
+            decoded_mean = self._stable_nonnegative_channel_mean(
+                decoded_prediction
+            )
+            target_mean = self._stable_nonnegative_channel_mean(safety_cost)
+
+        return {
+            "safety_loss": safety_loss,
+            "safety_curvature_loss": curvature_loss,
+            "safety_translation_error_loss": translation_error_loss,
+            "safety_decoded_curvature_mean": decoded_mean[0],
+            "safety_target_curvature_mean": target_mean[0],
+            "safety_decoded_translation_error_mean": decoded_mean[1],
+            "safety_target_translation_error_mean": target_mean[1],
+        }
+
+    @staticmethod
+    def _stable_nonnegative_channel_mean(value: torch.Tensor) -> torch.Tensor:
+        """Compute per-channel means without overflowing a finite dtype."""
+
+        channel_max = value.amax(dim=(0, 1))
+        denominator = torch.where(
+            channel_max > 0.0,
+            channel_max,
+            torch.ones_like(channel_max),
+        )
+        normalized_mean = (value / denominator).mean(dim=(0, 1))
+        return normalized_mean * channel_max
+
     def update(self, replay_buffer) -> Dict[str, float]:
-        observations, actions, rewards, terminated, _safety_cost = (
+        observations, actions, rewards, terminated, safety_cost = (
             replay_buffer.sample(self.device)
         )
-        # Safety cost is collected for future work and intentionally unused here.
         rho = float(self.config["rho"])
         weights = torch.pow(
             torch.tensor(rho, device=self.device),
@@ -303,11 +515,29 @@ class TDMPC2Agent:
         termination_loss = F.binary_cross_entropy_with_logits(
             termination_logits, terminated
         )
+        zero_safety_loss = torch.zeros((), device=self.device)
+        safety_info: Dict[str, torch.Tensor] = {
+            "safety_loss": zero_safety_loss,
+            "safety_curvature_loss": zero_safety_loss,
+            "safety_translation_error_loss": zero_safety_loss,
+            "safety_decoded_curvature_mean": zero_safety_loss,
+            "safety_target_curvature_mean": zero_safety_loss,
+            "safety_decoded_translation_error_mean": zero_safety_loss,
+            "safety_target_translation_error_mean": zero_safety_loss,
+        }
+        if self.safety_training_enabled:
+            safety_info = self._compute_safety_loss(
+                latent_rollout_tensor[:-1],
+                actions,
+                safety_cost,
+                weights,
+            )
         total_loss = (
             float(self.config["consistency_coef"]) * consistency_loss
             + float(self.config["reward_coef"]) * reward_loss
             + float(self.config["value_coef"]) * value_loss
             + float(self.config["termination_coef"]) * termination_loss
+            + self.safety_loss_coef * safety_info["safety_loss"]
         )
 
         self.model_optimizer.zero_grad(set_to_none=True)
@@ -333,6 +563,10 @@ class TDMPC2Agent:
             "value_loss": float(value_loss.detach().cpu()),
             "termination_loss": float(termination_loss.detach().cpu()),
             "model_grad_norm": float(model_grad_norm.detach().cpu()),
+            **{
+                name: float(value.detach().cpu())
+                for name, value in safety_info.items()
+            },
             **policy_info,
         }
 
@@ -370,8 +604,81 @@ class TDMPC2Agent:
             "policy_scale": float(self.scale.value.detach().cpu()),
         }
 
+    def _safety_state_config(self) -> Dict[str, float]:
+        return {
+            "safety_loss_coef": self.safety_loss_coef,
+            "safety_curvature_loss_coef": self.safety_curvature_loss_coef,
+            "safety_translation_error_loss_coef": (
+                self.safety_translation_error_loss_coef
+            ),
+            "safety_curvature_scale_mm_inv": (
+                self.safety_curvature_scale_mm_inv
+            ),
+            "safety_translation_error_scale": self.safety_translation_error_scale,
+        }
+
+    def _validate_safety_state(self, state: Mapping[str, Any]) -> None:
+        required = {
+            "safety_model_schema_version",
+            "safety_cost_names",
+            "safety_dim",
+            "safety_config",
+        }
+        missing = sorted(required - state.keys())
+        if missing:
+            raise ValueError(
+                "Agent checkpoint predates the required Safety Head/model "
+                f"schema; missing metadata {missing}"
+            )
+        schema_version = int(state["safety_model_schema_version"])
+        if schema_version != SAFETY_MODEL_SCHEMA_VERSION:
+            raise ValueError(
+                f"Agent checkpoint Safety model schema version {schema_version} "
+                f"does not match required version {SAFETY_MODEL_SCHEMA_VERSION}"
+            )
+        received_names = tuple(state["safety_cost_names"])
+        if received_names != self.safety_cost_names:
+            raise ValueError(
+                "Agent checkpoint safety_cost_names "
+                f"{received_names} do not match current "
+                f"{self.safety_cost_names} in this exact order"
+            )
+        received_dim = int(state["safety_dim"])
+        if received_dim != self.safety_dim:
+            raise ValueError(
+                f"Agent checkpoint safety_dim {received_dim} does not match "
+                f"current {self.safety_dim}"
+            )
+        received_config = state["safety_config"]
+        if not isinstance(received_config, Mapping):
+            raise TypeError("Agent checkpoint safety_config must be a mapping")
+        expected_config = self._safety_state_config()
+        missing_config = sorted(expected_config.keys() - received_config.keys())
+        if missing_config:
+            raise ValueError(
+                "Agent checkpoint safety_config is missing required keys "
+                f"{missing_config}"
+            )
+        unexpected_config = sorted(received_config.keys() - expected_config.keys())
+        if unexpected_config:
+            raise ValueError(
+                "Agent checkpoint safety_config has unexpected keys "
+                f"{unexpected_config}"
+            )
+        for name, expected_value in expected_config.items():
+            received_value = float(received_config[name])
+            if received_value != expected_value:
+                raise ValueError(
+                    f"Agent checkpoint {name}={received_value} does not match "
+                    f"current value {expected_value}"
+                )
+
     def state_dict(self) -> Dict[str, Any]:
         return {
+            "safety_model_schema_version": SAFETY_MODEL_SCHEMA_VERSION,
+            "safety_cost_names": self.safety_cost_names,
+            "safety_dim": self.safety_dim,
+            "safety_config": self._safety_state_config(),
             "model": self.model.state_dict(),
             "model_optimizer": self.model_optimizer.state_dict(),
             "policy_optimizer": self.policy_optimizer.state_dict(),
@@ -386,6 +693,7 @@ class TDMPC2Agent:
     def load_state_dict(
         self, state: Mapping[str, Any], *, load_optimizers: bool = True
     ) -> None:
+        self._validate_safety_state(state)
         if int(state["observation_dim"]) != self.observation_dim or int(
             state["action_dim"]
         ) != self.action_dim:

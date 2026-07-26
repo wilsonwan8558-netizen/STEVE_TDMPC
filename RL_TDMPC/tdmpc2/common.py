@@ -7,7 +7,7 @@ import json
 import os
 import random
 from pathlib import Path
-from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Sequence
 
 import numpy as np
 import torch
@@ -28,6 +28,7 @@ def load_config(path: os.PathLike) -> Dict[str, Any]:
     required = {
         "environment",
         "model",
+        "safety",
         "training",
         "planning",
         "logging",
@@ -38,6 +39,85 @@ def load_config(path: os.PathLike) -> Dict[str, Any]:
     if missing:
         raise KeyError(f"Configuration is missing sections: {sorted(missing)}")
     return config
+
+
+def build_safety_agent_config(
+    config: Mapping[str, Any],
+    safety_cost_names: Sequence[str],
+) -> Dict[str, Any]:
+    """Validate nested safety settings and return the agent's flat schema."""
+
+    names = tuple(str(name) for name in safety_cost_names)
+    if len(names) != 2:
+        raise ValueError(
+            "Safety configuration requires exactly two ordered cost channels; "
+            f"got {names}"
+        )
+    if len(set(names)) != len(names):
+        raise ValueError(f"Safety cost channel names must be unique; got {names}")
+
+    safety = config.get("safety")
+    if not isinstance(safety, Mapping):
+        raise TypeError("Configuration section 'safety' must be a mapping")
+    expected_keys = {
+        "loss_coef",
+        "curvature_loss_coef",
+        "translation_error_loss_coef",
+        "curvature_scale_mm_inv",
+        "translation_error_scale",
+    }
+    unexpected_keys = sorted(set(safety) - expected_keys)
+    if unexpected_keys:
+        raise ValueError(
+            "Configuration safety section has unexpected keys: "
+            f"{unexpected_keys}"
+        )
+
+    def validated_value(key: str, *, strictly_positive: bool) -> float:
+        if key not in safety:
+            raise KeyError(f"Configuration safety section is missing {key!r}")
+        value = safety[key]
+        if isinstance(value, bool):
+            raise TypeError(f"safety.{key} must be a real number, not bool")
+        try:
+            converted = float(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(f"safety.{key} must be a real number") from exc
+        if not np.isfinite(converted):
+            raise ValueError(f"safety.{key} must be finite")
+        if strictly_positive and converted <= 0.0:
+            raise ValueError(f"safety.{key} must be strictly positive")
+        if not strictly_positive and converted < 0.0:
+            raise ValueError(f"safety.{key} must be nonnegative")
+        if strictly_positive:
+            with np.errstate(over="ignore", under="ignore"):
+                replay_value = np.asarray(converted, dtype=np.float32).item()
+            if not np.isfinite(replay_value) or replay_value <= 0.0:
+                raise ValueError(
+                    f"safety.{key} must remain finite and strictly positive "
+                    "when represented as float32 replay data"
+                )
+        return converted
+
+    return {
+        "safety_cost_names": names,
+        "safety_dim": len(names),
+        "safety_loss_coef": validated_value(
+            "loss_coef", strictly_positive=False
+        ),
+        "safety_curvature_loss_coef": validated_value(
+            "curvature_loss_coef", strictly_positive=False
+        ),
+        "safety_translation_error_loss_coef": validated_value(
+            "translation_error_loss_coef", strictly_positive=False
+        ),
+        "safety_curvature_scale_mm_inv": validated_value(
+            "curvature_scale_mm_inv", strictly_positive=True
+        ),
+        "safety_translation_error_scale": validated_value(
+            "translation_error_scale", strictly_positive=True
+        ),
+    }
 
 
 def resolve_project_path(path: os.PathLike) -> Path:

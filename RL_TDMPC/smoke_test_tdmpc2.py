@@ -3,27 +3,69 @@
 from __future__ import annotations
 
 import copy
+from contextlib import ExitStack
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from envs.safety import SAFETY_COST_NAMES as ENV_SAFETY_COST_NAMES
+from evaluate import build_agent_config as build_evaluation_agent_config
 from train import (
     CHECKPOINT_FORMAT_VERSION,
+    DEFAULT_CONFIG,
+    SAFETY_MODEL_SCHEMA_VERSION,
+    build_agent_config,
     save_checkpoint,
     validate_collected_safety_cost,
     validate_checkpoint_schema,
 )
 from tdmpc2.agent import TDMPC2Agent
-from tdmpc2.common import load_torch_checkpoint
+from tdmpc2.common import load_config, load_torch_checkpoint
 from tdmpc2.replay_buffer import (
     LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES,
     REPLAY_SAFETY_COST_NAMES,
     SAFETY_COST_SCHEMA_VERSION,
     EpisodeReplayBuffer,
 )
+
+
+class FixedReplay:
+    """Return one deterministic, clone-on-read replay batch."""
+
+    def __init__(self, batch, *, poison_safety: bool = False) -> None:
+        self.batch = tuple(tensor.detach().clone() for tensor in batch)
+        self.poison_safety = bool(poison_safety)
+
+    def sample(self, device: torch.device):
+        tensors = [tensor.detach().clone().to(device) for tensor in self.batch]
+        if self.poison_safety:
+            tensors[-1].fill_(float("nan"))
+        return tuple(tensors)
+
+
+def _module_has_finite_nonzero_gradient(module: torch.nn.Module) -> bool:
+    gradients = [
+        parameter.grad
+        for parameter in module.parameters()
+        if parameter.grad is not None
+    ]
+    return bool(gradients) and all(
+        torch.isfinite(gradient).all() for gradient in gradients
+    ) and any(torch.count_nonzero(gradient).item() > 0 for gradient in gradients)
+
+
+def _assert_parameters_unchanged(
+    before: dict[str, torch.Tensor],
+    module: torch.nn.Module,
+) -> None:
+    after = dict(module.named_parameters())
+    assert before.keys() == after.keys()
+    for name, expected in before.items():
+        torch.testing.assert_close(after[name], expected, rtol=0.0, atol=0.0)
 
 
 def main() -> None:
@@ -77,45 +119,91 @@ def main() -> None:
             raise AssertionError(
                 "Training collection accepted invalid safety_cost data"
             )
-    config = {
-        "latent_dim": 16,
-        "enc_dim": 16,
-        "mlp_dim": 16,
-        "num_enc_layers": 2,
-        "simnorm_dim": 4,
-        "num_q": 2,
-        "dropout": 0.0,
-        "num_bins": 11,
-        "vmin": -5.0,
-        "vmax": 5.0,
-        "log_std_min": -10.0,
-        "log_std_max": 2.0,
-        "lr": 3e-4,
-        "enc_lr_scale": 0.3,
-        "tau": 0.01,
-        "discount_denom": 5.0,
-        "discount_min": 0.95,
-        "discount_max": 0.995,
-        "horizon": 3,
-        "mpc": True,
-        "num_samples": 8,
-        "num_elites": 2,
-        "num_pi_trajs": 2,
-        "iterations": 1,
-        "max_std": 2.0,
-        "min_std": 0.05,
-        "temperature": 0.5,
-        "episodic": True,
-        "rho": 0.5,
-        "consistency_coef": 20.0,
-        "reward_coef": 0.1,
-        "value_coef": 0.1,
-        "termination_coef": 1.0,
-        "entropy_coef": 1e-4,
-        "grad_clip_norm": 20.0,
-    }
+    full_config = load_config(DEFAULT_CONFIG)
+    full_config["model"].update(
+        {
+            "latent_dim": 16,
+            "enc_dim": 16,
+            "mlp_dim": 16,
+            "num_enc_layers": 2,
+            "simnorm_dim": 4,
+            "num_q": 2,
+            "dropout": 0.2,
+            "num_bins": 11,
+            "vmin": -5.0,
+            "vmax": 5.0,
+        }
+    )
+    full_config["training"].update(
+        {
+            "horizon": 3,
+            "lr": 3e-4,
+            "enc_lr_scale": 0.3,
+            "rho": 0.5,
+            "consistency_coef": 20.0,
+            "reward_coef": 0.1,
+            "value_coef": 0.1,
+            "termination_coef": 1.0,
+            "entropy_coef": 1e-4,
+            "grad_clip_norm": 20.0,
+            "tau": 0.01,
+            "discount_denom": 5.0,
+            "discount_min": 0.95,
+            "discount_max": 0.995,
+        }
+    )
+    full_config["planning"].update(
+        {
+            "horizon": 3,
+            "mpc": True,
+            "num_samples": 8,
+            "num_elites": 2,
+            "num_pi_trajs": 2,
+            "iterations": 1,
+            "max_std": 2.0,
+            "min_std": 0.05,
+            "temperature": 0.5,
+        }
+    )
+    full_config["safety"].update(
+        {
+            "loss_coef": 1.0,
+            "curvature_loss_coef": 1.0,
+            "translation_error_loss_coef": 1.0,
+            "curvature_scale_mm_inv": 0.1,
+            "translation_error_scale": 1.0,
+        }
+    )
+    config = build_agent_config(full_config)
+    assert config == build_evaluation_agent_config(full_config)
+    assert tuple(config["safety_cost_names"]) == tuple(
+        ENV_SAFETY_COST_NAMES
+    )
+    assert config["safety_dim"] == 2
+    for scale_key, invalid_scale in (
+        ("curvature_scale_mm_inv", 1.0e-50),
+        ("translation_error_scale", 1.0e40),
+    ):
+        invalid_scale_config = copy.deepcopy(full_config)
+        invalid_scale_config["safety"][scale_key] = invalid_scale
+        try:
+            build_agent_config(invalid_scale_config)
+        except ValueError as exc:
+            assert "float32 replay data" in str(exc)
+        else:
+            raise AssertionError(
+                f"Configuration accepted unrepresentable safety scale {invalid_scale}"
+            )
     device = torch.device("cpu")
     agent = TDMPC2Agent(14, 2, config, episode_length=200, device=device)
+    assert not any(
+        isinstance(module, torch.nn.Dropout)
+        for module in agent.model.safety_trunk.modules()
+    )
+    assert any(
+        isinstance(module, torch.nn.Dropout)
+        for module in agent.model.q_ensemble.modules()
+    )
     try:
         EpisodeReplayBuffer(
             100,
@@ -319,32 +407,661 @@ def main() -> None:
     else:
         raise AssertionError("Replay restored legacy three-channel transition data")
 
-    class SafetyPoisonReplay:
-        """Return valid baseline data plus a safety tensor that must be ignored."""
+    # The model exposes the exact canonical ordering through two explicit
+    # scalar branches and supports both batch and time-major latent tensors.
+    assert agent.model.safety_cost_names == tuple(ENV_SAFETY_COST_NAMES)
+    for latent_shape in ((5, 16), (3, 5, 16)):
+        latent_input = torch.randn(*latent_shape)
+        action_input = torch.randn(*latent_shape[:-1], 2)
+        transformed_prediction = agent.model.safety_transformed(
+            latent_input, action_input
+        )
+        decoded_prediction = agent.model.safety(latent_input, action_input)
+        expected_shape = (*latent_shape[:-1], 2)
+        assert transformed_prediction.shape == expected_shape
+        assert decoded_prediction.shape == expected_shape
+        assert transformed_prediction.dtype == latent_input.dtype
+        assert decoded_prediction.dtype == latent_input.dtype
+        assert torch.isfinite(transformed_prediction).all()
+        assert torch.isfinite(decoded_prediction).all()
+        assert torch.all(decoded_prediction >= 0.0)
 
-        def sample(self, sample_device: torch.device):
-            tensors = list(replay.sample(sample_device))
-            tensors[-1] = torch.full_like(tensors[-1], float("nan"))
-            return tuple(tensors)
+    branch_state = {
+        "curvature": copy.deepcopy(
+            agent.model.safety_curvature_head.state_dict()
+        ),
+        "translation": copy.deepcopy(
+            agent.model.safety_translation_error_head.state_dict()
+        ),
+    }
+    with torch.no_grad():
+        agent.model.safety_curvature_head.weight.zero_()
+        agent.model.safety_curvature_head.bias.fill_(1.0)
+        agent.model.safety_translation_error_head.weight.zero_()
+        agent.model.safety_translation_error_head.bias.fill_(2.0)
+    ordered_prediction = agent.model.safety_transformed(
+        torch.zeros(2, 16), torch.zeros(2, 2)
+    )
+    torch.testing.assert_close(
+        ordered_prediction,
+        torch.tensor([[1.0, 2.0], [1.0, 2.0]]),
+    )
+    agent.model.safety_curvature_head.load_state_dict(
+        branch_state["curvature"]
+    )
+    agent.model.safety_translation_error_head.load_state_dict(
+        branch_state["translation"]
+    )
 
-    metrics = agent.update(SafetyPoisonReplay())
+    original_cost = torch.tensor(
+        [[0.0, 0.0], [0.1, 1.0], [0.35, 4.5]],
+        dtype=torch.float32,
+    )
+    transformed_target = agent.model.transform_safety_targets(original_cost)
+    expected_target = torch.log1p(
+        original_cost / torch.tensor([0.1, 1.0])
+    )
+    assert torch.isfinite(transformed_target).all()
+    torch.testing.assert_close(transformed_target, expected_target)
+    torch.testing.assert_close(
+        agent.model.decode_safety_transformed(transformed_target),
+        original_cost,
+    )
+    # The translation-error channel is intentionally not clipped at one.
+    assert transformed_target[-1, 1] > np.log(2.0)
+    for dtype, tiny_value in (
+        (torch.float16, 1.0e-5),
+        (torch.float32, 1.0e-9),
+        (torch.float64, 1.0e-20),
+    ):
+        tiny_cost = torch.full((1, 2), tiny_value, dtype=dtype)
+        tiny_scale = torch.tensor([0.1, 1.0], dtype=dtype)
+        tiny_transformed = agent.model.transform_safety_targets(tiny_cost)
+        tiny_reference = torch.log1p(tiny_cost / tiny_scale)
+        assert torch.all(tiny_transformed > 0.0)
+        torch.testing.assert_close(tiny_transformed, tiny_reference)
+    extreme_decoded = agent.model.decode_safety_transformed(
+        torch.tensor(
+            [[-100.0, 1.0e6], [float("nan"), float("inf")]],
+            dtype=torch.float32,
+        )
+    )
+    assert torch.isfinite(extreme_decoded).all()
+    assert torch.all(extreme_decoded >= 0.0)
+    for dtype in (torch.float16, torch.float32, torch.float64):
+        dtype_max = torch.finfo(dtype).max
+        extreme_target = torch.full((2, 2), dtype_max, dtype=dtype)
+        extreme_transformed_target = agent.model.transform_safety_targets(
+            extreme_target
+        )
+        assert torch.isfinite(extreme_transformed_target).all()
+        dtype_decoded = agent.model.decode_safety_transformed(
+            torch.tensor(
+                [[-1.0, dtype_max], [float("nan"), float("inf")]],
+                dtype=dtype,
+            )
+        )
+        assert torch.isfinite(dtype_decoded).all()
+        assert torch.all(dtype_decoded >= 0.0)
+
+    safety_parameter_ids = {
+        id(parameter) for parameter in agent.model.safety_head_parameters()
+    }
+    assert agent.model_optimizer.param_groups[-1]["name"] == "safety"
+    assert {
+        id(parameter)
+        for parameter in agent.model_optimizer.param_groups[-1]["params"]
+    } == safety_parameter_ids
+    assert safety_parameter_ids.isdisjoint(
+        id(parameter) for parameter in agent.model.policy.parameters()
+    )
+
+    horizon, batch_size = 3, 4
+    fixed_observations = torch.linspace(
+        -1.0,
+        1.0,
+        (horizon + 1) * batch_size * 14,
+        dtype=torch.float32,
+    ).reshape(horizon + 1, batch_size, 14)
+    fixed_actions = torch.linspace(
+        -0.8,
+        0.8,
+        horizon * batch_size * 2,
+        dtype=torch.float32,
+    ).reshape(horizon, batch_size, 2)
+    fixed_rewards = torch.linspace(
+        -0.2,
+        0.9,
+        horizon * batch_size,
+        dtype=torch.float32,
+    ).reshape(horizon, batch_size, 1)
+    fixed_terminated = torch.zeros(horizon, batch_size, 1)
+    fixed_terminated[-1, -1, 0] = 1.0
+    temporal_id = torch.arange(
+        horizon * batch_size, dtype=torch.float32
+    ).reshape(horizon, batch_size)
+    fixed_safety_cost = torch.stack(
+        (
+            0.01 + temporal_id * 0.013,
+            0.2 + temporal_id * 0.37,
+        ),
+        dim=-1,
+    )
+    fixed_batch = (
+        fixed_observations,
+        fixed_actions,
+        fixed_rewards,
+        fixed_terminated,
+        fixed_safety_cost,
+    )
+
+    # Disable all baseline model coefficients so every encoder/dynamics/head
+    # gradient below is attributable to the Safety auxiliary objective.
+    safety_only_config = copy.deepcopy(config)
+    for coefficient in (
+        "consistency_coef",
+        "reward_coef",
+        "value_coef",
+        "termination_coef",
+    ):
+        safety_only_config[coefficient] = 0.0
+    safety_only_config["safety_loss_coef"] = 1.5
+    safety_only_config["safety_curvature_loss_coef"] = 2.0
+    safety_only_config["safety_translation_error_loss_coef"] = 3.0
+    safety_only_config["grad_clip_norm"] = 1.0e6
+    torch.manual_seed(11)
+    safety_agent = TDMPC2Agent(
+        14,
+        2,
+        safety_only_config,
+        episode_length=200,
+        device=device,
+    )
+    with torch.no_grad():
+        expected_rollout = [safety_agent.model.encode(fixed_observations[0])]
+        for step in range(horizon):
+            expected_rollout.append(
+                safety_agent.model.next(
+                    expected_rollout[-1],
+                    fixed_actions[step],
+                )
+            )
+        expected_rollout_tensor = torch.stack(expected_rollout)
+        prediction_before_update = safety_agent.model.safety_transformed(
+            expected_rollout_tensor[:-1],
+            fixed_actions,
+        )
+        target_transformed = safety_agent.model.transform_safety_targets(
+            fixed_safety_cost
+        )
+        weights = torch.pow(
+            torch.tensor(float(config["rho"])),
+            torch.arange(horizon),
+        )
+        expected_channel_losses = (
+            F.smooth_l1_loss(
+                prediction_before_update,
+                target_transformed,
+                reduction="none",
+            ).mean(dim=1)
+            * weights.unsqueeze(-1)
+        ).sum(dim=0) / horizon
+        expected_combined_safety_loss = (
+            safety_only_config["safety_curvature_loss_coef"]
+            * expected_channel_losses[0]
+            + safety_only_config["safety_translation_error_loss_coef"]
+            * expected_channel_losses[1]
+        )
+        expected_decoded_means = (
+            safety_agent.model.decode_safety_transformed(
+                prediction_before_update
+            ).mean(dim=(0, 1))
+        )
+
+    captured_alignment: dict[str, torch.Tensor] = {}
+    original_compute_safety_loss = safety_agent._compute_safety_loss
+
+    def capture_safety_alignment(
+        rollout_latent: torch.Tensor,
+        action_tensor: torch.Tensor,
+        cost_tensor: torch.Tensor,
+        weight_tensor: torch.Tensor,
+    ):
+        captured_alignment["latent"] = rollout_latent.detach().clone()
+        captured_alignment["actions"] = action_tensor.detach().clone()
+        captured_alignment["cost"] = cost_tensor.detach().clone()
+        return original_compute_safety_loss(
+            rollout_latent,
+            action_tensor,
+            cost_tensor,
+            weight_tensor,
+        )
+
+    safety_agent._compute_safety_loss = capture_safety_alignment
+    safety_parameters_before = {
+        name: parameter.detach().clone()
+        for name, parameter in safety_agent.model.named_parameters()
+        if name.startswith("safety_")
+    }
+    torch.manual_seed(29)
+    metrics = safety_agent.update(FixedReplay(fixed_batch))
     assert all(np.isfinite(value) for value in metrics.values())
-    assert all("safety" not in key for key in metrics)
-    action = agent.act(observations[0], first_step=True, eval_mode=True)
-    assert action.shape == (2,)
-    assert action.dtype == np.float32
-    assert np.all(np.isfinite(action))
-    assert np.all(np.abs(action) <= 1.0)
+    torch.testing.assert_close(
+        captured_alignment["latent"],
+        expected_rollout_tensor[:-1],
+    )
+    torch.testing.assert_close(captured_alignment["actions"], fixed_actions)
+    torch.testing.assert_close(captured_alignment["cost"], fixed_safety_cost)
+    assert not torch.allclose(
+        captured_alignment["latent"],
+        expected_rollout_tensor[1:],
+    )
+    np.testing.assert_allclose(
+        metrics["safety_curvature_loss"],
+        float(expected_channel_losses[0]),
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        metrics["safety_translation_error_loss"],
+        float(expected_channel_losses[1]),
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        metrics["safety_loss"],
+        float(expected_combined_safety_loss),
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        metrics["total_loss"],
+        safety_only_config["safety_loss_coef"]
+        * metrics["safety_loss"],
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        metrics["safety_target_curvature_mean"],
+        float(fixed_safety_cost[..., 0].mean()),
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        metrics["safety_target_translation_error_mean"],
+        float(fixed_safety_cost[..., 1].mean()),
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        metrics["safety_decoded_curvature_mean"],
+        float(expected_decoded_means[0]),
+        rtol=1e-6,
+    )
+    np.testing.assert_allclose(
+        metrics["safety_decoded_translation_error_mean"],
+        float(expected_decoded_means[1]),
+        rtol=1e-6,
+    )
+    required_safety_metrics = {
+        "safety_loss",
+        "safety_curvature_loss",
+        "safety_translation_error_loss",
+        "safety_decoded_curvature_mean",
+        "safety_target_curvature_mean",
+        "safety_decoded_translation_error_mean",
+        "safety_target_translation_error_mean",
+    }
+    assert required_safety_metrics.issubset(metrics)
+    assert _module_has_finite_nonzero_gradient(
+        safety_agent.model.safety_trunk
+    )
+    assert _module_has_finite_nonzero_gradient(
+        safety_agent.model.safety_curvature_head
+    )
+    assert _module_has_finite_nonzero_gradient(
+        safety_agent.model.safety_translation_error_head
+    )
+    assert _module_has_finite_nonzero_gradient(safety_agent.model.encoder)
+    assert _module_has_finite_nonzero_gradient(safety_agent.model.dynamics)
+    assert any(
+        not torch.equal(
+            safety_parameters_before[name],
+            parameter.detach(),
+        )
+        for name, parameter in safety_agent.model.named_parameters()
+        if name in safety_parameters_before
+    )
+    original_curvature_coef = safety_agent.safety_curvature_loss_coef
+    safety_agent.safety_curvature_loss_coef = 0.0
+    single_channel_info = safety_agent._compute_safety_loss(
+        captured_alignment["latent"],
+        fixed_actions,
+        fixed_safety_cost,
+        weights,
+    )
+    assert single_channel_info["safety_curvature_loss"] > 0.0
+    assert single_channel_info["safety_translation_error_loss"] > 0.0
+    torch.testing.assert_close(
+        single_channel_info["safety_loss"],
+        safety_agent.safety_translation_error_loss_coef
+        * single_channel_info["safety_translation_error_loss"],
+    )
+    safety_agent.safety_curvature_loss_coef = original_curvature_coef
+    maximum_finite_cost = torch.full_like(
+        fixed_safety_cost,
+        torch.finfo(fixed_safety_cost.dtype).max,
+    )
+    extreme_safety_info = safety_agent._compute_safety_loss(
+        captured_alignment["latent"],
+        fixed_actions,
+        maximum_finite_cost,
+        weights,
+    )
+    assert all(
+        torch.isfinite(value).all() for value in extreme_safety_info.values()
+    )
 
-    clone = TDMPC2Agent(14, 2, config, episode_length=200, device=device)
-    clone.load_state_dict(agent.state_dict(), load_optimizers=True)
-    assert clone.update_count == agent.update_count
+    # Planning must stay isolated even while Safety prediction is enabled.
+    with ExitStack() as enabled_planning_stack:
+        enabled_safety_forward_spy = enabled_planning_stack.enter_context(
+            patch.object(
+                safety_agent.model,
+                "safety_transformed",
+                side_effect=AssertionError(
+                    "enabled planning called transformed Safety prediction"
+                ),
+            )
+        )
+        enabled_safety_decode_spy = enabled_planning_stack.enter_context(
+            patch.object(
+                safety_agent.model,
+                "decode_safety_transformed",
+                side_effect=AssertionError(
+                    "enabled planning decoded Safety prediction"
+                ),
+            )
+        )
+        enabled_safety_spy = enabled_planning_stack.enter_context(
+            patch.object(
+                safety_agent.model,
+                "safety",
+                side_effect=AssertionError(
+                    "enabled planning called Safety prediction"
+                ),
+            )
+        )
+        torch.manual_seed(37)
+        safety_agent.act(observations[0], first_step=True, eval_mode=True)
+        active_observation_tensor = safety_agent._tensor_observation(
+            observations[0]
+        )
+        torch.manual_seed(38)
+        safety_agent._plan(
+            active_observation_tensor,
+            first_step=True,
+            eval_mode=True,
+        )
+        active_planning_latent = safety_agent.model.encode(
+            active_observation_tensor
+        ).repeat(2, 1)
+        safety_agent._estimate_value(
+            active_planning_latent,
+            torch.zeros(horizon, 2, 2),
+        )
+        assert enabled_safety_forward_spy.call_count == 0
+        assert enabled_safety_decode_spy.call_count == 0
+        assert enabled_safety_spy.call_count == 0
+
+    # With the global coefficient at zero, neither invalid targets nor arbitrary
+    # Safety weights can affect baseline losses, shared updates, or planning.
+    zero_config = copy.deepcopy(config)
+    zero_config["safety_loss_coef"] = 0.0
+    torch.manual_seed(41)
+    zero_agent_a = TDMPC2Agent(
+        14, 2, zero_config, episode_length=200, device=device
+    )
+    torch.manual_seed(41)
+    zero_agent_b = TDMPC2Agent(
+        14, 2, zero_config, episode_length=200, device=device
+    )
+    # Use the exact five original world-model parameter groups as a local
+    # pre-Safety optimizer reference.
+    baseline_learning_rate = float(zero_config["lr"])
+    zero_agent_b.model_optimizer = torch.optim.Adam(
+        [
+            {
+                "params": zero_agent_b.model.encoder.parameters(),
+                "lr": baseline_learning_rate
+                * float(zero_config["enc_lr_scale"]),
+            },
+            {"params": zero_agent_b.model.dynamics.parameters()},
+            {"params": zero_agent_b.model.reward_head.parameters()},
+            {"params": zero_agent_b.model.termination_head.parameters()},
+            {"params": zero_agent_b.model.q_ensemble.parameters()},
+        ],
+        lr=baseline_learning_rate,
+    )
+    with torch.no_grad():
+        for parameter in zero_agent_b.model.safety_head_parameters():
+            parameter.add_(3.0)
+    zero_safety_before_a = {
+        name: parameter.detach().clone()
+        for name, parameter in zero_agent_a.model.named_parameters()
+        if name.startswith("safety_")
+    }
+    zero_safety_before_b = {
+        name: parameter.detach().clone()
+        for name, parameter in zero_agent_b.model.named_parameters()
+        if name.startswith("safety_")
+    }
+    with ExitStack() as safety_patch_stack:
+        safety_forward_spy = safety_patch_stack.enter_context(
+            patch.object(
+            zero_agent_a.model,
+            "safety_transformed",
+            side_effect=AssertionError("disabled update called Safety Head"),
+            )
+        )
+        target_transform_spy = safety_patch_stack.enter_context(
+            patch.object(
+            zero_agent_a.model,
+            "transform_safety_targets",
+            side_effect=AssertionError("disabled update transformed targets"),
+            )
+        )
+        safety_decode_spy = safety_patch_stack.enter_context(
+            patch.object(
+            zero_agent_a.model,
+            "decode_safety_transformed",
+            side_effect=AssertionError("disabled update decoded predictions"),
+            )
+        )
+        decoded_safety_spy = safety_patch_stack.enter_context(
+            patch.object(
+            zero_agent_a.model,
+            "safety",
+            side_effect=AssertionError("planning called Safety prediction"),
+            )
+        )
+        torch.manual_seed(53)
+        zero_metrics_a = zero_agent_a.update(FixedReplay(fixed_batch))
+        torch.manual_seed(53)
+        zero_metrics_b = zero_agent_b.update(
+            FixedReplay(fixed_batch, poison_safety=True)
+        )
+        assert safety_forward_spy.call_count == 0
+        assert target_transform_spy.call_count == 0
+        assert safety_decode_spy.call_count == 0
+        for key in required_safety_metrics:
+            assert zero_metrics_a[key] == 0.0
+            assert zero_metrics_b[key] == 0.0
+        expected_zero_total_loss = (
+            float(zero_config["consistency_coef"])
+            * zero_metrics_a["consistency_loss"]
+            + float(zero_config["reward_coef"])
+            * zero_metrics_a["reward_loss"]
+            + float(zero_config["value_coef"])
+            * zero_metrics_a["value_loss"]
+            + float(zero_config["termination_coef"])
+            * zero_metrics_a["termination_loss"]
+        )
+        np.testing.assert_allclose(
+            zero_metrics_a["total_loss"],
+            expected_zero_total_loss,
+            rtol=1e-6,
+        )
+        for key in zero_metrics_a:
+            np.testing.assert_allclose(
+                zero_metrics_a[key],
+                zero_metrics_b[key],
+                rtol=0.0,
+                atol=0.0,
+            )
+
+        shared_parameters_a = dict(zero_agent_a.model.named_parameters())
+        shared_parameters_b = dict(zero_agent_b.model.named_parameters())
+        for name in shared_parameters_a:
+            if not name.startswith("safety_"):
+                torch.testing.assert_close(
+                    shared_parameters_a[name],
+                    shared_parameters_b[name],
+                    rtol=0.0,
+                    atol=0.0,
+                )
+        _assert_parameters_unchanged(
+            zero_safety_before_a,
+            torch.nn.ModuleDict(
+                {
+                    "safety_trunk": zero_agent_a.model.safety_trunk,
+                    "safety_curvature_head": (
+                        zero_agent_a.model.safety_curvature_head
+                    ),
+                    "safety_translation_error_head": (
+                        zero_agent_a.model.safety_translation_error_head
+                    ),
+                }
+            ),
+        )
+        _assert_parameters_unchanged(
+            zero_safety_before_b,
+            torch.nn.ModuleDict(
+                {
+                    "safety_trunk": zero_agent_b.model.safety_trunk,
+                    "safety_curvature_head": (
+                        zero_agent_b.model.safety_curvature_head
+                    ),
+                    "safety_translation_error_head": (
+                        zero_agent_b.model.safety_translation_error_head
+                    ),
+                }
+            ),
+        )
+        assert all(
+            parameter.grad is None
+            for parameter in zero_agent_a.model.safety_head_parameters()
+        )
+        assert all(
+            parameter.grad is None
+            for parameter in zero_agent_b.model.safety_head_parameters()
+        )
+
+        torch.manual_seed(67)
+        action_a = zero_agent_a.act(
+            observations[0], first_step=True, eval_mode=True
+        )
+        torch.manual_seed(67)
+        action_b = zero_agent_b.act(
+            observations[0], first_step=True, eval_mode=True
+        )
+        np.testing.assert_array_equal(action_a, action_b)
+        assert action_a.shape == (2,)
+        assert action_a.dtype == np.float32
+        assert np.all(np.isfinite(action_a))
+        assert np.all(np.abs(action_a) <= 1.0)
+
+        observation_tensor = zero_agent_a._tensor_observation(observations[0])
+        torch.manual_seed(71)
+        zero_agent_a._plan(
+            observation_tensor,
+            first_step=True,
+            eval_mode=True,
+        )
+        planning_latent = zero_agent_a.model.encode(
+            observation_tensor
+        ).repeat(2, 1)
+        zero_agent_a._estimate_value(
+            planning_latent,
+            torch.zeros(horizon, 2, 2),
+        )
+        assert safety_forward_spy.call_count == 0
+        assert target_transform_spy.call_count == 0
+        assert safety_decode_spy.call_count == 0
+        assert decoded_safety_spy.call_count == 0
+
+    clone = TDMPC2Agent(
+        14, 2, safety_only_config, episode_length=200, device=device
+    )
+    clone.load_state_dict(safety_agent.state_dict(), load_optimizers=True)
+    assert clone.update_count == safety_agent.update_count
+    assert len(clone.model_optimizer.param_groups) == 6
+    assert clone.model_optimizer.param_groups[-1]["name"] == "safety"
+    for restored, expected in zip(
+        clone.model.safety_head_parameters(),
+        safety_agent.model.safety_head_parameters(),
+    ):
+        torch.testing.assert_close(restored, expected)
+
+    old_agent_state = copy.deepcopy(safety_agent.state_dict())
+    old_agent_state.pop("safety_model_schema_version")
+    try:
+        clone.load_state_dict(old_agent_state, load_optimizers=False)
+    except ValueError as exc:
+        assert "predates" in str(exc)
+        assert "Safety Head" in str(exc)
+    else:
+        raise AssertionError("Agent accepted a checkpoint without Safety Head schema")
+
+    old_optimizer_state = copy.deepcopy(safety_agent.state_dict())
+    old_optimizer_state["model_optimizer"]["param_groups"].pop()
+    old_optimizer_agent = TDMPC2Agent(
+        14, 2, safety_only_config, episode_length=200, device=device
+    )
+    try:
+        old_optimizer_agent.load_state_dict(
+            old_optimizer_state,
+            load_optimizers=True,
+        )
+    except ValueError as exc:
+        assert "parameter group" in str(exc)
+    else:
+        raise AssertionError("Agent silently loaded an old five-group optimizer")
+
     with TemporaryDirectory(prefix="steve-tdmpc2-checkpoint-", dir="/tmp") as temp_dir:
-        checkpoint_path = Path(temp_dir) / "schema_v2.pt"
+        checkpoint_path = Path(temp_dir) / "schema_v3.pt"
+        checkpoint_config = copy.deepcopy(full_config)
+        checkpoint_config["safety"].update(
+            {
+                "loss_coef": safety_only_config["safety_loss_coef"],
+                "curvature_loss_coef": (
+                    safety_only_config["safety_curvature_loss_coef"]
+                ),
+                "translation_error_loss_coef": (
+                    safety_only_config[
+                        "safety_translation_error_loss_coef"
+                    ]
+                ),
+            }
+        )
+        for key in (
+            "consistency_coef",
+            "reward_coef",
+            "value_coef",
+            "termination_coef",
+            "grad_clip_norm",
+        ):
+            checkpoint_config["training"][key] = safety_only_config[key]
+        checkpoint_agent_config = build_agent_config(checkpoint_config)
+        for key, value in safety_only_config.items():
+            assert checkpoint_agent_config[key] == value
         save_checkpoint(
             path=checkpoint_path,
-            config={"test": True},
-            agent=agent,
+            config=checkpoint_config,
+            agent=safety_agent,
             replay=replay,
             total_env_steps=8,
             episode_index=1,
@@ -357,14 +1074,23 @@ def main() -> None:
         )
         validate_checkpoint_schema(
             checkpoint,
+            config=checkpoint_config,
             source="Smoke-test checkpoint",
         )
         assert checkpoint["format_version"] == CHECKPOINT_FORMAT_VERSION
+        assert (
+            checkpoint["safety_model_schema_version"]
+            == SAFETY_MODEL_SCHEMA_VERSION
+        )
         assert (
             checkpoint["safety_cost_schema_version"]
             == SAFETY_COST_SCHEMA_VERSION
         )
         assert tuple(checkpoint["safety_cost_names"]) == safety_cost_names
+        assert checkpoint["safety_dim"] == 2
+        assert checkpoint["safety_curvature_scale_mm_inv"] == 0.1
+        assert checkpoint["safety_translation_error_scale"] == 1.0
+        assert checkpoint["safety_config"] == checkpoint_config["safety"]
         checkpoint_replay = EpisodeReplayBuffer(
             100,
             14,
@@ -382,7 +1108,7 @@ def main() -> None:
         checkpoint_agent = TDMPC2Agent(
             14,
             2,
-            config,
+            checkpoint_agent_config,
             episode_length=200,
             device=device,
         )
@@ -390,12 +1116,12 @@ def main() -> None:
             checkpoint["agent"],
             load_optimizers=True,
         )
-        assert checkpoint_agent.update_count == agent.update_count
+        assert checkpoint_agent.update_count == safety_agent.update_count
+        assert checkpoint_agent.model_optimizer.param_groups[-1]["name"] == "safety"
 
         old_checkpoint = copy.deepcopy(checkpoint)
-        old_checkpoint["format_version"] = 1
-        old_checkpoint.pop("safety_cost_names")
-        old_checkpoint.pop("safety_cost_schema_version")
+        old_checkpoint["format_version"] = 2
+        old_checkpoint.pop("safety_model_schema_version")
         try:
             validate_checkpoint_schema(
                 old_checkpoint,
@@ -403,9 +1129,9 @@ def main() -> None:
             )
         except ValueError as exc:
             assert "predate" in str(exc)
-            assert "two-channel" in str(exc)
+            assert "safety-model" in str(exc)
         else:
-            raise AssertionError("Training accepted a format-v1 checkpoint")
+            raise AssertionError("Training accepted a format-v2 checkpoint")
 
         legacy_checkpoint = copy.deepcopy(checkpoint)
         legacy_checkpoint["safety_cost_names"] = (
@@ -421,9 +1147,36 @@ def main() -> None:
         else:
             raise AssertionError("Training accepted a legacy safety schema")
 
+        reordered_checkpoint = copy.deepcopy(checkpoint)
+        reordered_checkpoint["safety_cost_names"] = tuple(
+            reversed(safety_cost_names)
+        )
+        try:
+            validate_checkpoint_schema(
+                reordered_checkpoint,
+                source="Reordered smoke-test checkpoint",
+            )
+        except ValueError as exc:
+            assert "exact order" in str(exc)
+        else:
+            raise AssertionError("Training accepted reordered Safety channels")
+
+        scale_mismatch_checkpoint = copy.deepcopy(checkpoint)
+        scale_mismatch_checkpoint["safety_curvature_scale_mm_inv"] = 0.2
+        try:
+            validate_checkpoint_schema(
+                scale_mismatch_checkpoint,
+                source="Scale-mismatch smoke-test checkpoint",
+            )
+        except ValueError as exc:
+            assert "does not match embedded config" in str(exc)
+        else:
+            raise AssertionError("Training accepted a mismatched Safety scale")
+
     print(
-        "PASS: aligned two-channel safety replay sampling, strict schema "
-        "validation/checkpoint restore, and baseline TD-MPC2 safety isolation."
+        "PASS: two-channel Safety Head shapes/transforms, aligned supervised "
+        "losses/gradients, coefficient-zero and planning isolation, and strict "
+        "format-v3 checkpoint restore."
     )
 
 

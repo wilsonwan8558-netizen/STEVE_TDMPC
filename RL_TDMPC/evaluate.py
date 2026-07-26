@@ -11,10 +11,13 @@ from typing import Any, Dict, Mapping, Optional
 import cv2
 import numpy as np
 
+from envs.safety import SAFETY_COST_NAMES
 from envs.steve_env import make_steve_env
+from train import validate_checkpoint_schema
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.common import (
     MetricLogger,
+    build_safety_agent_config,
     load_config,
     load_torch_checkpoint,
     select_device,
@@ -55,10 +58,15 @@ def parse_args() -> argparse.Namespace:
 
 
 def build_agent_config(config: Mapping[str, Any]) -> Dict[str, Any]:
+    training_horizon = int(config["training"]["horizon"])
+    planning_horizon = int(config["planning"]["horizon"])
+    if training_horizon != planning_horizon:
+        raise ValueError("training.horizon and planning.horizon must match")
     return {
         **dict(config["model"]),
         **dict(config["training"]),
         **dict(config["planning"]),
+        **build_safety_agent_config(config, SAFETY_COST_NAMES),
     }
 
 
@@ -72,6 +80,11 @@ def main() -> None:
         config = copy.deepcopy(checkpoint["config"])
     else:
         raise KeyError("Checkpoint has no saved config; pass --config explicitly")
+    validate_checkpoint_schema(
+        checkpoint,
+        config=config,
+        source=f"Evaluation checkpoint {checkpoint_path}",
+    )
 
     evaluation = config["evaluation"]
     episodes = int(args.episodes if args.episodes is not None else evaluation["episodes"])

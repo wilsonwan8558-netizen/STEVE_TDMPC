@@ -14,12 +14,13 @@ import torch
 
 from envs.safety import SAFETY_COST_NAMES
 from envs.steve_env import make_steve_env
-from tdmpc2.agent import TDMPC2Agent
+from tdmpc2.agent import SAFETY_MODEL_SCHEMA_VERSION, TDMPC2Agent
 from tdmpc2.common import (
     PROJECT_DIR,
     MetricLogger,
     apply_cli_overrides,
     atomic_torch_save,
+    build_safety_agent_config,
     capture_rng_state,
     load_torch_checkpoint,
     load_config,
@@ -29,7 +30,6 @@ from tdmpc2.common import (
     set_seed,
 )
 from tdmpc2.replay_buffer import (
-    REPLAY_SAFETY_COST_NAMES,
     SAFETY_COST_SCHEMA_VERSION,
     EpisodeReplayBuffer,
     validate_safety_cost_names,
@@ -37,7 +37,7 @@ from tdmpc2.replay_buffer import (
 
 
 DEFAULT_CONFIG = PROJECT_DIR / "configs" / "steve.yaml"
-CHECKPOINT_FORMAT_VERSION = 2
+CHECKPOINT_FORMAT_VERSION = 3
 
 
 def parse_args() -> argparse.Namespace:
@@ -72,44 +72,280 @@ def build_agent_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         **dict(config["model"]),
         **dict(config["training"]),
         **dict(config["planning"]),
+        **build_safety_agent_config(config, SAFETY_COST_NAMES),
     }
 
 
 def validate_checkpoint_schema(
-    checkpoint: Mapping[str, Any], *, source: str = "Checkpoint"
+    checkpoint: Mapping[str, Any],
+    *,
+    config: Optional[Mapping[str, Any]] = None,
+    source: str = "Checkpoint",
 ) -> None:
-    """Reject checkpoints that do not use the current safety replay schema."""
+    """Validate format-v3 safety metadata and all internal/external links."""
+
+    if not isinstance(checkpoint, Mapping):
+        raise TypeError(f"{source} must be a mapping")
+
+    def exact_integer(value: Any, label: str) -> int:
+        if isinstance(value, bool):
+            raise TypeError(f"{source} {label} must be an integer, not bool")
+        try:
+            numeric = float(value)
+            converted = int(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(f"{source} {label} must be an integer") from exc
+        if not np.isfinite(numeric) or numeric != converted:
+            raise ValueError(f"{source} {label} must be an integer")
+        return converted
 
     if "format_version" not in checkpoint:
         raise ValueError(
             f"{source} has no format_version and predates the required "
-            "two-channel safety-cost checkpoint schema"
+            "format-v3 two-channel safety-model checkpoint schema"
         )
-    format_version = int(checkpoint["format_version"])
+    format_version = exact_integer(
+        checkpoint["format_version"], "format_version"
+    )
     if format_version != CHECKPOINT_FORMAT_VERSION:
+        legacy_note = (
+            " This checkpoint predates the format-v3 two-channel safety-model "
+            "metadata and cannot be resumed or evaluated without retraining."
+            if format_version < CHECKPOINT_FORMAT_VERSION
+            else ""
+        )
         raise ValueError(
             f"{source} format_version {format_version} is unsupported; expected "
-            f"{CHECKPOINT_FORMAT_VERSION}. Older checkpoints predate the required "
-            f"two-channel safety-cost schema {REPLAY_SAFETY_COST_NAMES}"
+            f"{CHECKPOINT_FORMAT_VERSION}.{legacy_note}"
         )
+
+    expected_names = validate_safety_cost_names(
+        SAFETY_COST_NAMES,
+        source="Environment safety schema",
+    )
     if "safety_cost_names" not in checkpoint:
         raise ValueError(
             f"{source} is missing required safety_cost_names metadata"
         )
-    validate_safety_cost_names(
+    checkpoint_names = validate_safety_cost_names(
         checkpoint["safety_cost_names"],
         source=source,
     )
+    if checkpoint_names != expected_names:
+        raise ValueError(
+            f"{source} safety_cost_names {checkpoint_names} do not match "
+            f"environment order {expected_names}"
+        )
+
+    if "safety_dim" not in checkpoint:
+        raise ValueError(f"{source} is missing required safety_dim metadata")
+    safety_dim = exact_integer(checkpoint["safety_dim"], "safety_dim")
+    if safety_dim != 2 or safety_dim != len(checkpoint_names):
+        raise ValueError(
+            f"{source} safety_dim {safety_dim} does not match the required "
+            f"two-channel dimension {len(checkpoint_names)}"
+        )
+
     if "safety_cost_schema_version" not in checkpoint:
         raise ValueError(
             f"{source} is missing required safety_cost_schema_version metadata"
         )
-    schema_version = int(checkpoint["safety_cost_schema_version"])
+    schema_version = exact_integer(
+        checkpoint["safety_cost_schema_version"],
+        "safety_cost_schema_version",
+    )
     if schema_version != SAFETY_COST_SCHEMA_VERSION:
         raise ValueError(
             f"{source} safety_cost_schema_version {schema_version} is unsupported; "
             f"expected {SAFETY_COST_SCHEMA_VERSION}"
         )
+
+    if "safety_model_schema_version" not in checkpoint:
+        raise ValueError(
+            f"{source} is missing required safety_model_schema_version metadata"
+        )
+    model_schema_version = exact_integer(
+        checkpoint["safety_model_schema_version"],
+        "safety_model_schema_version",
+    )
+    if model_schema_version != SAFETY_MODEL_SCHEMA_VERSION:
+        raise ValueError(
+            f"{source} safety_model_schema_version {model_schema_version} is "
+            f"unsupported; expected {SAFETY_MODEL_SCHEMA_VERSION}"
+        )
+
+    if "config" not in checkpoint:
+        raise ValueError(f"{source} is missing its embedded config")
+    embedded_config = checkpoint["config"]
+    if not isinstance(embedded_config, Mapping):
+        raise TypeError(f"{source} embedded config must be a mapping")
+    embedded_agent_config = build_agent_config(embedded_config)
+    embedded_names = tuple(embedded_agent_config["safety_cost_names"])
+    if embedded_names != checkpoint_names:
+        raise ValueError(
+            f"{source} top-level safety_cost_names {checkpoint_names} do not "
+            f"match embedded config order {embedded_names}"
+        )
+    if int(embedded_agent_config["safety_dim"]) != safety_dim:
+        raise ValueError(
+            f"{source} top-level safety_dim {safety_dim} does not match "
+            f"embedded config safety_dim {embedded_agent_config['safety_dim']}"
+        )
+
+    def positive_checkpoint_float(key: str) -> float:
+        if key not in checkpoint:
+            raise ValueError(f"{source} is missing required {key} metadata")
+        value = checkpoint[key]
+        if isinstance(value, bool):
+            raise TypeError(f"{source} {key} must be a real number, not bool")
+        try:
+            converted = float(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(f"{source} {key} must be a real number") from exc
+        if not np.isfinite(converted) or converted <= 0.0:
+            raise ValueError(f"{source} {key} must be finite and positive")
+        return converted
+
+    checkpoint_curvature_scale = positive_checkpoint_float(
+        "safety_curvature_scale_mm_inv"
+    )
+    checkpoint_translation_scale = positive_checkpoint_float(
+        "safety_translation_error_scale"
+    )
+    embedded_curvature_scale = float(
+        embedded_agent_config["safety_curvature_scale_mm_inv"]
+    )
+    embedded_translation_scale = float(
+        embedded_agent_config["safety_translation_error_scale"]
+    )
+    if checkpoint_curvature_scale != embedded_curvature_scale:
+        raise ValueError(
+            f"{source} top-level safety_curvature_scale_mm_inv "
+            f"{checkpoint_curvature_scale} does not match embedded config "
+            f"value {embedded_curvature_scale}"
+        )
+    if checkpoint_translation_scale != embedded_translation_scale:
+        raise ValueError(
+            f"{source} top-level safety_translation_error_scale "
+            f"{checkpoint_translation_scale} does not match embedded config "
+            f"value {embedded_translation_scale}"
+        )
+
+    if "safety_config" not in checkpoint:
+        raise ValueError(f"{source} is missing required safety_config metadata")
+    checkpoint_safety_config = checkpoint["safety_config"]
+    if not isinstance(checkpoint_safety_config, Mapping):
+        raise TypeError(f"{source} safety_config must be a mapping")
+    embedded_safety_config = embedded_config["safety"]
+    if dict(checkpoint_safety_config) != dict(embedded_safety_config):
+        raise ValueError(
+            f"{source} top-level safety_config does not match its embedded "
+            "config['safety']"
+        )
+
+    if config is not None:
+        requested_agent_config = build_agent_config(config)
+        requested_names = tuple(requested_agent_config["safety_cost_names"])
+        if requested_names != checkpoint_names:
+            raise ValueError(
+                f"{source} safety-cost order {checkpoint_names} does not match "
+                f"requested config order {requested_names}"
+            )
+        if int(requested_agent_config["safety_dim"]) != safety_dim:
+            raise ValueError(
+                f"{source} safety_dim {safety_dim} does not match requested "
+                f"config safety_dim {requested_agent_config['safety_dim']}"
+            )
+        requested_curvature_scale = float(
+            requested_agent_config["safety_curvature_scale_mm_inv"]
+        )
+        requested_translation_scale = float(
+            requested_agent_config["safety_translation_error_scale"]
+        )
+        if requested_curvature_scale != checkpoint_curvature_scale:
+            raise ValueError(
+                f"{source} curvature scale {checkpoint_curvature_scale} does "
+                f"not match requested config value {requested_curvature_scale}"
+            )
+        if requested_translation_scale != checkpoint_translation_scale:
+            raise ValueError(
+                f"{source} translation-error scale "
+                f"{checkpoint_translation_scale} does not match requested "
+                f"config value {requested_translation_scale}"
+            )
+        requested_safety = config.get("safety")
+        if not isinstance(requested_safety, Mapping):
+            raise TypeError("Requested config safety section must be a mapping")
+        if dict(requested_safety) != dict(checkpoint_safety_config):
+            raise ValueError(
+                f"{source} safety_config does not match the requested "
+                "config['safety']"
+            )
+
+    agent_state = checkpoint.get("agent")
+    if not isinstance(agent_state, Mapping):
+        raise TypeError(f"{source} agent state must be a mapping")
+    required_agent_safety_keys = {
+        "safety_model_schema_version",
+        "safety_cost_names",
+        "safety_dim",
+        "safety_config",
+    }
+    missing_agent_safety_keys = sorted(
+        required_agent_safety_keys - agent_state.keys()
+    )
+    if missing_agent_safety_keys:
+        raise ValueError(
+            f"{source} agent state predates the required Safety-Aware schema; "
+            f"missing metadata {missing_agent_safety_keys}"
+        )
+    agent_schema_version = exact_integer(
+        agent_state["safety_model_schema_version"],
+        "agent safety_model_schema_version",
+    )
+    if agent_schema_version != SAFETY_MODEL_SCHEMA_VERSION:
+        raise ValueError(
+            f"{source} agent safety_model_schema_version "
+            f"{agent_schema_version} does not match required version "
+            f"{SAFETY_MODEL_SCHEMA_VERSION}"
+        )
+    agent_names = tuple(agent_state["safety_cost_names"])
+    if agent_names != checkpoint_names:
+        raise ValueError(
+            f"{source} agent safety_cost_names {agent_names} do not match "
+            f"top-level order {checkpoint_names}"
+        )
+    agent_safety_dim = exact_integer(
+        agent_state["safety_dim"], "agent safety_dim"
+    )
+    if agent_safety_dim != safety_dim:
+        raise ValueError(
+            f"{source} agent safety_dim {agent_safety_dim} does not match "
+            f"top-level safety_dim {safety_dim}"
+        )
+    agent_safety_config = agent_state["safety_config"]
+    if not isinstance(agent_safety_config, Mapping):
+        raise TypeError(f"{source} agent safety_config must be a mapping")
+    expected_agent_safety_config = {
+        "safety_loss_coef": float(
+            embedded_agent_config["safety_loss_coef"]
+        ),
+        "safety_curvature_loss_coef": float(
+            embedded_agent_config["safety_curvature_loss_coef"]
+        ),
+        "safety_translation_error_loss_coef": float(
+            embedded_agent_config[
+                "safety_translation_error_loss_coef"
+            ]
+        ),
+        "safety_curvature_scale_mm_inv": embedded_curvature_scale,
+        "safety_translation_error_scale": embedded_translation_scale,
+    }
+    if dict(agent_safety_config) != expected_agent_safety_config:
+        raise ValueError(
+            f"{source} agent safety_config does not match its embedded config"
+        )
+
     replay_state = checkpoint.get("replay")
     if replay_state is not None:
         if not isinstance(replay_state, Mapping):
@@ -122,7 +358,7 @@ def validate_checkpoint_schema(
             replay_state["safety_cost_names"],
             source=f"{source} replay state",
         )
-        if tuple(checkpoint["safety_cost_names"]) != replay_names:
+        if checkpoint_names != replay_names:
             raise ValueError(
                 f"{source} top-level and replay safety-cost schemas disagree"
             )
@@ -132,10 +368,14 @@ def validate_checkpoint_schema(
                 f"{source} replay state is missing required "
                 "safety_cost_schema_version metadata"
             )
-        if int(replay_schema_version) != SAFETY_COST_SCHEMA_VERSION:
+        parsed_replay_schema_version = exact_integer(
+            replay_schema_version,
+            "replay safety_cost_schema_version",
+        )
+        if parsed_replay_schema_version != SAFETY_COST_SCHEMA_VERSION:
             raise ValueError(
                 f"{source} replay safety_cost_schema_version "
-                f"{int(replay_schema_version)} is unsupported; expected "
+                f"{parsed_replay_schema_version} is unsupported; expected "
                 f"{SAFETY_COST_SCHEMA_VERSION}"
             )
         replay_safety_dim = replay_state.get("safety_cost_dim")
@@ -143,17 +383,20 @@ def validate_checkpoint_schema(
             raise ValueError(
                 f"{source} replay state is missing required safety_cost_dim metadata"
             )
-        if int(replay_safety_dim) != len(REPLAY_SAFETY_COST_NAMES):
+        parsed_replay_safety_dim = exact_integer(
+            replay_safety_dim, "replay safety_cost_dim"
+        )
+        if parsed_replay_safety_dim != safety_dim:
             raise ValueError(
-                f"{source} replay safety_cost_dim {int(replay_safety_dim)} does "
-                f"not match required dimension {len(REPLAY_SAFETY_COST_NAMES)}"
+                f"{source} replay safety_cost_dim {parsed_replay_safety_dim} does "
+                f"not match top-level safety_dim {safety_dim}"
             )
 
 
 def validate_collected_safety_cost(
     value: Any,
     *,
-    safety_cost_names: Sequence[str] = REPLAY_SAFETY_COST_NAMES,
+    safety_cost_names: Sequence[str] = SAFETY_COST_NAMES,
     source: str = "Environment info['safety_cost']",
 ) -> np.ndarray:
     """Validate and copy one environment transition's safety-cost vector."""
@@ -166,7 +409,7 @@ def validate_collected_safety_cost(
         raise TypeError(f"{source} must be a numpy.ndarray, got {type(value).__name__}")
     expected_shape = (len(validated_names),)
     if value.shape != expected_shape:
-        if value.shape == (len(REPLAY_SAFETY_COST_NAMES) + 1,):
+        if value.shape == (len(validated_names) + 1,):
             raise ValueError(
                 f"{source} uses the unsupported legacy three-channel shape "
                 f"{value.shape}; expected {expected_shape}"
@@ -194,16 +437,43 @@ def save_checkpoint(
     success_count: int,
     include_replay: bool,
 ) -> Path:
-    safety_cost_names = validate_safety_cost_names(
+    agent_config = build_agent_config(config)
+    expected_names = validate_safety_cost_names(
+        agent_config["safety_cost_names"],
+        source="Checkpoint config",
+    )
+    replay_names = validate_safety_cost_names(
         replay.safety_cost_names,
         source="Replay buffer",
     )
+    if replay_names != expected_names:
+        raise ValueError(
+            "Replay safety-cost order does not match the checkpoint config: "
+            f"{replay_names} != {expected_names}"
+        )
+    safety_dim = int(agent_config["safety_dim"])
+    if safety_dim != len(expected_names) or safety_dim != 2:
+        raise ValueError(
+            f"Checkpoint safety_dim must be 2, got {safety_dim}"
+        )
+    safety_config = config.get("safety")
+    if not isinstance(safety_config, Mapping):
+        raise TypeError("Checkpoint config safety section must be a mapping")
     payload: Dict[str, Any] = {
         "format_version": CHECKPOINT_FORMAT_VERSION,
         "algorithm": "TD-MPC2",
         "official_reference_commit": "e9f59321933cbc8e11a002b842adc7d4ffae8ff1",
         "safety_cost_schema_version": SAFETY_COST_SCHEMA_VERSION,
-        "safety_cost_names": safety_cost_names,
+        "safety_model_schema_version": SAFETY_MODEL_SCHEMA_VERSION,
+        "safety_cost_names": expected_names,
+        "safety_dim": safety_dim,
+        "safety_curvature_scale_mm_inv": float(
+            agent_config["safety_curvature_scale_mm_inv"]
+        ),
+        "safety_translation_error_scale": float(
+            agent_config["safety_translation_error_scale"]
+        ),
+        "safety_config": copy.deepcopy(dict(safety_config)),
         "config": copy.deepcopy(dict(config)),
         "agent": agent.state_dict(),
         "total_env_steps": int(total_env_steps),
@@ -214,6 +484,11 @@ def save_checkpoint(
     }
     if include_replay:
         payload["replay"] = replay.state_dict()
+    validate_checkpoint_schema(
+        payload,
+        config=config,
+        source=f"Checkpoint payload for {path}",
+    )
     return atomic_torch_save(payload, path)
 
 
@@ -277,6 +552,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         checkpoint = load_torch_checkpoint(resolved_resume, map_location=device)
         validate_checkpoint_schema(
             checkpoint,
+            config=config,
             source=f"Resume checkpoint {resolved_resume}",
         )
         agent.load_state_dict(checkpoint["agent"], load_optimizers=True)

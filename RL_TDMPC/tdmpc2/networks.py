@@ -9,6 +9,7 @@ prior. Multi-task embeddings and pixel encoders are intentionally omitted.
 
 from __future__ import annotations
 
+import math
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple
 
@@ -170,6 +171,60 @@ class WorldModel(nn.Module):
         self.num_bins = int(config["num_bins"])
         self.value_min = float(config["vmin"])
         self.value_max = float(config["vmax"])
+        self.safety_dim = int(config["safety_dim"])
+        if self.safety_dim != 2:
+            raise ValueError(
+                f"safety_dim must be exactly 2, got {self.safety_dim}"
+            )
+        try:
+            self.safety_cost_names = tuple(config["safety_cost_names"])
+        except TypeError as exc:
+            raise TypeError("safety_cost_names must be an iterable") from exc
+        if len(self.safety_cost_names) != self.safety_dim:
+            raise ValueError(
+                "safety_cost_names must contain exactly "
+                f"{self.safety_dim} entries, got {len(self.safety_cost_names)}"
+            )
+
+        configured_curvature_scale = float(
+            config["safety_curvature_scale_mm_inv"]
+        )
+        configured_translation_error_scale = float(
+            config["safety_translation_error_scale"]
+        )
+        if (
+            not math.isfinite(configured_curvature_scale)
+            or configured_curvature_scale <= 0.0
+        ):
+            raise ValueError(
+                "safety_curvature_scale_mm_inv must be finite and positive"
+            )
+        if (
+            not math.isfinite(configured_translation_error_scale)
+            or configured_translation_error_scale <= 0.0
+        ):
+            raise ValueError(
+                "safety_translation_error_scale must be finite and positive"
+            )
+        encoded_scales = torch.tensor(
+            [
+                configured_curvature_scale,
+                configured_translation_error_scale,
+            ],
+            dtype=torch.float32,
+        )
+        if not torch.isfinite(encoded_scales).all() or torch.any(
+            encoded_scales <= 0.0
+        ):
+            raise ValueError(
+                "Safety transform scales must remain finite and positive when "
+                "represented as float32 replay data"
+            )
+        curvature_scale, translation_error_scale = (
+            float(value) for value in encoded_scales
+        )
+        self.safety_curvature_scale_mm_inv = curvature_scale
+        self.safety_translation_error_scale = translation_error_scale
 
         simnorm_dim = int(config["simnorm_dim"])
         enc_dim = int(config["enc_dim"])
@@ -229,6 +284,25 @@ class WorldModel(nn.Module):
             torch.tensor(float(config["log_std_max"]) - float(config["log_std_min"])),
         )
 
+        self.register_buffer(
+            "safety_scales",
+            encoded_scales,
+        )
+        # Register and initialize safety modules only after the original
+        # TD-MPC2 model. This preserves the initialization RNG sequence of all
+        # shared encoder/dynamics/reward/policy/Q parameters.
+        self.safety_trunk = mlp(
+            self.latent_dim + self.action_dim,
+            [mlp_dim],
+            mlp_dim,
+            output_activation=nn.Mish(),
+        )
+        self.safety_curvature_head = nn.Linear(mlp_dim, 1)
+        self.safety_translation_error_head = nn.Linear(mlp_dim, 1)
+        self.safety_trunk.apply(weight_init)
+        self.safety_curvature_head.apply(weight_init)
+        self.safety_translation_error_head.apply(weight_init)
+
     def train(self, mode: bool = True):
         """Keep target critics in evaluation mode, as in the official code."""
 
@@ -244,6 +318,105 @@ class WorldModel(nn.Module):
 
     def reward(self, latent: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
         return self.reward_head(torch.cat([latent, action], dim=-1))
+
+    def safety_head_parameters(self) -> List[nn.Parameter]:
+        """Return all trainable parameters owned by the two-channel safety head."""
+
+        return [
+            *self.safety_trunk.parameters(),
+            *self.safety_curvature_head.parameters(),
+            *self.safety_translation_error_head.parameters(),
+        ]
+
+    def safety_transformed(
+        self, latent: torch.Tensor, action: torch.Tensor
+    ) -> torch.Tensor:
+        """Predict raw immediate safety costs in log-transformed space."""
+
+        features = self.safety_trunk(torch.cat([latent, action], dim=-1))
+        curvature = self.safety_curvature_head(features)
+        translation_error = self.safety_translation_error_head(features)
+        return torch.cat([curvature, translation_error], dim=-1)
+
+    def transform_safety_targets(self, safety_cost: torch.Tensor) -> torch.Tensor:
+        """Map nonnegative physical safety targets into transformed space."""
+
+        self._validate_safety_tensor(safety_cost, "safety_cost")
+        scales = self.safety_scales.to(
+            device=safety_cost.device, dtype=safety_cost.dtype
+        )
+        # log(1 + cost / scale) expressed in log-space avoids overflowing the
+        # intermediate division for very large but still finite targets.
+        log_ratio = torch.log(safety_cost) - torch.log(scales)
+        return torch.logaddexp(torch.zeros_like(log_ratio), log_ratio)
+
+    def decode_safety_transformed(
+        self, transformed: torch.Tensor
+    ) -> torch.Tensor:
+        """Decode transformed predictions without overflowing their dtype."""
+
+        self._validate_safety_tensor(transformed, "transformed safety")
+        finfo = torch.finfo(transformed.dtype)
+        upper_values = [
+            self._safe_expm1_upper(
+                transformed.dtype,
+                self.safety_curvature_scale_mm_inv,
+            ),
+            self._safe_expm1_upper(
+                transformed.dtype,
+                self.safety_translation_error_scale,
+            ),
+        ]
+        upper = transformed.new_tensor(upper_values)
+        nonnegative = torch.clamp(transformed, min=0.0)
+        guarded = torch.minimum(nonnegative, upper)
+        scales = self.safety_scales.to(
+            device=transformed.device, dtype=transformed.dtype
+        )
+        decoded = scales * torch.expm1(guarded)
+        return torch.nan_to_num(
+            decoded,
+            nan=0.0,
+            posinf=finfo.max,
+            neginf=0.0,
+        ).clamp(min=0.0, max=finfo.max)
+
+    def safety(self, latent: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        """Predict finite, nonnegative immediate safety costs."""
+
+        return self.decode_safety_transformed(
+            self.safety_transformed(latent, action)
+        )
+
+    def _validate_safety_tensor(
+        self, value: torch.Tensor, name: str
+    ) -> None:
+        if not value.is_floating_point():
+            raise TypeError(f"{name} must use a floating-point dtype")
+        if value.ndim == 0 or value.shape[-1] != self.safety_dim:
+            raise ValueError(
+                f"{name} must have final dimension {self.safety_dim}, "
+                f"got shape {tuple(value.shape)}"
+            )
+
+    @staticmethod
+    def _safe_expm1_upper(dtype: torch.dtype, scale: float) -> float:
+        """Return a conservative pre-expm1 bound for one output channel."""
+
+        finfo = torch.finfo(dtype)
+        log_dtype_max = math.log(finfo.max)
+        if scale <= 1.0:
+            upper = log_dtype_max
+        else:
+            log_ratio = log_dtype_max - math.log(scale)
+            upper = (
+                log_ratio
+                if log_ratio > 50.0
+                else math.log1p(math.exp(log_ratio))
+            )
+            upper = min(log_dtype_max, upper)
+        margin = 2.0 * finfo.eps * max(1.0, abs(upper))
+        return max(0.0, upper - margin)
 
     def termination(
         self, latent: torch.Tensor, *, logits: bool = False
