@@ -58,6 +58,11 @@ class Simulation(EveObject, ABC):
     ):
         ...
 
+    def get_safety_metrics(self) -> Dict[str, Any]:
+        """Return adapter-provided monitoring signals, when available."""
+
+        return {}
+
     def get_reset_state(self) -> Dict[str, Any]:
         state = {
             "dof_positions": self.dof_positions,

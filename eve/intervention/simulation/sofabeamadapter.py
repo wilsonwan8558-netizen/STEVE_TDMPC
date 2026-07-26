@@ -2,7 +2,7 @@ from copy import deepcopy
 import importlib
 import math
 import os
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import logging
 import numpy as np
 from .simulation import Simulation
@@ -51,6 +51,10 @@ class SofaBeamAdapter(Simulation):
         self._dof_positions = None
         self._inserted_lengths = None
         self._rotations = None
+        self._guidewire_collision_models = []
+        self._collision_association_detected = False
+        self._max_collision_model_associations = 0
+        self._last_step_simulation_time_s = 0.0
 
     @property
     def dof_positions(self) -> np.ndarray:
@@ -72,6 +76,7 @@ class SofaBeamAdapter(Simulation):
             self._sofa.Simulation.unload(self.root)
 
     def step(self, action: np.ndarray, duration: float):
+        self._reset_step_safety_metrics()
         n_steps = int(duration / self.dt_simulation)
         for _ in range(n_steps):
             inserted_lengths = self.inserted_lengths
@@ -93,7 +98,10 @@ class SofaBeamAdapter(Simulation):
                 tip_rot[i] += float(action[i][1] * self.root.dt.value)
             self._instruments_combined.m_ircontroller.xtip = x_tip
             self._instruments_combined.m_ircontroller.rotationInstrument = tip_rot
-            self._sofa.Simulation.animate(self.root, self.root.dt.value)
+            substep_duration = float(self.root.dt.value)
+            self._sofa.Simulation.animate(self.root, substep_duration)
+            self._last_step_simulation_time_s += substep_duration
+            self._update_collision_association_metrics()
         self._update_properties()
 
     def reset_devices(self):
@@ -117,6 +125,7 @@ class SofaBeamAdapter(Simulation):
         vessel_visual_path: Optional[str] = None,
         seed: int = None,
     ):
+        self._reset_step_safety_metrics()
         if seed is not None:
             self._rng = np.random.default_rng(seed)
         if self._sofa is None:
@@ -170,6 +179,48 @@ class SofaBeamAdapter(Simulation):
             self.simulation_error = False
             self.logger.debug("Sofa Initialized")
         self._update_properties()
+
+    def get_safety_metrics(self) -> Dict[str, Any]:
+        """Return monitoring-only SOFA signals from the latest outer step."""
+
+        return {
+            "collision_association_detected": bool(
+                self._collision_association_detected
+            ),
+            "max_collision_model_associations": int(
+                self._max_collision_model_associations
+            ),
+            "actual_simulation_time_s": float(
+                self._last_step_simulation_time_s
+            ),
+        }
+
+    def _reset_step_safety_metrics(self) -> None:
+        self._collision_association_detected = False
+        self._max_collision_model_associations = 0
+        self._last_step_simulation_time_s = 0.0
+
+    def _update_collision_association_metrics(self) -> None:
+        """Aggregate coarse collision-model associations for this outer step."""
+
+        for collision_model in self._guidewire_collision_models:
+            try:
+                association_data = collision_model.numberOfContacts
+                association_value = getattr(
+                    association_data, "value", association_data
+                )
+                association_count = max(0, int(association_value))
+            except Exception:  # SOFA binding errors vary between builds.
+                # Some SOFA builds do not expose this optional association
+                # field. Missing data remains False/0 rather than interrupting
+                # the simulation. This is not a physical contact-point count.
+                continue
+            if association_count > 0:
+                self._collision_association_detected = True
+                self._max_collision_model_associations = max(
+                    self._max_collision_model_associations,
+                    association_count,
+                )
 
     def _update_properties(self) -> None:
         tracking = self._instruments_combined.DOFs.position.value[:, 0:3][::-1]
@@ -244,6 +295,7 @@ class SofaBeamAdapter(Simulation):
         self._vessel_object = vessel_object
 
     def _add_devices(self, devices: List[Device], insertion_point, insertion_direction):
+        self._guidewire_collision_models = []
         for device in devices:
             sofa_device = device.sofa_device
             topo_lines = self.root.addChild("topolines_" + device.name)
@@ -390,8 +442,15 @@ class SofaBeamAdapter(Simulation):
             printLog=False,
             name="collisMap",
         )
-        beam_collis.addObject("LineCollisionModel", proximity=0.0)
-        beam_collis.addObject("PointCollisionModel", proximity=0.0)
+        line_collision_model = beam_collis.addObject(
+            "LineCollisionModel", proximity=0.0
+        )
+        point_collision_model = beam_collis.addObject(
+            "PointCollisionModel", proximity=0.0
+        )
+        self._guidewire_collision_models.extend(
+            [line_collision_model, point_collision_model]
+        )
 
     def _add_visual(
         self,

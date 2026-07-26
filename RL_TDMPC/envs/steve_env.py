@@ -26,6 +26,7 @@ import eve  # noqa: E402  (must follow source-checkout path setup)
 
 
 OBSERVATION_KEYS: Tuple[str, ...] = ("position", "target", "rotation")
+_CURVATURE_EPSILON_MM = 1e-8
 
 
 class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
@@ -154,6 +155,8 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         self._intervention = intervention
         self._simulation = simulation
         self._visualisation = visualisation
+        self._previous_tip_position: Optional[np.ndarray] = None
+        self._previous_inserted_length: Optional[float] = None
 
         self._raw_action_low = np.asarray(
             self._env.action_space.low, dtype=np.float32
@@ -228,6 +231,174 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         )
         return raw.reshape(self._env.action_space.shape).astype(np.float32)
 
+    @staticmethod
+    def _finite_float(value: Any, default: float = 0.0) -> float:
+        try:
+            converted = float(value)
+        except (TypeError, ValueError, OverflowError):
+            return float(default)
+        return converted if np.isfinite(converted) else float(default)
+
+    @staticmethod
+    def _curvature_metrics(positions: np.ndarray) -> Tuple[float, float]:
+        """Compute circumcircle curvature over valid consecutive DOF triplets."""
+
+        if (
+            positions.ndim != 2
+            or positions.shape[0] < 3
+            or positions.shape[1] < 3
+        ):
+            return 0.0, 0.0
+
+        p0 = positions[:-2, :3]
+        p1 = positions[1:-1, :3]
+        p2 = positions[2:, :3]
+        u = p1 - p0
+        v = p2 - p1
+        chord = p2 - p0
+        u_norm = np.linalg.norm(u, axis=1)
+        v_norm = np.linalg.norm(v, axis=1)
+        chord_norm = np.linalg.norm(chord, axis=1)
+        valid = (
+            np.all(np.isfinite(p0), axis=1)
+            & np.all(np.isfinite(p1), axis=1)
+            & np.all(np.isfinite(p2), axis=1)
+            & (u_norm > _CURVATURE_EPSILON_MM)
+            & (v_norm > _CURVATURE_EPSILON_MM)
+            & (chord_norm > _CURVATURE_EPSILON_MM)
+        )
+        if not np.any(valid):
+            return 0.0, 0.0
+
+        numerator = 2.0 * np.linalg.norm(np.cross(u[valid], v[valid]), axis=1)
+        denominator = u_norm[valid] * v_norm[valid] * chord_norm[valid]
+        curvatures = numerator / denominator
+        curvatures = curvatures[np.isfinite(curvatures)]
+        if curvatures.size == 0:
+            return 0.0, 0.0
+        return float(np.max(curvatures)), float(np.mean(curvatures))
+
+    def _read_simulation_state(
+        self,
+    ) -> Tuple[np.ndarray, np.ndarray, float, float]:
+        try:
+            positions = np.asarray(
+                self._simulation.dof_positions, dtype=np.float64
+            )
+        except (TypeError, ValueError):
+            positions = np.empty((0, 3), dtype=np.float64)
+        if positions.ndim != 2 or positions.shape[1] < 3:
+            positions = np.empty((0, 3), dtype=np.float64)
+        else:
+            positions = positions[:, :3]
+
+        fallback_tip = (
+            self._previous_tip_position
+            if self._previous_tip_position is not None
+            else np.zeros(3, dtype=np.float64)
+        )
+        if positions.shape[0] > 0 and np.all(np.isfinite(positions[0])):
+            # SofaBeamAdapter reverses DOFs, so index zero is the guidewire tip.
+            current_tip = positions[0].copy()
+        else:
+            current_tip = fallback_tip.copy()
+
+        fallback_length = (
+            self._previous_inserted_length
+            if self._previous_inserted_length is not None
+            else 0.0
+        )
+        try:
+            inserted_length = self._finite_float(
+                self._simulation.inserted_lengths[0], fallback_length
+            )
+        except (IndexError, TypeError):
+            inserted_length = float(fallback_length)
+        try:
+            rotation = self._finite_float(self._simulation.rotations[0])
+        except (IndexError, TypeError):
+            rotation = 0.0
+        return positions, current_tip, inserted_length, rotation
+
+    def _build_safety_metrics(
+        self,
+        requested_translation_speed: float,
+        *,
+        initial: bool = False,
+    ) -> Dict[str, Any]:
+        """Build monitoring-only signals; they do not affect training or planning."""
+
+        positions, current_tip, inserted_length, rotation = (
+            self._read_simulation_state()
+        )
+        adapter_metrics = self._simulation.get_safety_metrics()
+        if not isinstance(adapter_metrics, Mapping):
+            adapter_metrics = {}
+        actual_time = self._finite_float(
+            adapter_metrics.get("actual_simulation_time_s", 0.0)
+        )
+        requested_speed = self._finite_float(requested_translation_speed)
+
+        tip_speed = 0.0
+        insertion_speed = 0.0
+        if (
+            not initial
+            and actual_time > 0.0
+            and self._previous_tip_position is not None
+            and self._previous_inserted_length is not None
+        ):
+            tip_speed = self._finite_float(
+                np.linalg.norm(current_tip - self._previous_tip_position)
+                / actual_time
+            )
+            insertion_speed = self._finite_float(
+                (inserted_length - self._previous_inserted_length)
+                / actual_time
+            )
+
+        max_curvature, mean_curvature = self._curvature_metrics(positions)
+        if initial:
+            requested_speed = 0.0
+            collision_detected = False
+            max_associations = 0
+        else:
+            collision_detected = bool(
+                adapter_metrics.get("collision_association_detected", False)
+            )
+            try:
+                max_associations = max(
+                    0,
+                    int(
+                        adapter_metrics.get(
+                            "max_collision_model_associations", 0
+                        )
+                    ),
+                )
+            except (TypeError, ValueError, OverflowError):
+                max_associations = 0
+
+        # Motion error is only an inconsistency proxy, not confirmed slippage.
+        command_motion_error = self._finite_float(
+            abs(requested_speed - insertion_speed)
+        )
+        safety_metrics = {
+            "tip_speed_mm_s": float(tip_speed),
+            "insertion_speed_mm_s": float(insertion_speed),
+            "requested_translation_speed_mm_s": float(requested_speed),
+            "command_motion_error_mm_s": float(command_motion_error),
+            "max_curvature_mm_inv": float(max_curvature),
+            "mean_curvature_mm_inv": float(mean_curvature),
+            "inserted_length_mm": float(inserted_length),
+            "rotation_rad": float(rotation),
+            # Coarse SOFA model association, not a physical contact count.
+            "collision_association_detected": bool(collision_detected),
+            "max_collision_model_associations": int(max_associations),
+            "simulation_error": bool(self._simulation.simulation_error),
+        }
+        self._previous_tip_position = current_tip.copy()
+        self._previous_inserted_length = float(inserted_length)
+        return safety_metrics
+
     def reset(
         self,
         *,
@@ -245,17 +416,23 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
                 seed
             )
         self._simulation.simulation_error = False
+        self._previous_tip_position = None
+        self._previous_inserted_length = None
         observation, info = self._env.reset(seed=seed, options=options)
         self._episode_steps = 0
         output_info = dict(info)
         output_info["is_success"] = bool(output_info.get("is_success", False))
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
+        output_info["safety_metrics"] = self._build_safety_metrics(
+            0.0, initial=True
+        )
         return self._flatten_observation(observation), output_info
 
     def step(
         self, action: np.ndarray
     ) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         raw_action = self._denormalize_action(action)
+        requested_translation_speed = float(raw_action.reshape(-1)[0])
         observation, reward, terminated, truncated, info = self._env.step(raw_action)
         self._episode_steps += 1
         reward = float(reward)
@@ -269,6 +446,9 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
         output_info["raw_action"] = raw_action.reshape(-1).copy()
         output_info["episode_step"] = self._episode_steps
+        output_info["safety_metrics"] = self._build_safety_metrics(
+            requested_translation_speed
+        )
         return (
             self._flatten_observation(observation),
             reward,
