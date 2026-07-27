@@ -1063,6 +1063,30 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                                     safety_aux_loss_coef=float(
                                         safety_aux_config["loss_coef"]
                                     ),
+                                    safety_aux_curvature_loss_coef=float(
+                                        safety_aux_config[
+                                            "curvature_loss_coef"
+                                        ]
+                                    ),
+                                    safety_aux_translation_loss_coef=float(
+                                        safety_aux_config[
+                                            "translation_loss_coef"
+                                        ]
+                                    ),
+                                    safety_aux_translation_group_weights=(
+                                        copy.deepcopy(
+                                            safety_aux_config[
+                                                "translation_group_weights"
+                                            ]
+                                        )
+                                    ),
+                                    safety_aux_translation_zero_calibration_coef=(
+                                        float(
+                                            safety_aux_config[
+                                                "translation_zero_calibration_coef"
+                                            ]
+                                        )
+                                    ),
                                 )
                                 agent_update_completed = True
                                 safety_auxiliary.commit_update(
@@ -1125,6 +1149,11 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                                                     "batch_size"
                                                 ]
                                             ),
+                                        ),
+                                        translation_threshold_candidates=(
+                                            safety_aux_config[
+                                                "validation_translation_threshold_candidates"
+                                            ]
                                         ),
                                     )
                                 )

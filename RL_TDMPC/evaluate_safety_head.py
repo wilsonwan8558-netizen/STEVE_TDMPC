@@ -29,6 +29,7 @@ from envs.steve_env import StEVEEnv, make_steve_env
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.common import (
+    build_safety_aux_config,
     curvature_boundaries_from_diagnostics,
     load_config,
     load_torch_checkpoint,
@@ -698,6 +699,87 @@ def evaluate_targeted_blockage(
     return cases
 
 
+def compare_targeted_blockage_to_calibrated_thresholds(
+    targeted_cases: Mapping[str, Any],
+    calibration: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Compare observed lower/tree predictions without changing any action."""
+
+    if not isinstance(targeted_cases, Mapping):
+        raise TypeError("targeted_cases must be a mapping")
+    if not isinstance(calibration, Mapping):
+        raise TypeError("calibration must be a mapping")
+    selections = calibration.get("selections")
+    if not isinstance(selections, Mapping):
+        raise ValueError("Calibration is missing deterministic selections")
+    translation_name = (
+        "normalized_requested_applied_translation_error"
+    )
+    output: Dict[str, Any] = {
+        "comparison_only": True,
+        "action_selection_unchanged": True,
+        "threshold_units": translation_name,
+        "threshold_note": (
+            "Fixed-validation diagnostic thresholds only; not clinical "
+            "safety thresholds."
+        ),
+        "cases": {},
+    }
+    for case_name in ("lower_insertion_boundary", "vessel_tree_end"):
+        record = targeted_cases.get(case_name)
+        if not isinstance(record, Mapping) or record.get("status") != "observed":
+            output["cases"][case_name] = {
+                "available": False,
+                "status": (
+                    record.get("status")
+                    if isinstance(record, Mapping)
+                    else None
+                ),
+                "prediction": None,
+                "selections": {
+                    selection_name: None
+                    for selection_name in selections
+                },
+            }
+            continue
+        prediction_mapping = record.get("prediction")
+        if (
+            not isinstance(prediction_mapping, Mapping)
+            or translation_name not in prediction_mapping
+        ):
+            raise ValueError(
+                f"Targeted case {case_name!r} is missing translation prediction"
+            )
+        prediction = float(prediction_mapping[translation_name])
+        if not np.isfinite(prediction) or prediction < 0.0:
+            raise ValueError(
+                f"Targeted case {case_name!r} has invalid translation prediction"
+            )
+        comparison: Dict[str, Any] = {}
+        for selection_name, selected in selections.items():
+            if selected is None:
+                comparison[selection_name] = None
+                continue
+            threshold = float(selected["threshold"])
+            comparison[selection_name] = {
+                "threshold": threshold,
+                "prediction": prediction,
+                "prediction_minus_threshold": prediction - threshold,
+                "predicted_blockage": bool(prediction > threshold),
+                "decision_rule": "prediction > threshold",
+            }
+        output["cases"][case_name] = {
+            "available": True,
+            "status": "observed",
+            "target_positive": bool(
+                record.get("translation_target_positive", False)
+            ),
+            "prediction": prediction,
+            "selections": comparison,
+        }
+    return output
+
+
 def _inference_metrics(values_ms: np.ndarray) -> Dict[str, float]:
     values = np.asarray(values_ms, dtype=np.float64)
     if values.ndim != 1 or values.size == 0:
@@ -917,6 +999,10 @@ def evaluate_fixed_safety_dataset(
         batch_size,
         "--safety-batch-size",
     )
+    resolved_auxiliary_config = build_safety_aux_config(config)
+    threshold_candidates = resolved_auxiliary_config[
+        "validation_translation_threshold_candidates"
+    ]
     expected_boundaries = curvature_boundaries_from_diagnostics(config)
     resolved_path = dataset_path.expanduser().resolve()
     dataset = load_dataset(
@@ -993,6 +1079,7 @@ def evaluate_fixed_safety_dataset(
         validation_state,
         batch_size=parsed_batch_size,
         translation_positive_threshold=positive_threshold,
+        translation_threshold_candidates=threshold_candidates,
     )
     _synchronize_if_cuda(agent.device)
     evaluation_ms = (time.perf_counter_ns() - evaluation_start_ns) / 1.0e6
@@ -1244,6 +1331,16 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         if env is not None:
             env.close()
 
+    targeted_calibrated_thresholds = (
+        compare_targeted_blockage_to_calibrated_thresholds(
+            targeted,
+            fixed_validation["metrics"][
+                "translation_threshold_calibration"
+            ],
+        )
+        if targeted is not None and fixed_validation is not None
+        else None
+    )
     episode_records = collected["episodes"] if collected is not None else []
     episode_summary = (
         _episode_summary(episode_records)
@@ -1273,6 +1370,9 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
             "metrics": policy_metrics,
             "fixed_validation": fixed_validation,
             "targeted_blockage": targeted,
+            "targeted_calibrated_thresholds": (
+                targeted_calibrated_thresholds
+            ),
             "planning_isolation": (
                 "Safety predictions never altered MPC scores/actions. Offline "
                 "validation used only stored observations and requested actions."
@@ -1305,6 +1405,9 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
                     "translation_blockage": offline_metrics[
                         "translation_blockage"
                     ],
+                    "translation_threshold_calibration": offline_metrics[
+                        "translation_threshold_calibration"
+                    ],
                     "per_translation_reason": offline_metrics[
                         "per_translation_reason"
                     ],
@@ -1322,6 +1425,16 @@ def run(args: argparse.Namespace) -> Dict[str, Any]:
         print(
             json.dumps(
                 report["targeted_blockage"],
+                indent=2,
+                sort_keys=True,
+                allow_nan=False,
+            )
+        )
+    if report["targeted_calibrated_thresholds"] is not None:
+        print("\nTargeted calibrated-threshold comparisons:")
+        print(
+            json.dumps(
+                report["targeted_calibrated_thresholds"],
                 indent=2,
                 sort_keys=True,
                 allow_nan=False,

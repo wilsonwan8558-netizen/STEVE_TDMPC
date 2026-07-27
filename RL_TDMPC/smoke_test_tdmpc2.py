@@ -14,7 +14,10 @@ import torch.nn.functional as F
 
 import evaluate_safety_head as safety_head_evaluation
 from smoke_test_safety_aux import main as run_safety_aux_smoke_tests
-from envs.safety import SAFETY_COST_NAMES as ENV_SAFETY_COST_NAMES
+from envs.safety import (
+    CURVATURE_STRATUM_NAMES,
+    SAFETY_COST_NAMES as ENV_SAFETY_COST_NAMES,
+)
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 from evaluate import build_agent_config as build_evaluation_agent_config
 from train import (
@@ -773,9 +776,9 @@ def main() -> None:
         fixed_safety_cost,
     )
 
-    # Commit 4.6C: independent offline transitions supervise only the Safety
-    # Head. Their loss uses the same target transform and channel coefficients
-    # as main replay Safety training, but has no temporal rho weighting.
+    # Commit 4.6D: independent offline transitions supervise only the Safety
+    # Head. Translation loss is normalized within canonical reason groups,
+    # curvature loss is normalized within stored strata, and neither uses rho.
     auxiliary_batch = {
         "observation": (
             fixed_observations[0].detach().cpu().numpy().astype(
@@ -795,7 +798,22 @@ def main() -> None:
                 copy=True,
             )
         ),
+        "translation_block_reason_id": np.asarray(
+            [0, 1, 3, 0],
+            dtype=np.int64,
+        ),
+        "curvature_stratum_id": np.asarray(
+            [0, 1, 2, 3],
+            dtype=np.int64,
+        ),
     }
+    auxiliary_translation_group_weights = {
+        name: (2.0 if name == "none" else 1.0)
+        for name in TRANSLATION_BLOCK_REASON_NAMES
+    }
+    auxiliary_curvature_loss_coef = 1.7
+    auxiliary_translation_loss_coef = 0.6
+    auxiliary_zero_calibration_coef = 0.25
     tiny_clip_config = copy.deepcopy(config)
     tiny_clip_config["grad_clip_norm"] = 1.0e-5
     tiny_clip_config["gradient_interval"] = 1
@@ -818,7 +836,21 @@ def main() -> None:
     )
 
     direct_auxiliary_info = (
-        auxiliary_agent._compute_auxiliary_safety_loss(auxiliary_batch)
+        auxiliary_agent._compute_auxiliary_safety_loss(
+            auxiliary_batch,
+            safety_aux_curvature_loss_coef=(
+                auxiliary_curvature_loss_coef
+            ),
+            safety_aux_translation_loss_coef=(
+                auxiliary_translation_loss_coef
+            ),
+            safety_aux_translation_group_weights=(
+                auxiliary_translation_group_weights
+            ),
+            safety_aux_translation_zero_calibration_coef=(
+                auxiliary_zero_calibration_coef
+            ),
+        )
     )
     with torch.no_grad():
         auxiliary_observation_tensor = torch.as_tensor(
@@ -848,30 +880,389 @@ def main() -> None:
                 auxiliary_cost_tensor
             )
         )
-        expected_auxiliary_channel_losses = F.smooth_l1_loss(
+        expected_auxiliary_element_loss = F.smooth_l1_loss(
             expected_auxiliary_prediction,
             expected_auxiliary_target,
             reduction="none",
-        ).mean(dim=0)
+        )
+        auxiliary_reason_tensor = torch.as_tensor(
+            auxiliary_batch["translation_block_reason_id"],
+            device=device,
+        )
+        auxiliary_stratum_tensor = torch.as_tensor(
+            auxiliary_batch["curvature_stratum_id"],
+            device=device,
+        )
+        expected_curvature_group_losses = {
+            stratum_name: expected_auxiliary_element_loss[
+                auxiliary_stratum_tensor == stratum_id,
+                0,
+            ].mean()
+            for stratum_id, stratum_name in enumerate(
+                CURVATURE_STRATUM_NAMES
+            )
+        }
+        expected_auxiliary_curvature_loss = torch.stack(
+            list(expected_curvature_group_losses.values())
+        ).mean()
+        expected_translation_group_losses = {
+            reason_name: expected_auxiliary_element_loss[
+                auxiliary_reason_tensor == reason_id,
+                1,
+            ].mean()
+            for reason_id, reason_name in enumerate(
+                TRANSLATION_BLOCK_REASON_NAMES
+            )
+            if torch.any(auxiliary_reason_tensor == reason_id)
+        }
+        expected_available_translation_weight = sum(
+            auxiliary_translation_group_weights[name]
+            for name in expected_translation_group_losses
+        )
+        expected_auxiliary_translation_loss = sum(
+            auxiliary_translation_group_weights[name] * loss
+            for name, loss in expected_translation_group_losses.items()
+        ) / expected_available_translation_weight
         expected_auxiliary_loss = (
-            auxiliary_agent.safety_curvature_loss_coef
-            * expected_auxiliary_channel_losses[0]
-            + auxiliary_agent.safety_translation_error_loss_coef
-            * expected_auxiliary_channel_losses[1]
+            auxiliary_curvature_loss_coef
+            * expected_auxiliary_curvature_loss
+            + auxiliary_translation_loss_coef
+            * expected_auxiliary_translation_loss
         )
     torch.testing.assert_close(
         direct_auxiliary_info["safety_aux_curvature_loss"],
-        expected_auxiliary_channel_losses[0],
+        expected_auxiliary_curvature_loss,
     )
     torch.testing.assert_close(
         direct_auxiliary_info["safety_aux_translation_error_loss"],
-        expected_auxiliary_channel_losses[1],
+        expected_auxiliary_translation_loss,
     )
     torch.testing.assert_close(
         direct_auxiliary_info["safety_aux_loss"],
         expected_auxiliary_loss,
     )
     assert float(direct_auxiliary_info["safety_aux_batch_size"]) == batch_size
+    assert np.isnan(
+        float(
+            direct_auxiliary_info[
+                "safety_aux_translation_zero_calibration_loss"
+            ]
+        )
+    )
+    assert (
+        float(
+            direct_auxiliary_info[
+                "safety_aux_translation_available_group_count"
+            ]
+        )
+        == 3.0
+    )
+    assert (
+        float(
+            direct_auxiliary_info[
+                "safety_aux_curvature_available_group_count"
+            ]
+        )
+        == 4.0
+    )
+    for reason_name, log_label in (
+        ("none", "none"),
+        ("lower_insertion_boundary", "lower"),
+        ("device_length_limit", "device"),
+        ("vessel_tree_end", "tree_end"),
+        ("other", "other"),
+    ):
+        loss_key = f"safety_aux_translation_{log_label}_loss"
+        available_key = f"safety_aux_translation_{log_label}_available"
+        if reason_name in expected_translation_group_losses:
+            torch.testing.assert_close(
+                direct_auxiliary_info[loss_key],
+                expected_translation_group_losses[reason_name],
+            )
+            assert float(direct_auxiliary_info[available_key]) == 1.0
+        else:
+            assert torch.isnan(direct_auxiliary_info[loss_key])
+            assert float(direct_auxiliary_info[available_key]) == 0.0
+    for stratum_name, expected_group_loss in (
+        expected_curvature_group_losses.items()
+    ):
+        torch.testing.assert_close(
+            direct_auxiliary_info[
+                f"safety_aux_curvature_{stratum_name}_loss"
+            ],
+            expected_group_loss,
+        )
+        assert (
+            float(
+                direct_auxiliary_info[
+                    f"safety_aux_curvature_{stratum_name}_available"
+                ]
+            )
+            == 1.0
+        )
+
+    # Repeating one identical sample inside an already available group must not
+    # silently give that group more influence than the other available groups.
+    balanced_group_batch = {
+        name: value[:3].copy()
+        for name, value in auxiliary_batch.items()
+    }
+    repeated_group_batch = {
+        name: np.concatenate(
+            (value[:3], np.repeat(value[:1], 7, axis=0)),
+            axis=0,
+        )
+        for name, value in auxiliary_batch.items()
+    }
+    equal_group_weights = {
+        name: 1.0 for name in TRANSLATION_BLOCK_REASON_NAMES
+    }
+    balanced_group_info = auxiliary_agent._compute_auxiliary_safety_loss(
+        balanced_group_batch,
+        safety_aux_translation_group_weights=equal_group_weights,
+    )
+    repeated_group_info = auxiliary_agent._compute_auxiliary_safety_loss(
+        repeated_group_batch,
+        safety_aux_translation_group_weights=equal_group_weights,
+    )
+    for loss_name in (
+        "safety_aux_curvature_loss",
+        "safety_aux_translation_error_loss",
+        "safety_aux_loss",
+    ):
+        torch.testing.assert_close(
+            repeated_group_info[loss_name],
+            balanced_group_info[loss_name],
+            rtol=1.0e-6,
+            atol=1.0e-8,
+        )
+    assert torch.isnan(
+        repeated_group_info["safety_aux_translation_device_loss"]
+    )
+    assert torch.isnan(
+        repeated_group_info["safety_aux_translation_other_loss"]
+    )
+    assert (
+        float(
+            repeated_group_info[
+                "safety_aux_translation_device_available"
+            ]
+        )
+        == 0.0
+    )
+    assert (
+        float(
+            repeated_group_info[
+                "safety_aux_translation_other_available"
+            ]
+        )
+        == 0.0
+    )
+
+    unknown_reason_batch = copy.deepcopy(auxiliary_batch)
+    unknown_reason_batch["translation_block_reason_id"][0] = 99
+    try:
+        auxiliary_agent._compute_auxiliary_safety_loss(
+            unknown_reason_batch
+        )
+    except ValueError as exc:
+        assert "unknown canonical IDs [99]" in str(exc)
+    else:
+        raise AssertionError(
+            "Auxiliary loss accepted an unknown translation-reason ID"
+        )
+    unknown_stratum_batch = copy.deepcopy(auxiliary_batch)
+    unknown_stratum_batch["curvature_stratum_id"][0] = 99
+    try:
+        auxiliary_agent._compute_auxiliary_safety_loss(
+            unknown_stratum_batch
+        )
+    except ValueError as exc:
+        assert "unknown canonical IDs [99]" in str(exc)
+    else:
+        raise AssertionError(
+            "Auxiliary loss accepted an unknown curvature-stratum ID"
+        )
+    unknown_weight_mapping = copy.deepcopy(equal_group_weights)
+    unknown_weight_mapping["unknown"] = 1.0
+    try:
+        auxiliary_agent._compute_auxiliary_safety_loss(
+            auxiliary_batch,
+            safety_aux_translation_group_weights=unknown_weight_mapping,
+        )
+    except ValueError as exc:
+        assert "canonical names and order" in str(exc)
+    else:
+        raise AssertionError(
+            "Auxiliary loss accepted an unknown translation group weight"
+        )
+    no_available_positive_weight = {
+        name: (
+            1.0
+            if name in {"device_length_limit", "other"}
+            else 0.0
+        )
+        for name in TRANSLATION_BLOCK_REASON_NAMES
+    }
+    try:
+        auxiliary_agent._compute_auxiliary_safety_loss(
+            auxiliary_batch,
+            safety_aux_translation_group_weights=(
+                no_available_positive_weight
+            ),
+        )
+    except ValueError as exc:
+        assert "available auxiliary translation group" in str(exc)
+    else:
+        raise AssertionError(
+            "Auxiliary loss accepted zero weights for every available group"
+        )
+
+    # The zero-target calibration term uses decoded original-unit predictions
+    # only from exact-zero translation targets. Its coefficient is nested inside
+    # the auxiliary-only translation channel coefficient.
+    torch.manual_seed(46031)
+    calibration_agent = TDMPC2Agent(
+        14,
+        2,
+        tiny_clip_config,
+        episode_length=200,
+        device=device,
+    )
+    calibration_batch = copy.deepcopy(auxiliary_batch)
+    calibration_batch["safety_cost"][:, 1] = np.asarray(
+        [0.0, 0.0, 0.4, 0.8],
+        dtype=np.float32,
+    )
+    calibration_batch["translation_block_reason_id"] = np.asarray(
+        [0, 0, 1, 3],
+        dtype=np.int64,
+    )
+    calibration_observation = torch.as_tensor(
+        calibration_batch["observation"],
+        device=device,
+    )
+    calibration_action = torch.as_tensor(
+        calibration_batch["action"],
+        device=device,
+    )
+    with torch.no_grad():
+        calibration_latent = calibration_agent.model.encode(
+            calibration_observation
+        )
+        calibration_features = calibration_agent.model.safety_trunk(
+            torch.cat(
+                (calibration_latent, calibration_action),
+                dim=-1,
+            )
+        )
+        varying_feature = int(
+            torch.argmax(calibration_features.var(dim=0, unbiased=False))
+        )
+        selected_feature = calibration_features[:, varying_feature]
+        calibration_agent.model.safety_translation_error_head.weight.zero_()
+        calibration_agent.model.safety_translation_error_head.weight[
+            0,
+            varying_feature,
+        ] = 1.0
+        calibration_agent.model.safety_translation_error_head.bias.fill_(
+            float(-selected_feature.min() + 0.2)
+        )
+        calibration_prediction_transformed = (
+            calibration_agent.model.safety_transformed(
+                calibration_latent,
+                calibration_action,
+            )
+        )
+        calibration_prediction = (
+            calibration_agent.model.decode_safety_transformed(
+                calibration_prediction_transformed
+            )
+        )
+        calibration_target = torch.as_tensor(
+            calibration_batch["safety_cost"],
+            device=device,
+        )
+        calibration_zero_mask = calibration_target[:, 1] == 0.0
+        calibration_positive_mask = calibration_target[:, 1] > 0.0
+        expected_zero_calibration = calibration_prediction[
+            calibration_zero_mask,
+            1,
+        ].pow(2).mean()
+        expected_positive_prediction_mean = calibration_prediction[
+            calibration_positive_mask,
+            1,
+        ].mean()
+        expected_none_prediction_mean = calibration_prediction[
+            torch.as_tensor(
+                calibration_batch["translation_block_reason_id"],
+                device=device,
+            )
+            == 0,
+            1,
+        ].mean()
+        all_prediction_square_mean = calibration_prediction[
+            :,
+            1,
+        ].pow(2).mean()
+    calibration_translation_coefficient = 1.3
+    zero_disabled_info = (
+        calibration_agent._compute_auxiliary_safety_loss(
+            calibration_batch,
+            safety_aux_curvature_loss_coef=0.0,
+            safety_aux_translation_loss_coef=(
+                calibration_translation_coefficient
+            ),
+            safety_aux_translation_group_weights=equal_group_weights,
+            safety_aux_translation_zero_calibration_coef=0.0,
+        )
+    )
+    zero_enabled_info = calibration_agent._compute_auxiliary_safety_loss(
+        calibration_batch,
+        safety_aux_curvature_loss_coef=0.0,
+        safety_aux_translation_loss_coef=(
+            calibration_translation_coefficient
+        ),
+        safety_aux_translation_group_weights=equal_group_weights,
+        safety_aux_translation_zero_calibration_coef=0.25,
+    )
+    torch.testing.assert_close(
+        zero_enabled_info[
+            "safety_aux_translation_zero_calibration_loss"
+        ],
+        expected_zero_calibration,
+    )
+    assert float(expected_zero_calibration) > 0.0
+    assert not torch.isclose(
+        expected_zero_calibration,
+        all_prediction_square_mean,
+    )
+    torch.testing.assert_close(
+        zero_enabled_info[
+            "safety_aux_translation_positive_prediction_mean"
+        ],
+        expected_positive_prediction_mean,
+    )
+    torch.testing.assert_close(
+        zero_enabled_info[
+            "safety_aux_translation_none_prediction_mean"
+        ],
+        expected_none_prediction_mean,
+    )
+    torch.testing.assert_close(
+        zero_disabled_info["safety_aux_loss"],
+        calibration_translation_coefficient
+        * zero_disabled_info["safety_aux_translation_error_loss"],
+        rtol=0.0,
+        atol=0.0,
+    )
+    torch.testing.assert_close(
+        zero_enabled_info["safety_aux_loss"]
+        - zero_disabled_info["safety_aux_loss"],
+        calibration_translation_coefficient
+        * 0.25
+        * expected_zero_calibration,
+    )
 
     invalid_auxiliary_batch = copy.deepcopy(auxiliary_batch)
     invalid_auxiliary_batch["observation"] = invalid_auxiliary_batch[
@@ -924,6 +1315,11 @@ def main() -> None:
         "safety_aux_loss",
         "safety_aux_curvature_loss",
         "safety_aux_translation_error_loss",
+        "safety_aux_translation_none_loss",
+        "safety_aux_curvature_extreme_loss",
+        "safety_aux_translation_zero_calibration_loss",
+        "safety_aux_translation_positive_prediction_mean",
+        "safety_aux_translation_none_prediction_mean",
         "safety_aux_batch_size",
         "aux_grad_norm_safety_head",
     ):
@@ -934,6 +1330,16 @@ def main() -> None:
         auxiliary_main_replay,
         safety_aux_batch=auxiliary_batch,
         safety_aux_loss_coef=1.0,
+        safety_aux_curvature_loss_coef=auxiliary_curvature_loss_coef,
+        safety_aux_translation_loss_coef=(
+            auxiliary_translation_loss_coef
+        ),
+        safety_aux_translation_group_weights=(
+            auxiliary_translation_group_weights
+        ),
+        safety_aux_translation_zero_calibration_coef=(
+            auxiliary_zero_calibration_coef
+        ),
     )
     np.testing.assert_allclose(
         auxiliary_metrics["total_loss"],
@@ -946,6 +1352,9 @@ def main() -> None:
         "reward_loss",
         "value_loss",
         "termination_loss",
+        "safety_loss",
+        "safety_curvature_loss",
+        "safety_translation_error_loss",
         "policy_loss",
         "policy_entropy",
     ):
@@ -958,12 +1367,17 @@ def main() -> None:
     assert auxiliary_metrics["safety_aux_batch_size"] == batch_size
     np.testing.assert_allclose(
         auxiliary_metrics["safety_aux_curvature_loss"],
-        float(expected_auxiliary_channel_losses[0]),
+        float(expected_auxiliary_curvature_loss),
         rtol=1.0e-6,
     )
     np.testing.assert_allclose(
         auxiliary_metrics["safety_aux_translation_error_loss"],
-        float(expected_auxiliary_channel_losses[1]),
+        float(expected_auxiliary_translation_loss),
+        rtol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        auxiliary_metrics["safety_aux_loss"],
+        float(expected_auxiliary_loss),
         rtol=1.0e-6,
     )
     for module_name in (

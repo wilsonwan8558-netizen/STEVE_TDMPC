@@ -14,6 +14,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from envs.safety import CURVATURE_STRATUM_NAMES
+from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
+
 from .networks import WorldModel, soft_cross_entropy, two_hot_inv
 from .replay_buffer import REPLAY_SAFETY_COST_NAMES
 from .safety_diagnostics import safety_batch_diagnostics
@@ -33,6 +36,13 @@ _DIAGNOSTIC_CONFIG_KEYS = (
     "curvature_low_max_mm_inv",
     "curvature_medium_max_mm_inv",
 )
+_TRANSLATION_AUXILIARY_LOG_LABELS = {
+    "none": "none",
+    "lower_insertion_boundary": "lower",
+    "device_length_limit": "device",
+    "vessel_tree_end": "tree_end",
+    "other": "other",
+}
 
 
 class RunningScale(torch.nn.Module):
@@ -466,30 +476,105 @@ class TDMPC2Agent:
             **diagnostics,
         }
 
+    @staticmethod
+    def _auxiliary_nonnegative_coefficient(value: Any, name: str) -> float:
+        """Strictly parse one auxiliary-only loss coefficient."""
+
+        if isinstance(value, (bool, np.bool_)):
+            raise TypeError(f"{name} must be a real number, not bool")
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(f"{name} must be a real number") from exc
+        if not np.isfinite(parsed) or parsed < 0.0:
+            raise ValueError(f"{name} must be finite and nonnegative")
+        return parsed
+
     def _compute_auxiliary_safety_loss(
         self,
         auxiliary_batch: Mapping[str, Any],
+        *,
+        safety_aux_curvature_loss_coef: float = 1.0,
+        safety_aux_translation_loss_coef: float = 1.0,
+        safety_aux_translation_group_weights: Optional[
+            Mapping[str, Any]
+        ] = None,
+        safety_aux_translation_zero_calibration_coef: float = 0.0,
     ) -> Dict[str, torch.Tensor]:
-        """Compute detached, single-transition Safety Head supervision.
+        """Compute group-normalized detached Safety Head supervision.
 
-        Auxiliary observations are deliberately encoded without autograd and
-        detached again before entering the Safety Head.  This is a fixed
-        isolation boundary: auxiliary supervision can train the Safety trunk
-        and output branches, but cannot train the encoder or latent dynamics.
-        The requested action (``batch["action"]``), rather than the post-mask
-        applied action, preserves the main replay's ``(z_t, a_t, c_t)``
-        convention.
+        Auxiliary observations are encoded without autograd and detached again
+        before entering the Safety Head. Translation Smooth-L1 losses are
+        averaged inside each canonical blockage-reason group before a weighted
+        mean across available groups. Curvature losses are averaged inside each
+        stored stratum and then equally across available strata. The requested
+        action (``batch["action"]``), rather than ``applied_action``, preserves
+        the main replay's ``(z_t, a_t, c_t)`` convention.
         """
 
         if not isinstance(auxiliary_batch, Mapping):
             raise TypeError("Auxiliary Safety batch must be a mapping")
-        required_keys = {"observation", "action", "safety_cost"}
+        required_keys = {
+            "observation",
+            "action",
+            "safety_cost",
+            "translation_block_reason_id",
+            "curvature_stratum_id",
+        }
         missing_keys = sorted(required_keys - auxiliary_batch.keys())
         if missing_keys:
             raise ValueError(
                 "Auxiliary Safety batch is missing required fields "
                 f"{missing_keys}"
             )
+
+        curvature_coefficient = self._auxiliary_nonnegative_coefficient(
+            safety_aux_curvature_loss_coef,
+            "safety_aux_curvature_loss_coef",
+        )
+        translation_coefficient = self._auxiliary_nonnegative_coefficient(
+            safety_aux_translation_loss_coef,
+            "safety_aux_translation_loss_coef",
+        )
+        zero_calibration_coefficient = (
+            self._auxiliary_nonnegative_coefficient(
+                safety_aux_translation_zero_calibration_coef,
+                "safety_aux_translation_zero_calibration_coef",
+            )
+        )
+
+        canonical_reason_names = tuple(TRANSLATION_BLOCK_REASON_NAMES)
+        if safety_aux_translation_group_weights is None:
+            group_weights = {
+                name: 1.0 for name in canonical_reason_names
+            }
+        else:
+            if not isinstance(
+                safety_aux_translation_group_weights,
+                Mapping,
+            ):
+                raise TypeError(
+                    "safety_aux_translation_group_weights must be a mapping"
+                )
+            received_names = tuple(
+                safety_aux_translation_group_weights.keys()
+            )
+            if received_names != canonical_reason_names:
+                raise ValueError(
+                    "safety_aux_translation_group_weights keys must match "
+                    f"canonical names and order {canonical_reason_names}, got "
+                    f"{received_names}"
+                )
+            group_weights = {
+                name: self._auxiliary_nonnegative_coefficient(
+                    safety_aux_translation_group_weights[name],
+                    (
+                        "safety_aux_translation_group_weights"
+                        f"[{name!r}]"
+                    ),
+                )
+                for name in canonical_reason_names
+            }
 
         def tensor_field(
             name: str,
@@ -528,8 +613,52 @@ class TDMPC2Agent:
                 "Auxiliary Safety observation, action, and safety_cost batch "
                 "dimensions must match"
             )
-        if torch.any(safety_cost < 0.0):
+        if bool(torch.any(safety_cost < 0.0)):
             raise ValueError("Auxiliary Safety cost values must be nonnegative")
+
+        def id_field(
+            name: str,
+            canonical_names: tuple[str, ...],
+        ) -> torch.Tensor:
+            value = auxiliary_batch[name]
+            if not isinstance(value, np.ndarray):
+                raise TypeError(
+                    f"Auxiliary Safety {name} must be a numpy.ndarray"
+                )
+            if value.dtype != np.int64:
+                raise TypeError(
+                    f"Auxiliary Safety {name} must use int64, "
+                    f"got {value.dtype}"
+                )
+            if value.shape != (batch_size,):
+                raise ValueError(
+                    f"Auxiliary Safety {name} must have shape "
+                    f"({batch_size},), got {value.shape}"
+                )
+            invalid = np.unique(
+                value[(value < 0) | (value >= len(canonical_names))]
+            )
+            if invalid.size:
+                raise ValueError(
+                    f"Auxiliary Safety {name} contains unknown canonical IDs "
+                    f"{invalid.tolist()}; valid range is "
+                    f"[0, {len(canonical_names) - 1}]"
+                )
+            return torch.as_tensor(
+                value,
+                device=self.device,
+                dtype=torch.long,
+            )
+
+        reason_ids = id_field(
+            "translation_block_reason_id",
+            canonical_reason_names,
+        )
+        canonical_stratum_names = tuple(CURVATURE_STRATUM_NAMES)
+        stratum_ids = id_field(
+            "curvature_stratum_id",
+            canonical_stratum_names,
+        )
 
         with torch.no_grad():
             latent = self.model.encode(observations)
@@ -551,49 +680,183 @@ class TDMPC2Agent:
                 "WorldModel.transform_safety_targets returned auxiliary shape "
                 f"{tuple(target_transformed.shape)}; expected {expected_shape}"
             )
-        if not torch.isfinite(prediction_transformed).all():
+        if not bool(torch.isfinite(prediction_transformed).all()):
             raise FloatingPointError(
                 "Auxiliary Safety prediction contains NaN or infinity"
             )
-        if not torch.isfinite(target_transformed).all():
+        if not bool(torch.isfinite(target_transformed).all()):
             raise FloatingPointError(
                 "Auxiliary Safety transformed target contains NaN or infinity"
             )
 
-        # Independent auxiliary transitions have no temporal rho weighting.
-        channel_losses = F.smooth_l1_loss(
+        # These transitions are independent, so no temporal rho weighting is
+        # applied. Group normalization also prevents sampled group cardinality
+        # from implicitly becoming an extra loss weight.
+        element_loss = F.smooth_l1_loss(
             prediction_transformed,
             target_transformed,
             reduction="none",
-        ).mean(dim=0)
-        curvature_loss = channel_losses[0]
-        translation_error_loss = channel_losses[1]
-        combined_loss = (
-            self.safety_curvature_loss_coef * curvature_loss
-            + self.safety_translation_error_loss_coef
-            * translation_error_loss
         )
-        if not torch.isfinite(combined_loss):
+        unavailable = prediction_transformed.new_tensor(float("nan"))
+        group_info: Dict[str, torch.Tensor] = {}
+
+        curvature_group_losses = []
+        for stratum_id, stratum_name in enumerate(canonical_stratum_names):
+            mask = stratum_ids == stratum_id
+            available = bool(torch.any(mask))
+            loss = (
+                element_loss[mask, 0].mean()
+                if available
+                else unavailable.clone()
+            )
+            group_info[
+                f"safety_aux_curvature_{stratum_name}_loss"
+            ] = loss
+            group_info[
+                f"safety_aux_curvature_{stratum_name}_available"
+            ] = prediction_transformed.new_tensor(float(available))
+            if available:
+                curvature_group_losses.append(loss)
+        curvature_loss = torch.stack(curvature_group_losses).mean()
+
+        weighted_translation_losses = []
+        available_translation_weight = 0.0
+        available_translation_count = 0
+        for reason_id, reason_name in enumerate(canonical_reason_names):
+            mask = reason_ids == reason_id
+            available = bool(torch.any(mask))
+            loss = (
+                element_loss[mask, 1].mean()
+                if available
+                else unavailable.clone()
+            )
+            log_label = _TRANSLATION_AUXILIARY_LOG_LABELS[reason_name]
+            group_info[
+                f"safety_aux_translation_{log_label}_loss"
+            ] = loss
+            group_info[
+                f"safety_aux_translation_{log_label}_available"
+            ] = prediction_transformed.new_tensor(float(available))
+            if available:
+                available_translation_count += 1
+                weight = group_weights[reason_name]
+                if weight > 0.0:
+                    weighted_translation_losses.append(weight * loss)
+                    available_translation_weight += weight
+        if not weighted_translation_losses:
+            available_names = tuple(
+                reason_name
+                for reason_id, reason_name in enumerate(canonical_reason_names)
+                if bool(torch.any(reason_ids == reason_id))
+            )
+            raise ValueError(
+                "At least one available auxiliary translation group must have "
+                "a positive weight; available groups are "
+                f"{available_names}"
+            )
+        translation_error_loss = (
+            torch.stack(weighted_translation_losses).sum()
+            / available_translation_weight
+        )
+
+        prediction_original = self.model.decode_safety_transformed(
+            prediction_transformed
+        )
+        if not bool(torch.isfinite(prediction_original).all()):
+            raise FloatingPointError(
+                "Auxiliary Safety decoded prediction contains NaN or infinity"
+            )
+        translation_prediction = prediction_original[:, 1]
+        translation_target = safety_cost[:, 1]
+        zero_target_mask = translation_target == 0.0
+        positive_target_mask = translation_target > 0.0
+        none_mask = reason_ids == canonical_reason_names.index("none")
+
+        def conditional_mean(
+            values: torch.Tensor,
+            mask: torch.Tensor,
+        ) -> torch.Tensor:
+            return (
+                values[mask].mean()
+                if bool(torch.any(mask))
+                else unavailable.clone()
+            )
+
+        zero_calibration_loss = (
+            translation_prediction[zero_target_mask].pow(2).mean()
+            if bool(torch.any(zero_target_mask))
+            else unavailable.clone()
+        )
+        zero_calibration_contribution = (
+            zero_calibration_coefficient * zero_calibration_loss
+            if bool(torch.any(zero_target_mask))
+            else prediction_transformed.sum() * 0.0
+        )
+        combined_loss = (
+            curvature_coefficient * curvature_loss
+            + translation_coefficient
+            * (translation_error_loss + zero_calibration_contribution)
+        )
+        if not bool(torch.isfinite(combined_loss)):
             raise FloatingPointError("Auxiliary Safety loss is not finite")
         return {
             "safety_aux_loss": combined_loss,
             "safety_aux_curvature_loss": curvature_loss,
             "safety_aux_translation_error_loss": translation_error_loss,
+            "safety_aux_translation_zero_calibration_loss": (
+                zero_calibration_loss
+            ),
+            "safety_aux_translation_positive_prediction_mean": (
+                conditional_mean(
+                    translation_prediction,
+                    positive_target_mask,
+                )
+            ),
+            "safety_aux_translation_none_prediction_mean": (
+                conditional_mean(translation_prediction, none_mask)
+            ),
+            "safety_aux_translation_available_group_count": (
+                combined_loss.new_tensor(float(available_translation_count))
+            ),
+            "safety_aux_curvature_available_group_count": (
+                combined_loss.new_tensor(float(len(curvature_group_losses)))
+            ),
             "safety_aux_batch_size": combined_loss.new_tensor(
                 float(batch_size)
             ),
+            **group_info,
         }
 
     def _disabled_auxiliary_info(self) -> Dict[str, torch.Tensor]:
         """Return stable unavailable metrics without evaluating auxiliary data."""
 
         unavailable = torch.full((), float("nan"), device=self.device)
-        names = (
+        names = [
             "safety_aux_loss",
             "safety_aux_curvature_loss",
             "safety_aux_translation_error_loss",
+            "safety_aux_translation_zero_calibration_loss",
+            "safety_aux_translation_positive_prediction_mean",
+            "safety_aux_translation_none_prediction_mean",
+            "safety_aux_translation_available_group_count",
+            "safety_aux_curvature_available_group_count",
             "safety_aux_batch_size",
-        )
+        ]
+        for reason_name in TRANSLATION_BLOCK_REASON_NAMES:
+            log_label = _TRANSLATION_AUXILIARY_LOG_LABELS[reason_name]
+            names.extend(
+                (
+                    f"safety_aux_translation_{log_label}_loss",
+                    f"safety_aux_translation_{log_label}_available",
+                )
+            )
+        for stratum_name in CURVATURE_STRATUM_NAMES:
+            names.extend(
+                (
+                    f"safety_aux_curvature_{stratum_name}_loss",
+                    f"safety_aux_curvature_{stratum_name}_available",
+                )
+            )
         return {name: unavailable.clone() for name in names}
 
     def _disabled_auxiliary_gradient_info(self) -> Dict[str, torch.Tensor]:
@@ -1101,6 +1364,12 @@ class TDMPC2Agent:
         *,
         safety_aux_batch: Optional[Mapping[str, Any]] = None,
         safety_aux_loss_coef: float = 0.0,
+        safety_aux_curvature_loss_coef: float = 1.0,
+        safety_aux_translation_loss_coef: float = 1.0,
+        safety_aux_translation_group_weights: Optional[
+            Mapping[str, Any]
+        ] = None,
+        safety_aux_translation_zero_calibration_coef: float = 0.0,
     ) -> Dict[str, float]:
         if isinstance(safety_aux_loss_coef, (bool, np.bool_)):
             raise TypeError(
@@ -1197,7 +1466,19 @@ class TDMPC2Agent:
         auxiliary_objective: Optional[torch.Tensor] = None
         if safety_aux_batch is not None:
             auxiliary_info = self._compute_auxiliary_safety_loss(
-                safety_aux_batch
+                safety_aux_batch,
+                safety_aux_curvature_loss_coef=(
+                    safety_aux_curvature_loss_coef
+                ),
+                safety_aux_translation_loss_coef=(
+                    safety_aux_translation_loss_coef
+                ),
+                safety_aux_translation_group_weights=(
+                    safety_aux_translation_group_weights
+                ),
+                safety_aux_translation_zero_calibration_coef=(
+                    safety_aux_translation_zero_calibration_coef
+                ),
             )
             auxiliary_objective = (
                 parsed_auxiliary_loss_coef

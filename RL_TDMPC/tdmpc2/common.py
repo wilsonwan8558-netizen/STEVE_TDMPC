@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import csv
 import json
 import math
@@ -13,6 +14,7 @@ from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Seque
 import numpy as np
 import torch
 import yaml
+from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
@@ -23,16 +25,59 @@ DEFAULT_DIAGNOSTICS_CONFIG = {
     "curvature_medium_max_mm_inv": 0.1,
     "curvature_high_max_mm_inv": 0.25,
 }
+SAFETY_AUX_TRANSLATION_GROUP_NAMES = tuple(
+    TRANSLATION_BLOCK_REASON_NAMES
+)
+DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES = (
+    0.0,
+    1.0e-6,
+    1.0e-5,
+    1.0e-4,
+    1.0e-3,
+    0.002,
+    0.005,
+    0.01,
+    0.02,
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+)
 DEFAULT_SAFETY_AUX_CONFIG = {
     "enabled": False,
     "dataset_path": None,
     "loss_coef": 1.0,
+    "curvature_loss_coef": 1.0,
+    "translation_loss_coef": 1.0,
+    "translation_group_weights": {
+        "none": 2.0,
+        "lower_insertion_boundary": 1.0,
+        "device_length_limit": 1.0,
+        "vessel_tree_end": 1.0,
+        "other": 1.0,
+    },
+    "translation_zero_calibration_coef": 0.1,
+    "validation_translation_threshold_candidates": list(
+        DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES
+    ),
     "batch_size": 64,
     "update_interval": 1,
     "sampling_mode": "mixed",
     "translation_fraction": 0.5,
     "curvature_fraction": 0.5,
     "sample_with_replacement": True,
+}
+COMMIT_46C_SAFETY_AUX_CONFIG_KEYS = {
+    "enabled",
+    "dataset_path",
+    "loss_coef",
+    "batch_size",
+    "update_interval",
+    "sampling_mode",
+    "translation_fraction",
+    "curvature_fraction",
+    "sample_with_replacement",
 }
 LEGACY_SAFETY_AUX_CONFIG_KEYS = {
     "enabled",
@@ -275,13 +320,13 @@ def curvature_boundaries_from_diagnostics(
 
 
 def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
-    """Validate offline balanced Safety supervision controls.
+    """Validate offline balanced and calibrated Safety supervision controls.
 
     Commit-4.6C replaces the former online collection buffer with a strict
-    offline dataset.  The one supported legacy form is the exact four-field
-    collection schema with ``enabled=false``; it is normalized to the new
-    disabled schema so old baseline checkpoints remain loadable.  Enabling
-    that legacy form is rejected rather than silently changing its semantics.
+    offline dataset. Commit-4.6D adds auxiliary-only channel/group calibration
+    and explicit validation-threshold candidates. Exact older schemas remain
+    loadable only when disabled; an enabled pre-4.6D schema is rejected rather
+    than silently receiving calibration defaults during strict resume.
     """
 
     safety_aux = config.get("safety_aux", DEFAULT_SAFETY_AUX_CONFIG)
@@ -296,7 +341,7 @@ def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
             raise ValueError(
                 "The legacy four-field safety_aux collection schema cannot be "
                 "enabled for offline auxiliary supervision; configure "
-                "dataset_path and the complete Commit-4.6C safety_aux schema"
+                "dataset_path and the complete Commit-4.6D safety_aux schema"
             )
 
         capacity_value = safety_aux["capacity"]
@@ -319,7 +364,42 @@ def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
             safety_aux["curvature_fraction"],
             "curvature_fraction",
         )
+        # These fractions were inert while the legacy auxiliary path was
+        # disabled, and older checkpoints did not require them to sum to one.
+        # The resolved 4.6D schema defaults to mixed sampling, whose strict
+        # parser does require that invariant. Preserve valid legacy ratios and
+        # canonicalize otherwise-inert invalid ratios so a disabled checkpoint
+        # remains stable when its materialized config is parsed again on save.
+        if not np.isclose(
+            normalized["translation_fraction"]
+            + normalized["curvature_fraction"],
+            1.0,
+            rtol=0.0,
+            atol=1.0e-12,
+        ):
+            normalized["translation_fraction"] = float(
+                DEFAULT_SAFETY_AUX_CONFIG["translation_fraction"]
+            )
+            normalized["curvature_fraction"] = float(
+                DEFAULT_SAFETY_AUX_CONFIG["curvature_fraction"]
+            )
         return normalized
+
+    if received_keys == COMMIT_46C_SAFETY_AUX_CONFIG_KEYS:
+        prior_enabled = safety_aux["enabled"]
+        if type(prior_enabled) is not bool:
+            raise TypeError("safety_aux.enabled must be a bool")
+        if prior_enabled:
+            raise ValueError(
+                "Enabled safety_aux uses a pre-Commit-4.6D schema and is "
+                "missing required auxiliary calibration metadata; explicitly "
+                "configure channel coefficients, canonical translation group "
+                "weights, zero calibration, and validation threshold candidates"
+            )
+        normalized_prior = copy_safety_aux_defaults()
+        normalized_prior.update(copy.deepcopy(dict(safety_aux)))
+        safety_aux = normalized_prior
+        received_keys = set(safety_aux)
 
     expected_keys = set(DEFAULT_SAFETY_AUX_CONFIG)
     unexpected_keys = sorted(received_keys - expected_keys)
@@ -364,6 +444,29 @@ def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         safety_aux["loss_coef"],
         "loss_coef",
         minimum=0.0,
+    )
+    curvature_loss_coef = _safety_aux_finite_float(
+        safety_aux["curvature_loss_coef"],
+        "curvature_loss_coef",
+        minimum=0.0,
+    )
+    translation_loss_coef = _safety_aux_finite_float(
+        safety_aux["translation_loss_coef"],
+        "translation_loss_coef",
+        minimum=0.0,
+    )
+    translation_group_weights = _safety_aux_translation_group_weights(
+        safety_aux["translation_group_weights"]
+    )
+    translation_zero_calibration_coef = _safety_aux_finite_float(
+        safety_aux["translation_zero_calibration_coef"],
+        "translation_zero_calibration_coef",
+        minimum=0.0,
+    )
+    validation_translation_threshold_candidates = (
+        _safety_aux_validation_threshold_candidates(
+            safety_aux["validation_translation_threshold_candidates"]
+        )
     )
     batch_size = _safety_aux_positive_integer(
         safety_aux["batch_size"],
@@ -426,6 +529,15 @@ def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         "enabled": enabled,
         "dataset_path": dataset_path,
         "loss_coef": loss_coef,
+        "curvature_loss_coef": curvature_loss_coef,
+        "translation_loss_coef": translation_loss_coef,
+        "translation_group_weights": translation_group_weights,
+        "translation_zero_calibration_coef": (
+            translation_zero_calibration_coef
+        ),
+        "validation_translation_threshold_candidates": (
+            validation_translation_threshold_candidates
+        ),
         "batch_size": batch_size,
         "update_interval": update_interval,
         "sampling_mode": sampling_mode,
@@ -436,9 +548,78 @@ def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def copy_safety_aux_defaults() -> Dict[str, Any]:
-    """Return a shallow copy of scalar/null auxiliary defaults."""
+    """Return a defensive copy of nested auxiliary defaults."""
 
-    return dict(DEFAULT_SAFETY_AUX_CONFIG)
+    return copy.deepcopy(DEFAULT_SAFETY_AUX_CONFIG)
+
+
+def _safety_aux_translation_group_weights(
+    value: Any,
+) -> Dict[str, float]:
+    if not isinstance(value, Mapping):
+        raise TypeError(
+            "safety_aux.translation_group_weights must be a mapping"
+        )
+    received_names = tuple(value.keys())
+    expected_names = SAFETY_AUX_TRANSLATION_GROUP_NAMES
+    missing = [name for name in expected_names if name not in value]
+    unexpected = [name for name in received_names if name not in expected_names]
+    if missing or unexpected:
+        raise ValueError(
+            "safety_aux.translation_group_weights keys mismatch; "
+            f"missing={missing}, unexpected={unexpected}"
+        )
+    if received_names != expected_names:
+        raise ValueError(
+            "safety_aux.translation_group_weights must use canonical order "
+            f"{expected_names}, got {received_names}"
+        )
+    weights = {
+        name: _safety_aux_finite_float(
+            value[name],
+            f"translation_group_weights.{name}",
+            minimum=0.0,
+        )
+        for name in expected_names
+    }
+    if not any(weight > 0.0 for weight in weights.values()):
+        raise ValueError(
+            "safety_aux.translation_group_weights must contain at least one "
+            "positive weight"
+        )
+    return weights
+
+
+def _safety_aux_validation_threshold_candidates(
+    value: Any,
+) -> list[float]:
+    if not isinstance(value, (list, tuple)):
+        raise TypeError(
+            "safety_aux.validation_translation_threshold_candidates must be "
+            "a list or tuple"
+        )
+    if not value:
+        raise ValueError(
+            "safety_aux.validation_translation_threshold_candidates must not "
+            "be empty"
+        )
+    candidates = [
+        _safety_aux_finite_float(
+            candidate,
+            f"validation_translation_threshold_candidates[{index}]",
+            minimum=0.0,
+        )
+        for index, candidate in enumerate(value)
+    ]
+    if any(
+        current <= previous
+        for previous, current in zip(candidates, candidates[1:])
+    ):
+        raise ValueError(
+            "safety_aux.validation_translation_threshold_candidates must be "
+            "strictly increasing with no duplicates"
+        )
+    return candidates
 
 
 def _safety_aux_positive_integer(value: Any, key: str) -> int:

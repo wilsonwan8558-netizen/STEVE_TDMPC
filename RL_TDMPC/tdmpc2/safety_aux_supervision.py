@@ -16,7 +16,10 @@ import numpy as np
 from envs.safety import CURVATURE_STRATUM_NAMES
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 
-from .common import resolve_project_path
+from .common import (
+    SAFETY_AUX_TRANSLATION_GROUP_NAMES,
+    resolve_project_path,
+)
 from .safety_aux_dataset import (
     SAFETY_AUX_DATASET_SCHEMA_VERSION,
     SafetyAuxDataset,
@@ -28,17 +31,25 @@ from .safety_aux_replay import (
 )
 
 
-SAFETY_AUXILIARY_STATE_SCHEMA_VERSION = 1
+SAFETY_AUXILIARY_STATE_SCHEMA_VERSION = 2
 SAFETY_AUXILIARY_CHECKPOINT_KEY = "safety_auxiliary"
 
 _STATE_KEYS = {
     "schema_version",
     "enabled",
     "config",
+    "calibration",
     "dataset",
     "sampler",
     "auxiliary_update_count",
     "last_normal_update_count",
+}
+_CALIBRATION_KEYS = {
+    "curvature_loss_coef",
+    "translation_loss_coef",
+    "translation_group_weights",
+    "translation_zero_calibration_coef",
+    "validation_translation_threshold_candidates",
 }
 _DATASET_IDENTITY_KEYS = {
     "resolved_path",
@@ -141,6 +152,7 @@ class SafetyAuxiliarySupervisor:
             raise ValueError("Safety auxiliary training split is empty")
         if self.dataset.validation_size <= 0:
             raise ValueError("Safety auxiliary validation split is empty")
+        self._validate_available_translation_weights()
 
         self.training_buffer = self.dataset.training_buffer()
         # The validation replay is never sampled.  Its state is a convenient,
@@ -220,6 +232,62 @@ class SafetyAuxiliarySupervisor:
                 "bounds [-1, 1]"
             )
 
+    def _validate_available_translation_weights(self) -> None:
+        replay = self._dataset_state["replay_state"]
+        train_indices = self.dataset.train_indices
+        train_reason_ids = replay["translation_block_reason_id"][
+            train_indices
+        ]
+        available_reason_ids = set(
+            int(value) for value in np.unique(train_reason_ids)
+        )
+        canonical_names = tuple(TRANSLATION_BLOCK_REASON_NAMES)
+        if canonical_names != SAFETY_AUX_TRANSLATION_GROUP_NAMES:
+            raise RuntimeError(
+                "Configured canonical translation groups do not match the "
+                "simulator translation-block reason schema"
+            )
+        weights = self.config["translation_group_weights"]
+        self.available_translation_reason_names = tuple(
+            name
+            for reason_id, name in enumerate(canonical_names)
+            if reason_id in available_reason_ids
+        )
+        self.positive_weighted_translation_reason_names = tuple(
+            name
+            for name in self.available_translation_reason_names
+            if float(weights[name]) > 0.0
+        )
+        if not self.positive_weighted_translation_reason_names:
+            raise ValueError(
+                "Safety auxiliary training split has no available translation "
+                "reason with a positive configured group weight; "
+                f"available={self.available_translation_reason_names}"
+            )
+
+    def calibration_metadata(self) -> Dict[str, Any]:
+        """Return the exact Commit-4.6D loss/calibration contract."""
+
+        return {
+            "curvature_loss_coef": float(
+                self.config["curvature_loss_coef"]
+            ),
+            "translation_loss_coef": float(
+                self.config["translation_loss_coef"]
+            ),
+            "translation_group_weights": copy.deepcopy(
+                self.config["translation_group_weights"]
+            ),
+            "translation_zero_calibration_coef": float(
+                self.config["translation_zero_calibration_coef"]
+            ),
+            "validation_translation_threshold_candidates": copy.deepcopy(
+                self.config[
+                    "validation_translation_threshold_candidates"
+                ]
+            ),
+        }
+
     def dataset_identity(self) -> Dict[str, Any]:
         replay = self._dataset_state["replay_state"]
         return {
@@ -258,6 +326,13 @@ class SafetyAuxiliarySupervisor:
                 ],
                 "split_seed": int(split["seed"]),
                 "validation_fraction": float(split["validation_fraction"]),
+                "available_translation_reason_names": list(
+                    self.available_translation_reason_names
+                ),
+                "positive_weighted_translation_reason_names": list(
+                    self.positive_weighted_translation_reason_names
+                ),
+                "calibration": self.calibration_metadata(),
             }
         )
         return identity
@@ -489,6 +564,7 @@ class SafetyAuxiliarySupervisor:
             "schema_version": SAFETY_AUXILIARY_STATE_SCHEMA_VERSION,
             "enabled": True,
             "config": resolved_config,
+            "calibration": self.calibration_metadata(),
             "dataset": self.dataset_identity(),
             "sampler": self.training_buffer.sampler_state_dict(),
             "auxiliary_update_count": self.auxiliary_update_count,
@@ -508,15 +584,28 @@ class SafetyAuxiliarySupervisor:
             )
         if not isinstance(state, Mapping):
             raise TypeError("Safety auxiliary checkpoint state must be a mapping")
-        _exact_keys(state, _STATE_KEYS, "Safety auxiliary checkpoint state")
+        if "schema_version" not in state:
+            raise ValueError(
+                "Safety auxiliary checkpoint state is missing schema_version "
+                "and required Commit-4.6D calibration metadata"
+            )
         schema = _exact_nonnegative_integer(
             state["schema_version"], "Safety auxiliary state schema_version"
         )
         if schema != SAFETY_AUXILIARY_STATE_SCHEMA_VERSION:
+            legacy_note = (
+                " This enabled checkpoint predates Commit-4.6D calibration "
+                "metadata and cannot be resumed without an explicit compatible "
+                "configuration and retraining."
+                if schema < SAFETY_AUXILIARY_STATE_SCHEMA_VERSION
+                else ""
+            )
             raise ValueError(
                 f"Safety auxiliary state schema {schema} is incompatible with "
-                f"required {SAFETY_AUXILIARY_STATE_SCHEMA_VERSION}"
+                f"required {SAFETY_AUXILIARY_STATE_SCHEMA_VERSION}."
+                f"{legacy_note}"
             )
+        _exact_keys(state, _STATE_KEYS, "Safety auxiliary checkpoint state")
         if state["enabled"] is not True:
             raise ValueError("Safety auxiliary checkpoint state must be enabled")
         if not isinstance(state["config"], Mapping):
@@ -534,6 +623,14 @@ class SafetyAuxiliarySupervisor:
             received_config["dataset_path"] = str(
                 resolve_project_path(received_path)
             )
+        received_weight_names = tuple(
+            received_config.get("translation_group_weights", {})
+        )
+        if received_weight_names != SAFETY_AUX_TRANSLATION_GROUP_NAMES:
+            raise ValueError(
+                "Safety auxiliary checkpoint config translation group weights "
+                "do not use canonical names and order"
+            )
         config_matches = _arrays_equal(received_config, expected_config)
         if allow_dataset_path_override:
             received_config.pop("dataset_path", None)
@@ -543,6 +640,34 @@ class SafetyAuxiliarySupervisor:
             raise ValueError(
                 "Safety auxiliary checkpoint config does not match the "
                 "requested resolved config"
+            )
+        calibration_state = state["calibration"]
+        if not isinstance(calibration_state, Mapping):
+            raise TypeError(
+                "Safety auxiliary checkpoint calibration metadata must be a "
+                "mapping"
+            )
+        _exact_keys(
+            calibration_state,
+            _CALIBRATION_KEYS,
+            "Safety auxiliary checkpoint calibration metadata",
+        )
+        received_calibration = copy.deepcopy(dict(calibration_state))
+        calibration_weight_names = tuple(
+            received_calibration["translation_group_weights"]
+        )
+        if calibration_weight_names != SAFETY_AUX_TRANSLATION_GROUP_NAMES:
+            raise ValueError(
+                "Safety auxiliary checkpoint calibration translation group "
+                "weights do not use canonical names and order"
+            )
+        if not _arrays_equal(
+            received_calibration,
+            self.calibration_metadata(),
+        ):
+            raise ValueError(
+                "Safety auxiliary checkpoint calibration metadata does not "
+                "match the requested Commit-4.6D configuration"
             )
         dataset_state = state["dataset"]
         if not isinstance(dataset_state, Mapping):

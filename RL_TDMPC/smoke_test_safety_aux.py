@@ -21,11 +21,16 @@ from envs.safety import (
 )
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 from tdmpc2.common import (
+    DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES,
+    SAFETY_AUX_TRANSLATION_GROUP_NAMES,
     build_safety_aux_config,
     curvature_boundaries_from_diagnostics,
     load_config,
 )
 from tdmpc2.replay_buffer import EpisodeReplayBuffer
+from tdmpc2.safety_diagnostics import (
+    calibrate_translation_blockage_thresholds,
+)
 from tdmpc2.safety_aux_dataset import (
     SAFETY_AUX_DATASET_SCHEMA_VERSION,
     build_dataset_state,
@@ -259,7 +264,101 @@ def _assert_raises(callable_object, expected_exception, message: str) -> None:
         )
 
 
+def _assert_translation_threshold_calibration() -> None:
+    """Exercise deterministic threshold selection without a model or SOFA."""
+
+    prediction = torch.tensor(
+        [0.01, 0.02, 0.03, 0.40, 0.50, 0.60],
+        dtype=torch.float64,
+    )
+    target = torch.tensor(
+        [0.0, 0.0, 0.0, 0.20, 0.30, 0.40],
+        dtype=torch.float64,
+    )
+    reason_id = torch.tensor([0, 0, 0, 1, 3, 3], dtype=torch.int64)
+    stratum_id = torch.tensor([0, 1, 2, 1, 2, 3], dtype=torch.int64)
+    calibration = calibrate_translation_blockage_thresholds(
+        prediction,
+        target,
+        reason_id,
+        threshold_candidates=(0.0, 0.02, 0.05, 0.06, 0.45, 0.70),
+        curvature_stratum_id=stratum_id,
+    )
+
+    assert calibration["roc_auc"] == 1.0
+    assert calibration["pr_auc"] == 1.0
+    assert calibration["class_counts"] == {
+        "sample_count": 6,
+        "positive_count": 3,
+        "negative_count": 3,
+    }
+    for selected in calibration["selections"].values():
+        assert selected is not None
+        # 0.05 and 0.06 have identical perfect metrics, so this also verifies
+        # the final threshold-ascending tie break for all three rules.
+        assert selected["threshold"] == 0.05
+        assert selected["true_positive"] == 3
+        assert selected["false_positive"] == 0
+        assert selected["true_negative"] == 3
+        assert selected["false_negative"] == 0
+        assert selected["balanced_accuracy"] == 1.0
+        assert selected["specificity"] == 1.0
+
+    all_positive_row = next(
+        row
+        for row in calibration["candidate_table"]
+        if "automatic_all_positive_boundary" in row["sources"]
+    )
+    all_negative_row = next(
+        row
+        for row in calibration["candidate_table"]
+        if "automatic_all_negative_boundary" in row["sources"]
+    )
+    assert all_positive_row["predicted_positive_count"] == 6
+    assert all_negative_row["predicted_positive_count"] == 0
+    assert not all_positive_row["eligible_for_selection"]
+    assert not all_negative_row["eligible_for_selection"]
+    assert calibration["prediction_quantiles"]["none_reason"]["p50"] == 0.02
+    assert calibration["prediction_quantiles"]["positive_target"]["p50"] == 0.50
+    assert calibration["prediction_means"]["per_translation_reason"][
+        "lower_insertion_boundary"
+    ] == 0.40
+    assert calibration["prediction_means"]["per_curvature_stratum"][
+        "extreme"
+    ] == 0.60
+
+    tied_auc = calibrate_translation_blockage_thresholds(
+        torch.tensor([0.1, 0.1, 0.9, 0.9], dtype=torch.float64),
+        torch.tensor([0.0, 1.0, 0.0, 1.0], dtype=torch.float64),
+        torch.tensor([0, 1, 0, 1], dtype=torch.int64),
+        threshold_candidates=(0.0, 0.5, 1.0),
+    )
+    assert tied_auc["roc_auc"] == 0.5
+    assert tied_auc["pr_auc"] == 0.5
+
+    single_class = calibrate_translation_blockage_thresholds(
+        prediction,
+        torch.zeros_like(target),
+        torch.zeros(6, dtype=torch.int64),
+        threshold_candidates=(0.0, 0.05, 0.70),
+    )
+    assert single_class["roc_auc"] is None
+    assert single_class["pr_auc"] is None
+    assert all(
+        selected is None
+        for selected in single_class["selections"].values()
+    )
+    assert single_class["prediction_quantiles"]["positive_target"] == {
+        "count": 0,
+        "p1": None,
+        "p5": None,
+        "p10": None,
+        "p50": None,
+    }
+
+
 def main() -> None:
+    _assert_translation_threshold_calibration()
     config = load_config(DEFAULT_CONFIG)
     boundaries = curvature_boundaries_from_diagnostics(config)
     assert boundaries == (0.05, 0.1, 0.25)
@@ -268,6 +367,19 @@ def main() -> None:
         "enabled": False,
         "dataset_path": None,
         "loss_coef": 1.0,
+        "curvature_loss_coef": 1.0,
+        "translation_loss_coef": 1.0,
+        "translation_group_weights": {
+            "none": 2.0,
+            "lower_insertion_boundary": 1.0,
+            "device_length_limit": 1.0,
+            "vessel_tree_end": 1.0,
+            "other": 1.0,
+        },
+        "translation_zero_calibration_coef": 0.1,
+        "validation_translation_threshold_candidates": list(
+            DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES
+        ),
         "batch_size": 64,
         "update_interval": 1,
         "sampling_mode": "mixed",
@@ -286,6 +398,15 @@ def main() -> None:
     assert build_agent_config(config) == build_agent_config(
         missing_section_config
     )
+    assert tuple(aux_config["translation_group_weights"]) == (
+        SAFETY_AUX_TRANSLATION_GROUP_NAMES
+    )
+    copied_aux_config = build_safety_aux_config(missing_section_config)
+    copied_aux_config["translation_group_weights"]["none"] = 99.0
+    copied_aux_config["validation_translation_threshold_candidates"].append(
+        2.0
+    )
+    assert build_safety_aux_config(missing_section_config) == aux_config
 
     legacy_config = copy.deepcopy(config)
     legacy_config["safety_aux"] = {
@@ -306,6 +427,38 @@ def main() -> None:
         lambda: build_safety_aux_config(enabled_legacy),
         ValueError,
         "legacy four-field",
+    )
+    legacy_inert_fractions = copy.deepcopy(legacy_config)
+    legacy_inert_fractions["safety_aux"]["translation_fraction"] = 0.8
+    legacy_inert_fractions["safety_aux"]["curvature_fraction"] = 0.8
+    normalized_legacy = build_safety_aux_config(legacy_inert_fractions)
+    assert normalized_legacy["translation_fraction"] == 0.5
+    assert normalized_legacy["curvature_fraction"] == 0.5
+    # Materialized disabled configs must remain parseable during checkpoint
+    # save instead of failing only on the second validation pass.
+    materialized_legacy = copy.deepcopy(legacy_inert_fractions)
+    materialized_legacy["safety_aux"] = normalized_legacy
+    assert build_safety_aux_config(materialized_legacy) == normalized_legacy
+
+    commit_46c_config = copy.deepcopy(config)
+    for key in (
+        "curvature_loss_coef",
+        "translation_loss_coef",
+        "translation_group_weights",
+        "translation_zero_calibration_coef",
+        "validation_translation_threshold_candidates",
+    ):
+        commit_46c_config["safety_aux"].pop(key)
+    assert build_safety_aux_config(commit_46c_config) == aux_config
+    enabled_commit_46c = copy.deepcopy(commit_46c_config)
+    enabled_commit_46c["safety_aux"]["enabled"] = True
+    enabled_commit_46c["safety_aux"][
+        "dataset_path"
+    ] = "/tmp/pre-46d-enabled.pt"
+    _assert_raises(
+        lambda: build_safety_aux_config(enabled_commit_46c),
+        ValueError,
+        "pre-Commit-4.6D",
     )
 
     legacy_wide_diagnostics = copy.deepcopy(missing_section_config)
@@ -362,6 +515,87 @@ def main() -> None:
         lambda: build_safety_aux_config(invalid_config),
         ValueError,
         "loss_coef",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"]["curvature_loss_coef"] = -1.0
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "curvature_loss_coef",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"]["translation_loss_coef"] = np.inf
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "translation_loss_coef",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"][
+        "translation_zero_calibration_coef"
+    ] = True
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        TypeError,
+        "translation_zero_calibration_coef",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"]["translation_group_weights"][
+        "unsupported"
+    ] = 1.0
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "unexpected",
+    )
+    invalid_config = copy.deepcopy(config)
+    reordered_weights = invalid_config["safety_aux"].pop(
+        "translation_group_weights"
+    )
+    invalid_config["safety_aux"]["translation_group_weights"] = {
+        key: reordered_weights[key]
+        for key in reversed(tuple(reordered_weights))
+    }
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "canonical order",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"]["translation_group_weights"] = {
+        name: 0.0 for name in SAFETY_AUX_TRANSLATION_GROUP_NAMES
+    }
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "at least one positive",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"][
+        "validation_translation_threshold_candidates"
+    ] = []
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "must not be empty",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"][
+        "validation_translation_threshold_candidates"
+    ] = [0.0, 0.01, 0.01]
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "strictly increasing",
+    )
+    invalid_config = copy.deepcopy(config)
+    invalid_config["safety_aux"][
+        "validation_translation_threshold_candidates"
+    ] = [0.0, np.nan]
+    _assert_raises(
+        lambda: build_safety_aux_config(invalid_config),
+        ValueError,
+        "validation_translation_threshold_candidates[1]",
     )
     invalid_config = copy.deepcopy(config)
     invalid_config["safety_aux"]["batch_size"] = 64.0
@@ -997,6 +1231,8 @@ def main() -> None:
     assert dataset.validation_size == 3
     train_indices = dataset.train_indices
     validation_indices = dataset.validation_indices
+    # This disjoint-index invariant, together with the exact training-buffer
+    # projection below, proves validation labels never enter optimization.
     assert np.intersect1d(train_indices, validation_indices).size == 0
     np.testing.assert_array_equal(
         np.sort(np.concatenate((train_indices, validation_indices))),
@@ -1041,6 +1277,9 @@ def main() -> None:
     validation_state = dataset.validation_buffer().state_dict()
     assert training_state["size"] == train_indices.size
     assert validation_state["size"] == validation_indices.size
+    # SafetyAuxiliarySupervisor samples only this training projection; every
+    # target/reason/stratum label in its optimizer-facing buffer comes from
+    # train_indices, while validation labels remain in validation_state.
     for field in semantic_fields:
         np.testing.assert_array_equal(
             training_state[field],
@@ -1100,6 +1339,36 @@ def main() -> None:
         assert supervisor.dataset.train_size == train_indices.size
         assert supervisor.dataset.validation_size == validation_indices.size
         assert supervisor.fingerprint == dataset.fingerprint
+        assert supervisor.available_translation_reason_names == (
+            "none",
+            "lower_insertion_boundary",
+            "vessel_tree_end",
+        )
+        assert supervisor.positive_weighted_translation_reason_names == (
+            "none",
+            "lower_insertion_boundary",
+            "vessel_tree_end",
+        )
+        unavailable_positive_config = copy.deepcopy(supervisor_config)
+        unavailable_positive_config["translation_group_weights"] = {
+            "none": 0.0,
+            "lower_insertion_boundary": 0.0,
+            "device_length_limit": 1.0,
+            "vessel_tree_end": 0.0,
+            "other": 1.0,
+        }
+        _assert_raises(
+            lambda: SafetyAuxiliarySupervisor(
+                unavailable_positive_config,
+                observation_dim=14,
+                action_dim=2,
+                safety_cost_names=SAFETY_COST_NAMES,
+                curvature_boundaries_mm_inv=boundaries,
+                seed=1701,
+            ),
+            ValueError,
+            "no available translation reason",
+        )
 
         sampler_before_validation = (
             supervisor.training_buffer.sampler_state_dict()
@@ -1161,6 +1430,24 @@ def main() -> None:
             SAFETY_AUXILIARY_STATE_SCHEMA_VERSION
         )
         assert checkpoint_state["enabled"] is True
+        assert checkpoint_state["calibration"] == (
+            supervisor.calibration_metadata()
+        )
+        assert checkpoint_state["calibration"] == {
+            "curvature_loss_coef": 1.0,
+            "translation_loss_coef": 1.0,
+            "translation_group_weights": {
+                "none": 2.0,
+                "lower_insertion_boundary": 1.0,
+                "device_length_limit": 1.0,
+                "vessel_tree_end": 1.0,
+                "other": 1.0,
+            },
+            "translation_zero_calibration_coef": 0.1,
+            "validation_translation_threshold_candidates": list(
+                DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES
+            ),
+        }
         assert checkpoint_state["dataset"]["fingerprint"] == (
             dataset.fingerprint
         )
@@ -1231,6 +1518,53 @@ def main() -> None:
             lambda: resumed_supervisor.load_state_dict(config_mismatch),
             ValueError,
             "config does not match",
+        )
+        calibration_mismatch = copy.deepcopy(checkpoint_state)
+        calibration_mismatch["calibration"][
+            "translation_group_weights"
+        ]["none"] = 4.0
+        _assert_raises(
+            lambda: resumed_supervisor.load_state_dict(
+                calibration_mismatch
+            ),
+            ValueError,
+            "calibration metadata does not match",
+        )
+        reordered_calibration = copy.deepcopy(checkpoint_state)
+        calibration_weights = reordered_calibration["calibration"].pop(
+            "translation_group_weights"
+        )
+        reordered_calibration["calibration"][
+            "translation_group_weights"
+        ] = {
+            name: calibration_weights[name]
+            for name in reversed(tuple(calibration_weights))
+        }
+        _assert_raises(
+            lambda: resumed_supervisor.load_state_dict(
+                reordered_calibration
+            ),
+            ValueError,
+            "canonical names and order",
+        )
+        pre_commit_46d_state = copy.deepcopy(checkpoint_state)
+        pre_commit_46d_state["schema_version"] = 1
+        pre_commit_46d_state.pop("calibration")
+        _assert_raises(
+            lambda: resumed_supervisor.load_state_dict(
+                pre_commit_46d_state
+            ),
+            ValueError,
+            "predates Commit-4.6D",
+        )
+        missing_calibration = copy.deepcopy(checkpoint_state)
+        missing_calibration.pop("calibration")
+        _assert_raises(
+            lambda: resumed_supervisor.load_state_dict(
+                missing_calibration
+            ),
+            ValueError,
+            "missing=['calibration']",
         )
         counter_mismatch = copy.deepcopy(checkpoint_state)
         counter_mismatch["auxiliary_update_count"] += 1
@@ -1565,7 +1899,8 @@ def main() -> None:
         "PASS: strict Safety auxiliary config, applied-action replay schema, "
         "replacement-aware balanced sampling, sampler RNG resume, deterministic "
         "train/validation isolation, strict supervisor checkpoint identity, "
-        "dataset corruption rejection, and duplicate diagnostics/deduplication."
+        "fixed-validation threshold calibration, dataset corruption rejection, "
+        "and duplicate diagnostics/deduplication."
     )
 
 

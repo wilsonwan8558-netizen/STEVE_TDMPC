@@ -310,6 +310,18 @@ safety_aux:
   enabled: true
   dataset_path: /tmp/steve_commit46b_safety_aux.pt
   loss_coef: 1.0
+  curvature_loss_coef: 1.0
+  translation_loss_coef: 1.0
+  translation_group_weights:
+    none: 2.0
+    lower_insertion_boundary: 1.0
+    device_length_limit: 1.0
+    vessel_tree_end: 1.0
+    other: 1.0
+  translation_zero_calibration_coef: 0.1
+  validation_translation_threshold_candidates:
+    [0.0, 0.000001, 0.00001, 0.0001, 0.001, 0.002, 0.005,
+     0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]
   batch_size: 64
   update_interval: 1
   sampling_mode: mixed
@@ -328,19 +340,35 @@ deterministically at `diagnostics.validation_interval`.
 For an auxiliary transition, the encoder runs under `torch.no_grad()` and its
 latent is detached before the existing Safety Head receives the requested
 normalized action. The two targets use the same `log1p(cost / scale)`
-transform and per-channel Smooth L1 losses as main Safety training, without
-temporal rho weighting. Only the Safety trunk and its two output branches
-receive auxiliary gradients. Encoder, dynamics, reward, termination, Q, and
-policy parameters receive only their original main-update gradients. The
-existing model optimizer performs one step; no second optimizer is introduced.
+transform and Smooth L1 loss as main Safety training, without temporal rho
+weighting. Curvature loss is averaged within each available stored stratum and
+then equally across available strata. Translation loss is averaged within each
+available canonical blockage-reason group and combined as
+`sum(weight[group] * loss[group]) / sum(available weights)`, so group size does
+not silently become a loss weight. Missing groups are logged as unavailable
+and are never fabricated.
+
+`translation_zero_calibration_coef` adds an auxiliary-only squared penalty on
+decoded translation predictions whose stored target is exactly zero. Positive
+blockage targets are excluded. The channel coefficients, group weights, and
+zero-calibration coefficient affect only offline auxiliary supervision; they
+do not change the main-replay Safety loss. The default `none: 2.0` weight and
+the threshold candidates are engineering diagnostics, not clinical limits.
+
+Only the Safety trunk and its two output branches receive auxiliary gradients.
+Encoder, dynamics, reward, termination, Q, and policy parameters receive only
+their original main-update gradients. The existing model optimizer performs
+one step; no second optimizer is introduced.
 
 Enabled checkpoints store the resolved auxiliary configuration, dataset
-fingerprint and fixed split identity, sampler-only RNG state, and update
-counters. Dataset transitions are not duplicated into checkpoints. Resume
-requires the same strict dataset and reproduces the next auxiliary batch.
-Legacy collection-only enabled auxiliary checkpoints are intentionally
-rejected; existing format-v3 checkpoints created with auxiliary supervision
-disabled remain compatible.
+fingerprint and fixed split identity, exact loss/calibration metadata,
+sampler-only RNG state, and update counters. Dataset transitions are not
+duplicated into checkpoints. Resume requires the same strict dataset,
+coefficients, ordered group weights, zero calibration, and threshold candidate
+list, and it reproduces the next auxiliary batch. Enabled checkpoints that
+predate Commit 4.6D are intentionally rejected because they do not contain
+this calibration contract. Existing format-v3 checkpoints created with
+auxiliary supervision disabled remain compatible.
 
 ## Training
 
@@ -465,10 +493,19 @@ python RL_TDMPC/evaluate_safety_head.py \
 ```
 
 The report contains overall, per-translation-reason, and four-stratum
-curvature metrics in original and transformed units, plus diagnostic blockage
-precision/recall/F1 at `1e-6`. This is an intervention-blockage diagnostic
-threshold, not a clinical safety limit. Requested actions are used as Safety
-Head inputs, and the validation split is never sampled or modified.
+curvature metrics in original and transformed units. For translation blockage
+it also reports the complete configured threshold table, confusion counts,
+precision/recall/F1, false-positive/false-negative rates, specificity,
+balanced accuracy, ROC AUC, PR AUC, prediction means, and the configured
+percentiles for normal and positive samples. It selects three deterministic
+diagnostic operating points: maximum F1, lowest-FPR among candidates with
+recall at least 0.95, and highest-recall among candidates with false-positive
+rate at most 0.05. Unavailable values are written as strict JSON `null`.
+
+The legacy `1e-6` result remains in the report to show mathematically nonzero
+predictions, but neither it nor a calibrated operating point is a clinical
+safety limit. Requested actions are used as Safety Head inputs, and the fixed
+validation split is never sampled or modified.
 
 Add explicit policy episodes and targeted real blockage checks to run a
 combined online/offline evaluation:
@@ -484,7 +521,10 @@ python RL_TDMPC/evaluate_safety_head.py \
 
 Supplying `--safety-dataset` without `--episodes` or
 `--targeted-blockage` is deliberately offline-only. Safety predictions remain
-diagnostic and are never called by MPC or used to alter actions.
+diagnostic and are never called by MPC or used to alter actions. When targeted
+checks and a fixed dataset are requested together, the lower-boundary and
+tree-end predictions are compared with every selected validation threshold;
+the comparison is report-only.
 
 ## Logs
 
@@ -492,7 +532,13 @@ Training writes append-only records under `RL_TDMPC/logs/`:
 
 - `metrics.jsonl`: all episode and update records;
 - `episodes.csv`: reward, length, success, cumulative success rate, and steps;
-- `updates.csv`: total/model/policy losses and total environment steps.
+- `updates.csv`: total/model/policy losses, per-group auxiliary losses,
+  zero-calibration loss, prediction means, auxiliary-only gradient norms, and
+  total environment steps;
+- `safety_aux_sampling.csv`: sampled group counts, unavailable groups, unique
+  exposure, and duplicate exposure for every scheduled auxiliary batch;
+- `safety_aux_validation.csv`: complete-split validation summaries, selected
+  calibration operating points, AUCs, and prediction distribution summaries.
 
 Evaluation writes per-episode records and a summary under
 `RL_TDMPC/logs/evaluation/`.

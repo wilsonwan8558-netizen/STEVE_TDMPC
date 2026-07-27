@@ -8,7 +8,7 @@ interpreted as clinical safety thresholds.
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -16,12 +16,18 @@ import torch.nn.functional as F
 from envs.safety import CURVATURE_STRATUM_NAMES
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 
+from .common import (
+    DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES,
+)
 from .replay_buffer import REPLAY_SAFETY_COST_NAMES
 
 
 CURVATURE_DIAGNOSTIC_BOUNDARIES_MM_INV: Tuple[float, float] = (0.05, 0.1)
 DEFAULT_TRANSLATION_POSITIVE_THRESHOLD = 1e-6
 DEFAULT_FIXED_VALIDATION_BATCH_SIZE = 512
+DEFAULT_TRANSLATION_THRESHOLD_CANDIDATES: Tuple[float, ...] = tuple(
+    DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES
+)
 
 _CURVATURE_INDEX = 0
 _TRANSLATION_ERROR_INDEX = 1
@@ -418,6 +424,543 @@ def _fixed_validation_group_metrics(
     return {"count": count, "channels": channels}
 
 
+def _validated_translation_threshold_candidates(
+    value: Sequence[float],
+) -> Tuple[float, ...]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        raise TypeError(
+            "translation_threshold_candidates must be a sequence of numbers"
+        )
+    if not value:
+        raise ValueError(
+            "translation_threshold_candidates must not be empty"
+        )
+    parsed: List[float] = []
+    for index, item in enumerate(value):
+        if isinstance(item, bool):
+            raise TypeError(
+                "translation_threshold_candidates "
+                f"[{index}] must be a real number, not bool"
+            )
+        try:
+            threshold = float(item)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(
+                "translation_threshold_candidates "
+                f"[{index}] must be a real number"
+            ) from exc
+        if not math.isfinite(threshold) or threshold < 0.0:
+            raise ValueError(
+                "translation_threshold_candidates must contain finite, "
+                "nonnegative values"
+            )
+        if parsed and threshold <= parsed[-1]:
+            raise ValueError(
+                "translation_threshold_candidates must be strictly increasing"
+            )
+        parsed.append(threshold)
+    return tuple(parsed)
+
+
+def _binary_operating_point(
+    prediction: torch.Tensor,
+    target_positive: torch.Tensor,
+    threshold: float,
+) -> Dict[str, Any]:
+    """Return a complete confusion-table row for ``prediction > threshold``."""
+
+    predicted_positive = prediction > threshold
+    true_positive = int(
+        torch.count_nonzero(target_positive & predicted_positive)
+    )
+    false_positive = int(
+        torch.count_nonzero(~target_positive & predicted_positive)
+    )
+    false_negative = int(
+        torch.count_nonzero(target_positive & ~predicted_positive)
+    )
+    true_negative = int(
+        torch.count_nonzero(~target_positive & ~predicted_positive)
+    )
+    actual_positive = true_positive + false_negative
+    actual_negative = true_negative + false_positive
+    predicted_positive_count = true_positive + false_positive
+    sample_count = actual_positive + actual_negative
+
+    precision = (
+        true_positive / predicted_positive_count
+        if predicted_positive_count > 0
+        else None
+    )
+    recall = (
+        true_positive / actual_positive
+        if actual_positive > 0
+        else None
+    )
+    specificity = (
+        true_negative / actual_negative
+        if actual_negative > 0
+        else None
+    )
+    false_positive_rate = (
+        false_positive / actual_negative
+        if actual_negative > 0
+        else None
+    )
+    false_negative_rate = (
+        false_negative / actual_positive
+        if actual_positive > 0
+        else None
+    )
+    f1_denominator = 2 * true_positive + false_positive + false_negative
+    f1 = (
+        2 * true_positive / f1_denominator
+        if f1_denominator > 0
+        else None
+    )
+    balanced_accuracy = (
+        (recall + specificity) / 2.0
+        if recall is not None and specificity is not None
+        else None
+    )
+    return {
+        "threshold": float(threshold),
+        "sample_count": sample_count,
+        "actual_positive_count": actual_positive,
+        "actual_negative_count": actual_negative,
+        "predicted_positive_count": predicted_positive_count,
+        "predicted_negative_count": sample_count - predicted_positive_count,
+        "true_positive": true_positive,
+        "false_positive": false_positive,
+        "true_negative": true_negative,
+        "false_negative": false_negative,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "specificity": specificity,
+        "false_positive_rate": false_positive_rate,
+        "false_negative_rate": false_negative_rate,
+        "balanced_accuracy": balanced_accuracy,
+    }
+
+
+def _linear_quantile(
+    values: torch.Tensor,
+    probability: float,
+) -> Optional[float]:
+    """Version-stable linear quantile for one finite float64 vector."""
+
+    if values.numel() == 0:
+        return None
+    sorted_values = torch.sort(values.to(dtype=torch.float64)).values
+    position = (int(sorted_values.numel()) - 1) * float(probability)
+    lower_index = int(math.floor(position))
+    upper_index = int(math.ceil(position))
+    lower = float(sorted_values[lower_index])
+    upper = float(sorted_values[upper_index])
+    fraction = position - lower_index
+    return float(lower + (upper - lower) * fraction)
+
+
+def _prediction_quantiles(
+    values: torch.Tensor,
+    percentiles: Sequence[int],
+) -> Dict[str, Optional[float]]:
+    return {
+        f"p{percentile}": _linear_quantile(
+            values,
+            float(percentile) / 100.0,
+        )
+        for percentile in percentiles
+    }
+
+
+def _binary_ranking_auc(
+    prediction: torch.Tensor,
+    target_positive: torch.Tensor,
+) -> Tuple[Optional[float], Optional[float]]:
+    """Return deterministic tie-aware ROC AUC and step-integral PR AUC."""
+
+    scores = [float(value) for value in prediction.to(dtype=torch.float64)]
+    labels = [bool(value) for value in target_positive]
+    positive_count = sum(labels)
+    negative_count = len(labels) - positive_count
+    if positive_count == 0 or negative_count == 0:
+        return None, None
+
+    ascending = sorted(
+        range(len(scores)),
+        key=lambda index: (scores[index], index),
+    )
+    ranks = [0.0] * len(scores)
+    start = 0
+    while start < len(ascending):
+        stop = start + 1
+        score = scores[ascending[start]]
+        while stop < len(ascending) and scores[ascending[stop]] == score:
+            stop += 1
+        # Ranks are one-based; tied scores receive their average rank.
+        average_rank = ((start + 1) + stop) / 2.0
+        for position in range(start, stop):
+            ranks[ascending[position]] = average_rank
+        start = stop
+    positive_rank_sum = sum(
+        rank for rank, label in zip(ranks, labels) if label
+    )
+    roc_auc = (
+        positive_rank_sum
+        - positive_count * (positive_count + 1) / 2.0
+    ) / (positive_count * negative_count)
+
+    descending = sorted(
+        range(len(scores)),
+        key=lambda index: (-scores[index], index),
+    )
+    true_positive = 0
+    false_positive = 0
+    previous_recall = 0.0
+    average_precision = 0.0
+    start = 0
+    while start < len(descending):
+        stop = start + 1
+        score = scores[descending[start]]
+        while stop < len(descending) and scores[descending[stop]] == score:
+            stop += 1
+        for position in range(start, stop):
+            if labels[descending[position]]:
+                true_positive += 1
+            else:
+                false_positive += 1
+        recall = true_positive / positive_count
+        precision = true_positive / (true_positive + false_positive)
+        average_precision += (recall - previous_recall) * precision
+        previous_recall = recall
+        start = stop
+    return float(roc_auc), float(average_precision)
+
+
+def _selected_operating_point(
+    row: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Copy one row without sharing mutable source lists."""
+
+    return {
+        key: list(value) if key == "sources" else value
+        for key, value in row.items()
+    }
+
+
+def calibrate_translation_blockage_thresholds(
+    prediction: Any,
+    target: Any,
+    translation_block_reason_id: Any,
+    *,
+    threshold_candidates: Sequence[float] = (
+        DEFAULT_TRANSLATION_THRESHOLD_CANDIDATES
+    ),
+    requested_threshold: float = DEFAULT_TRANSLATION_POSITIVE_THRESHOLD,
+    translation_block_reason_names: Sequence[str] = (
+        TRANSLATION_BLOCK_REASON_NAMES
+    ),
+    curvature_stratum_id: Optional[Any] = None,
+    curvature_stratum_names: Sequence[str] = CURVATURE_STRATUM_NAMES,
+) -> Dict[str, Any]:
+    """Calibrate diagnostic blockage thresholds on one fixed validation split.
+
+    All configured candidates are expressed in the decoded, original
+    normalized translation-error units. Automatic score boundaries make the
+    table include all-positive and all-negative operating points, but only
+    configured candidates are eligible for deterministic selection.
+    """
+
+    prediction_tensor = _as_floating_tensor(
+        prediction,
+        "translation prediction",
+    ).reshape(-1).to(dtype=torch.float64, device="cpu")
+    target_tensor = _as_floating_tensor(
+        target,
+        "translation target",
+    ).reshape(-1).to(dtype=torch.float64, device="cpu")
+    if (
+        prediction_tensor.numel() == 0
+        or prediction_tensor.shape != target_tensor.shape
+    ):
+        raise ValueError(
+            "Translation prediction and target must be equal non-empty vectors"
+        )
+    if not bool(torch.isfinite(prediction_tensor).all()) or not bool(
+        torch.isfinite(target_tensor).all()
+    ):
+        raise FloatingPointError(
+            "Translation calibration inputs contain NaN or infinity"
+        )
+    if bool(torch.any(prediction_tensor < 0)) or bool(
+        torch.any(target_tensor < 0)
+    ):
+        raise ValueError(
+            "Translation calibration inputs must be nonnegative"
+        )
+    configured_candidates = _validated_translation_threshold_candidates(
+        threshold_candidates
+    )
+    requested = float(requested_threshold)
+    if not math.isfinite(requested) or requested < 0.0:
+        raise ValueError(
+            "requested_threshold must be finite and nonnegative"
+        )
+    reason_names = _validated_group_names(
+        translation_block_reason_names,
+        name="translation_block_reason_names",
+    )
+    reason_ids = _validated_group_ids(
+        translation_block_reason_id,
+        name="translation_block_reason_id",
+        sample_count=int(target_tensor.numel()),
+        group_count=len(reason_names),
+        device=target_tensor.device,
+    )
+    stratum_names = _validated_group_names(
+        curvature_stratum_names,
+        name="curvature_stratum_names",
+    )
+    stratum_ids = (
+        _validated_group_ids(
+            curvature_stratum_id,
+            name="curvature_stratum_id",
+            sample_count=int(target_tensor.numel()),
+            group_count=len(stratum_names),
+            device=target_tensor.device,
+        )
+        if curvature_stratum_id is not None
+        else None
+    )
+    target_positive = target_tensor > 0.0
+
+    candidate_sources: Dict[float, set[str]] = {}
+
+    def add_candidate(threshold: float, source: str) -> None:
+        candidate_sources.setdefault(float(threshold), set()).add(source)
+
+    for threshold in configured_candidates:
+        add_candidate(threshold, "configured")
+    add_candidate(requested, "requested_evaluation_threshold")
+    minimum = torch.amin(prediction_tensor)
+    maximum = torch.amax(prediction_tensor)
+    lower_boundary = float(
+        torch.nextafter(
+            minimum,
+            minimum.new_tensor(float("-inf")),
+        )
+    )
+    upper_boundary = float(
+        torch.nextafter(
+            maximum,
+            maximum.new_tensor(float("inf")),
+        )
+    )
+    if math.isfinite(lower_boundary):
+        add_candidate(lower_boundary, "automatic_all_positive_boundary")
+    if math.isfinite(upper_boundary):
+        add_candidate(upper_boundary, "automatic_all_negative_boundary")
+
+    configured_set = set(configured_candidates)
+    candidate_table = []
+    for threshold in sorted(candidate_sources):
+        row = _binary_operating_point(
+            prediction_tensor,
+            target_positive,
+            threshold,
+        )
+        row["sources"] = sorted(candidate_sources[threshold])
+        row["eligible_for_selection"] = threshold in configured_set
+        candidate_table.append(row)
+    eligible = [
+        row for row in candidate_table if row["eligible_for_selection"]
+    ]
+
+    max_f1_rows = [
+        row
+        for row in eligible
+        if row["f1"] is not None and row["recall"] is not None
+    ]
+    max_f1 = (
+        _selected_operating_point(
+            min(
+                max_f1_rows,
+                key=lambda row: (
+                    -float(row["f1"]),
+                    -float(row["recall"]),
+                    (
+                        float(row["false_positive_rate"])
+                        if row["false_positive_rate"] is not None
+                        else float("inf")
+                    ),
+                    float(row["threshold"]),
+                ),
+            )
+        )
+        if max_f1_rows
+        else None
+    )
+    recall_constrained_rows = [
+        row
+        for row in eligible
+        if row["recall"] is not None
+        and row["recall"] >= 0.95
+        and row["false_positive_rate"] is not None
+    ]
+    recall_constrained = (
+        _selected_operating_point(
+            min(
+                recall_constrained_rows,
+                key=lambda row: (
+                    float(row["false_positive_rate"]),
+                    float(row["threshold"]),
+                    -(
+                        float(row["precision"])
+                        if row["precision"] is not None
+                        else float("-inf")
+                    ),
+                ),
+            )
+        )
+        if recall_constrained_rows
+        else None
+    )
+    fpr_constrained_rows = [
+        row
+        for row in eligible
+        if row["false_positive_rate"] is not None
+        and row["false_positive_rate"] <= 0.05
+        and row["recall"] is not None
+    ]
+    fpr_constrained = (
+        _selected_operating_point(
+            min(
+                fpr_constrained_rows,
+                key=lambda row: (
+                    -float(row["recall"]),
+                    float(row["threshold"]),
+                    -(
+                        float(row["precision"])
+                        if row["precision"] is not None
+                        else float("-inf")
+                    ),
+                ),
+            )
+        )
+        if fpr_constrained_rows
+        else None
+    )
+
+    def masked_mean(mask: torch.Tensor) -> Optional[float]:
+        return (
+            float(torch.mean(prediction_tensor[mask]))
+            if int(torch.count_nonzero(mask)) > 0
+            else None
+        )
+
+    none_id = (
+        reason_names.index("none")
+        if "none" in reason_names
+        else None
+    )
+    none_mask = (
+        reason_ids == none_id
+        if none_id is not None
+        else torch.zeros_like(target_positive)
+    )
+    roc_auc, pr_auc = _binary_ranking_auc(
+        prediction_tensor,
+        target_positive,
+    )
+    return {
+        "schema_version": 1,
+        "units": "normalized_requested_applied_translation_error",
+        "decision_rule": "decoded_prediction > threshold",
+        "threshold_note": (
+            "Validation diagnostic only; no calibrated threshold is a "
+            "clinical safety threshold."
+        ),
+        "configured_candidate_thresholds": list(configured_candidates),
+        "requested_evaluation_threshold": requested,
+        "automatic_boundaries": {
+            "all_positive_threshold": lower_boundary,
+            "all_negative_threshold": upper_boundary,
+            "eligible_for_selection": False,
+        },
+        "candidate_count": len(candidate_table),
+        "selection_candidate_count": len(eligible),
+        "candidate_table": candidate_table,
+        "selection_rules": {
+            "max_f1": (
+                "F1 descending, recall descending, FPR ascending, "
+                "threshold ascending."
+            ),
+            "recall_at_least_0_95_lowest_fpr": (
+                "Eligible recall >= 0.95; FPR ascending, threshold "
+                "ascending, precision descending."
+            ),
+            "fpr_at_most_0_05_highest_recall": (
+                "Eligible FPR <= 0.05; recall descending, threshold "
+                "ascending, precision descending."
+            ),
+            "selection_scope": (
+                "Configured candidates only; automatic boundaries and an "
+                "unconfigured requested threshold are report-only."
+            ),
+        },
+        "selections": {
+            "max_f1": max_f1,
+            "recall_at_least_0_95_lowest_fpr": recall_constrained,
+            "fpr_at_most_0_05_highest_recall": fpr_constrained,
+        },
+        "class_counts": {
+            "sample_count": int(target_tensor.numel()),
+            "positive_count": int(torch.count_nonzero(target_positive)),
+            "negative_count": int(torch.count_nonzero(~target_positive)),
+        },
+        "roc_auc": roc_auc,
+        "roc_auc_method": "tie-aware Mann-Whitney rank statistic",
+        "pr_auc": pr_auc,
+        "pr_auc_method": "average-precision step integral",
+        "auc_requires_both_classes": True,
+        "prediction_means": {
+            "overall": float(torch.mean(prediction_tensor)),
+            "target_negative": masked_mean(~target_positive),
+            "target_positive": masked_mean(target_positive),
+            "per_translation_reason": {
+                name: masked_mean(reason_ids == index)
+                for index, name in enumerate(reason_names)
+            },
+            "per_curvature_stratum": (
+                {
+                    name: masked_mean(stratum_ids == index)
+                    for index, name in enumerate(stratum_names)
+                }
+                if stratum_ids is not None
+                else None
+            ),
+        },
+        "prediction_quantiles": {
+            "none_reason": {
+                "count": int(torch.count_nonzero(none_mask)),
+                **_prediction_quantiles(
+                    prediction_tensor[none_mask],
+                    (50, 90, 95, 99),
+                ),
+            },
+            "positive_target": {
+                "count": int(torch.count_nonzero(target_positive)),
+                **_prediction_quantiles(
+                    prediction_tensor[target_positive],
+                    (1, 5, 10, 50),
+                ),
+            },
+        },
+    }
+
+
 def _translation_blockage_metrics(
     *,
     prediction: torch.Tensor,
@@ -483,6 +1026,9 @@ def aggregate_fixed_safety_validation(
     *,
     translation_positive_threshold: float = (
         DEFAULT_TRANSLATION_POSITIVE_THRESHOLD
+    ),
+    translation_threshold_candidates: Sequence[float] = (
+        DEFAULT_TRANSLATION_THRESHOLD_CANDIDATES
     ),
     safety_cost_names: Sequence[str] = REPLAY_SAFETY_COST_NAMES,
     translation_block_reason_names: Sequence[str] = (
@@ -577,6 +1123,18 @@ def aggregate_fixed_safety_validation(
             target=target,
             threshold=threshold,
         ),
+        "translation_threshold_calibration": (
+            calibrate_translation_blockage_thresholds(
+                prediction=prediction[:, _TRANSLATION_ERROR_INDEX],
+                target=target[:, _TRANSLATION_ERROR_INDEX],
+                translation_block_reason_id=reason_ids,
+                threshold_candidates=translation_threshold_candidates,
+                requested_threshold=threshold,
+                translation_block_reason_names=reason_names,
+                curvature_stratum_id=stratum_ids,
+                curvature_stratum_names=stratum_names,
+            )
+        ),
     }
 
 
@@ -587,6 +1145,9 @@ def evaluate_fixed_safety_validation(
     batch_size: int = DEFAULT_FIXED_VALIDATION_BATCH_SIZE,
     translation_positive_threshold: float = (
         DEFAULT_TRANSLATION_POSITIVE_THRESHOLD
+    ),
+    translation_threshold_candidates: Sequence[float] = (
+        DEFAULT_TRANSLATION_THRESHOLD_CANDIDATES
     ),
 ) -> Dict[str, Any]:
     """Predict and aggregate one complete immutable validation batch.
@@ -722,6 +1283,9 @@ def evaluate_fixed_safety_validation(
                 translation_positive_threshold=(
                     translation_positive_threshold
                 ),
+                translation_threshold_candidates=(
+                    translation_threshold_candidates
+                ),
                 safety_cost_names=validation_batch["safety_cost_names"],
                 translation_block_reason_names=validation_batch[
                     "translation_block_reason_names"
@@ -768,6 +1332,8 @@ def flatten_fixed_safety_validation_metrics(
     normalized_prefix = _normalise_prefix(prefix)
 
     def scalar(value: Any, name: str) -> float:
+        if value is None:
+            return float("nan")
         if isinstance(value, torch.Tensor):
             if value.numel() != 1:
                 raise ValueError(f"{name} must be scalar")
@@ -853,6 +1419,81 @@ def flatten_fixed_safety_validation_metrics(
             classification[name],
             f"translation_blockage.{name}",
         )
+
+    calibration = metrics["translation_threshold_calibration"]
+    output[
+        f"{normalized_prefix}translation_calibration_roc_auc"
+    ] = scalar(calibration["roc_auc"], "calibration.roc_auc")
+    output[
+        f"{normalized_prefix}translation_calibration_pr_auc"
+    ] = scalar(calibration["pr_auc"], "calibration.pr_auc")
+    output[
+        f"{normalized_prefix}translation_calibration_candidate_count"
+    ] = scalar(
+        calibration["candidate_count"],
+        "calibration.candidate_count",
+    )
+    output[
+        f"{normalized_prefix}translation_calibration_selection_candidate_count"
+    ] = scalar(
+        calibration["selection_candidate_count"],
+        "calibration.selection_candidate_count",
+    )
+    for group_name, value in calibration["prediction_means"][
+        "per_translation_reason"
+    ].items():
+        output[
+            f"{normalized_prefix}translation_prediction_mean_reason_{group_name}"
+        ] = scalar(
+            value,
+            f"calibration.prediction_means.reason.{group_name}",
+        )
+    for group_name, value in (
+        calibration["prediction_means"]["per_curvature_stratum"] or {}
+    ).items():
+        output[
+            f"{normalized_prefix}translation_prediction_mean_stratum_{group_name}"
+        ] = scalar(
+            value,
+            f"calibration.prediction_means.stratum.{group_name}",
+        )
+    for group_name in ("none_reason", "positive_target"):
+        group = calibration["prediction_quantiles"][group_name]
+        output[
+            f"{normalized_prefix}translation_{group_name}_count"
+        ] = scalar(
+            group["count"],
+            f"calibration.quantiles.{group_name}.count",
+        )
+        for quantile_name, value in group.items():
+            if quantile_name == "count":
+                continue
+            output[
+                f"{normalized_prefix}translation_{group_name}_{quantile_name}"
+            ] = scalar(
+                value,
+                f"calibration.quantiles.{group_name}.{quantile_name}",
+            )
+
+    selected_metric_names = (
+        "threshold",
+        "precision",
+        "recall",
+        "f1",
+        "specificity",
+        "false_positive_rate",
+        "false_negative_rate",
+        "balanced_accuracy",
+    )
+    for selection_name, selection in calibration["selections"].items():
+        for metric_name in selected_metric_names:
+            output[
+                f"{normalized_prefix}translation_calibration_"
+                f"{selection_name}_{metric_name}"
+            ] = scalar(
+                selection.get(metric_name) if selection is not None else None,
+                f"calibration.selections.{selection_name}.{metric_name}",
+            )
     return output
 
 
@@ -1184,9 +1825,11 @@ __all__ = [
     "CURVATURE_DIAGNOSTIC_BOUNDARIES_MM_INV",
     "DEFAULT_FIXED_VALIDATION_BATCH_SIZE",
     "DEFAULT_TRANSLATION_POSITIVE_THRESHOLD",
+    "DEFAULT_TRANSLATION_THRESHOLD_CANDIDATES",
     "aggregate_fixed_safety_validation",
     "aggregate_safety_episode",
     "aggregate_safety_evaluation",
+    "calibrate_translation_blockage_thresholds",
     "evaluate_fixed_safety_validation",
     "flatten_fixed_safety_validation_metrics",
     "safety_batch_diagnostics",

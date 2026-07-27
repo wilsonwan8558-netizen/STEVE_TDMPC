@@ -45,6 +45,31 @@ safety_aux:
   enabled: false
   dataset_path: null
   loss_coef: 1.0
+  curvature_loss_coef: 1.0
+  translation_loss_coef: 1.0
+  translation_group_weights:
+    none: 2.0
+    lower_insertion_boundary: 1.0
+    device_length_limit: 1.0
+    vessel_tree_end: 1.0
+    other: 1.0
+  translation_zero_calibration_coef: 0.1
+  # Diagnostic calibration only; these values never affect MPC or actions.
+  validation_translation_threshold_candidates:
+    - 0.0
+    - 0.000001
+    - 0.00001
+    - 0.0001
+    - 0.001
+    - 0.002
+    - 0.005
+    - 0.01
+    - 0.02
+    - 0.05
+    - 0.1
+    - 0.2
+    - 0.5
+    - 1.0
   batch_size: 64
   update_interval: 1
   sampling_mode: mixed
