@@ -1527,6 +1527,7 @@ def main() -> None:
             safety_cost[0].copy(),
             0,
             0,
+            applied_action=actions[0].copy(),
             episode_step=1,
         )
         auxiliary_checkpoint_path = (

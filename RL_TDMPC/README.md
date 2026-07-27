@@ -162,9 +162,16 @@ reason as one canonical ID/name pair:
 
 This metadata is not part of the 14-D observation, reward, termination, or
 two-channel Safety Head target. `SafetyAuxReplayBuffer` stores individual
-`(observation_t, normalized_action_t, safety_cost_t)` transitions and supports
+transitions with both requested and applied normalized actions and supports
 uniform, translation-balanced, curvature-balanced, and mixed sampling with an
 RNG independent from the main temporal replay.
+
+The persisted `action` field is the normalized action requested by the caller.
+The separate `applied_action` field is the intervention's command after its
+translation constraint mask, normalized back to the public `[-1, 1]` action
+range. It is not measured/realized guidewire motion: a blocked translation can
+therefore have a nonzero requested component and a zero applied component,
+while actual motion remains a property of the resulting simulation state.
 
 The auxiliary curvature strata are ordered as:
 
@@ -175,22 +182,57 @@ The auxiliary curvature strata are ordered as:
 3 extreme  curvature >= 0.25 mm^-1
 ```
 
-Collect all supported scenarios and write the dataset/report under `/tmp`:
+The collector can repeat controlled scenarios with deterministic, distinct
+seeds and save every seed used in the report and dataset metadata. Its main
+controls are:
+
+- `--lower-boundary-repetitions`, `--tree-end-repetitions`, and
+  `--device-length-repetitions`;
+- `--random-episodes` and `--curvature-episodes`;
+- `--seed-start` (with `--seed` retained as an alias),
+  `--tree-end-seed`, and `--device-length-seed`;
+- `--target-none`, `--target-lower-boundary`, and `--target-tree-end`;
+- `--target-low`, `--target-medium`, `--target-high`, and
+  `--target-extreme`;
+- `--max-curvature-transitions`, `--capacity`, `--split-seed`, and
+  `--validation-fraction`;
+- `--observation-round-decimals` and the opt-in
+  `--deduplicate-exact`.
+
+Collect all supported scenarios with the small defaults and write the
+dataset/report under `/tmp`:
 
 ```bash
 python RL_TDMPC/collect_safety_dataset.py
 ```
 
-Collect selected modes with reproducible seeds:
+A practical initial collection command is:
 
 ```bash
 python RL_TDMPC/collect_safety_dataset.py \
-  --modes random lower-boundary vessel-tree-end curvature-coverage \
-  --random-episodes 5 \
-  --curvature-episodes 5 \
-  --seed 7 \
-  --output-dataset /tmp/steve_safety_aux_seed7.pt \
-  --output-report /tmp/steve_safety_aux_seed7.json
+  --modes all \
+  --lower-boundary-repetitions 50 \
+  --tree-end-repetitions 60 \
+  --device-length-repetitions 1 \
+  --random-episodes 3 \
+  --curvature-episodes 6 \
+  --max-curvature-transitions 1200 \
+  --seed-start 7 \
+  --tree-end-seed 301 \
+  --device-length-seed 301 \
+  --target-none 500 \
+  --target-lower-boundary 100 \
+  --target-tree-end 100 \
+  --target-low 100 \
+  --target-medium 500 \
+  --target-high 300 \
+  --target-extreme 100 \
+  --capacity 3000 \
+  --split-seed 4602 \
+  --validation-fraction 0.20 \
+  --observation-round-decimals 6 \
+  --output-dataset /tmp/steve_commit46b_safety_aux.pt \
+  --output-report /tmp/steve_commit46b_safety_aux_report.json
 ```
 
 The collector computes a conservative storage upper bound before creating the
@@ -199,6 +241,16 @@ therefore cannot be silently overwritten by the ring buffer. Dataset and
 report paths must also be different. Tree-end and device-length attempts use
 independent `--tree-end-seed` and `--device-length-seed` controls.
 
+Each lower-boundary repetition records moderate/maximum blocked retractions
+and matched zero/forward controls. Each successful tree-end construction
+records moderate/maximum blocked insertions and zero, rotation-only, and
+retraction controls from the endpoint neighborhood. Labels always come from
+the intervention; the collector never relabels a transition to satisfy a
+target. Curvature collection stops when the requested strata have been
+covered, the configured transition limit is reached, or the trajectory budget
+is exhausted. The JSON report records requested, collected, and unmet counts
+and the number of transitions examined.
+
 With the default controlled seed, the fixed vessel reaches a tree endpoint
 before the 450 mm J-shaped guidewire limit, so `device_length_limit` is
 reported as unsupported rather than fabricated. If an episode ends before any
@@ -206,10 +258,57 @@ blocker is observed, the report says `not_observed` instead. Curvature strata
 are diagnostic sampling bins configured under `diagnostics`; they are not
 clinical safety thresholds.
 
+### Dataset validation, split, and inspection
+
+The saved file uses offline Safety dataset schema version 1 and embeds a
+strict Safety auxiliary replay schema version 2. It contains:
+
+- the ordered safety-cost, blockage-reason, and curvature-stratum names;
+- curvature boundaries and observation/action dimensions;
+- all dataset-generation seeds;
+- one fixed joint `(blockage reason, curvature stratum)` split;
+- explicit, disjoint train and validation indices;
+- the split seed and requested validation fraction; and
+- a SHA256 dataset fingerprint.
+
+The default split is 80% training and 20% validation within each joint group.
+A group with at least five transitions contributes at least one validation
+transition while retaining training data; a smaller group remains train-only.
+Membership is assigned deterministically from the split seed and saved once,
+so validation data are never resampled by the training-buffer API.
+
+Duplicate diagnostics report exact semantic duplicates based on observation,
+requested action, safety cost, blockage reason, and curvature stratum;
+repeated observation-action pairs; and unique observations after rounding to
+`--observation-round-decimals`. Diagnostics do not remove samples.
+`--deduplicate-exact` optionally retains the first exact representative and
+reports removals, but is disabled by default because repeated controlled
+commands can be legitimate data.
+
+Inspect a saved dataset without constructing a stEVE/SOFA environment:
+
+```bash
+python RL_TDMPC/inspect_safety_dataset.py \
+  --dataset /tmp/steve_commit46b_safety_aux.pt
+```
+
+Inspection first performs strict schema, ordered-name, curvature-boundary,
+split-integrity, and fingerprint validation, then prints total/train/validation
+sizes and their reason, curvature, joint, duplicate, and safety-cost
+statistics as strict JSON.
+
+Auxiliary replay schema version 1 checkpoints do not contain
+`applied_action` and are intentionally incompatible with replay schema version
+2 when `safety_aux.enabled: true`. Existing main checkpoints made with
+auxiliary replay disabled do not carry that state and are unaffected by this
+auxiliary schema migration.
+
 Normal training leaves `safety_aux.enabled: false`. If explicitly enabled, it
 collects and checkpoints the auxiliary replay but never samples it in
-`agent.update()`; main replay sampling, TD targets, losses, policy, and MPC
-remain unchanged.
+`agent.update()`. The standalone dataset produced by
+`collect_safety_dataset.py` is offline and is not automatically loaded by
+`train.py`. Main replay sampling, TD targets, losses, optimizers, policy,
+action selection, and MPC remain unchanged.
 
 ## Training
 

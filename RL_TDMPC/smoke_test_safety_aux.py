@@ -4,15 +4,14 @@ from __future__ import annotations
 
 import copy
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import torch
 
 from collect_safety_dataset import (
-    CollectionRecorder,
     _planned_storage_upper_bound,
     _resolved_output_paths,
-    build_dataset_report,
     parse_args,
 )
 from envs.safety import (
@@ -27,6 +26,15 @@ from tdmpc2.common import (
     load_config,
 )
 from tdmpc2.replay_buffer import EpisodeReplayBuffer
+from tdmpc2.safety_aux_dataset import (
+    SAFETY_AUX_DATASET_SCHEMA_VERSION,
+    build_dataset_state,
+    duplicate_diagnostics,
+    exact_unique_indices,
+    load_dataset,
+    subset_replay_state,
+    validate_dataset_state,
+)
 from tdmpc2.safety_aux_replay import (
     SAFETY_AUX_REPLAY_SCHEMA_VERSION,
     SafetyAuxReplayBuffer,
@@ -62,6 +70,7 @@ def _add_fixture(buffer: SafetyAuxReplayBuffer, count: int = 12) -> None:
             cost,
             reasons[index % len(reasons)],
             curvature_stratum_id(curvature, (0.05, 0.10, 0.25)),
+            applied_action=action.copy(),
             terminated=index == count - 1,
             truncated=False,
             episode_step=index + 1,
@@ -69,6 +78,137 @@ def _add_fixture(buffer: SafetyAuxReplayBuffer, count: int = 12) -> None:
         observation.fill(-99.0)
         action.fill(-99.0)
         cost.fill(-99.0)
+
+
+def _add_group_fixture(
+    buffer: SafetyAuxReplayBuffer,
+    *,
+    reason_id: int,
+    stratum_id: int,
+    count: int,
+    start_index: int,
+) -> None:
+    """Add uniquely identifiable samples from one joint split group."""
+
+    curvatures = (0.01, 0.075, 0.15, 0.30)
+    for offset in range(count):
+        sample_index = start_index + offset
+        observation = np.full(
+            14,
+            (sample_index + 1) / 1000.0,
+            dtype=np.float32,
+        )
+        action = np.asarray(
+            [
+                ((sample_index % 5) - 2) / 2.0,
+                ((sample_index % 7) - 3) / 3.0,
+            ],
+            dtype=np.float32,
+        )
+        applied_action = action * np.float32(0.5)
+        safety_cost = np.asarray(
+            [curvatures[stratum_id], sample_index / 100.0],
+            dtype=np.float32,
+        )
+        buffer.add(
+            observation,
+            action,
+            safety_cost,
+            reason_id,
+            stratum_id,
+            applied_action=applied_action,
+            episode_step=sample_index + 1,
+        )
+
+
+def _split_fixture() -> SafetyAuxReplayBuffer:
+    """Build groups of sizes 10, 5, 4, and 1 for split edge cases."""
+
+    buffer = _new_buffer(seed=19, capacity=24)
+    next_index = 0
+    for reason_id, stratum_id, count in (
+        (0, 0, 10),
+        (1, 1, 5),
+        (3, 2, 4),
+        (0, 3, 1),
+    ):
+        _add_group_fixture(
+            buffer,
+            reason_id=reason_id,
+            stratum_id=stratum_id,
+            count=count,
+            start_index=next_index,
+        )
+        next_index += count
+    return buffer
+
+
+def _duplicate_fixture() -> SafetyAuxReplayBuffer:
+    """Build exact, observation/action, near-observation, and unique rows."""
+
+    buffer = _new_buffer(seed=23, capacity=8)
+    observation = np.zeros(14, dtype=np.float32)
+    action = np.asarray([0.25, -0.5], dtype=np.float32)
+    base_cost = np.asarray([0.01, 0.2], dtype=np.float32)
+
+    rows = (
+        # The second row is an exact semantic duplicate even though the
+        # applied action differs; the task's exact key uses requested action.
+        (observation, action, base_cost, 0, 0, action),
+        (
+            observation,
+            action,
+            base_cost,
+            0,
+            0,
+            np.asarray([0.0, -0.5], dtype=np.float32),
+        ),
+        (
+            observation,
+            action,
+            np.asarray([0.01, 0.3], dtype=np.float32),
+            0,
+            0,
+            action,
+        ),
+        (
+            np.asarray(
+                [4.0e-7] + [0.0] * 13,
+                dtype=np.float32,
+            ),
+            action,
+            np.asarray([0.01, 0.4], dtype=np.float32),
+            0,
+            0,
+            action,
+        ),
+        (
+            np.ones(14, dtype=np.float32),
+            np.asarray([-0.5, 0.5], dtype=np.float32),
+            np.asarray([0.30, 0.5], dtype=np.float32),
+            3,
+            3,
+            np.asarray([-0.25, 0.25], dtype=np.float32),
+        ),
+    )
+    for index, (
+        row_observation,
+        row_action,
+        row_cost,
+        reason_id,
+        stratum_id,
+        applied_action,
+    ) in enumerate(rows):
+        buffer.add(
+            row_observation.copy(),
+            row_action.copy(),
+            row_cost.copy(),
+            reason_id,
+            stratum_id,
+            applied_action=applied_action.copy(),
+            episode_step=index + 1,
+        )
+    return buffer
 
 
 def _assert_batch_equal(left, right) -> None:
@@ -171,11 +311,15 @@ def main() -> None:
     assert state["curvature_stratum_names"] == CURVATURE_STRATUM_NAMES
     assert state["observation"].shape == (12, 14)
     assert state["action"].shape == (12, 2)
+    assert state["applied_action"].shape == (12, 2)
     assert state["safety_cost"].shape == (12, 2)
     assert state["observation"].dtype == np.float32
     assert state["action"].dtype == np.float32
+    assert state["applied_action"].dtype == np.float32
     assert state["safety_cost"].dtype == np.float32
     assert np.all(state["observation"] > -1.0)
+    assert np.all(np.isfinite(state["applied_action"]))
+    np.testing.assert_array_equal(state["action"], state["applied_action"])
 
     valid_observation = np.zeros(14, dtype=np.float32)
     valid_action = np.zeros(2, dtype=np.float32)
@@ -188,6 +332,7 @@ def main() -> None:
                 valid_cost,
                 0,
                 0,
+                applied_action=valid_action,
             ),
             ValueError,
             "shape",
@@ -199,6 +344,7 @@ def main() -> None:
                 valid_cost,
                 0,
                 0,
+                applied_action=valid_action,
             ),
             TypeError,
             "float32",
@@ -210,6 +356,7 @@ def main() -> None:
                 valid_cost,
                 0,
                 0,
+                applied_action=valid_action,
             ),
             ValueError,
             "shape",
@@ -221,6 +368,7 @@ def main() -> None:
                 valid_cost,
                 0,
                 0,
+                applied_action=valid_action,
             ),
             TypeError,
             "float32",
@@ -232,6 +380,7 @@ def main() -> None:
                 valid_cost,
                 0,
                 0,
+                applied_action=valid_action,
             ),
             FloatingPointError,
             "NaN or infinity",
@@ -243,6 +392,7 @@ def main() -> None:
                 np.zeros(3, dtype=np.float32),
                 0,
                 0,
+                applied_action=valid_action,
             ),
             ValueError,
             "shape",
@@ -254,6 +404,7 @@ def main() -> None:
                 valid_cost.astype(np.float64),
                 0,
                 0,
+                applied_action=valid_action,
             ),
             TypeError,
             "float32",
@@ -265,6 +416,7 @@ def main() -> None:
                 np.asarray([np.inf, 0.0], dtype=np.float32),
                 0,
                 0,
+                applied_action=valid_action,
             ),
             FloatingPointError,
             "NaN or infinity",
@@ -276,6 +428,7 @@ def main() -> None:
                 np.asarray([-1.0, 0.0], dtype=np.float32),
                 0,
                 0,
+                applied_action=valid_action,
             ),
             ValueError,
             "nonnegative",
@@ -287,6 +440,7 @@ def main() -> None:
                 valid_cost,
                 len(TRANSLATION_BLOCK_REASON_NAMES),
                 0,
+                applied_action=valid_action,
             ),
             ValueError,
             "translation_block_reason_id",
@@ -298,9 +452,49 @@ def main() -> None:
                 valid_cost,
                 0,
                 len(CURVATURE_STRATUM_NAMES),
+                applied_action=valid_action,
             ),
             ValueError,
             "curvature_stratum_id",
+        ),
+        (
+            lambda: buffer.add(
+                valid_observation,
+                valid_action,
+                valid_cost,
+                0,
+                0,
+                applied_action=np.zeros(3, dtype=np.float32),
+            ),
+            ValueError,
+            "shape",
+        ),
+        (
+            lambda: buffer.add(
+                valid_observation,
+                valid_action,
+                valid_cost,
+                0,
+                0,
+                applied_action=valid_action.astype(np.float64),
+            ),
+            TypeError,
+            "float32",
+        ),
+        (
+            lambda: buffer.add(
+                valid_observation,
+                valid_action,
+                valid_cost,
+                0,
+                0,
+                applied_action=np.asarray(
+                    [np.inf, 0.0],
+                    dtype=np.float32,
+                ),
+            ),
+            FloatingPointError,
+            "NaN or infinity",
         ),
     )
     for callable_object, error_type, message in invalid_insertions:
@@ -310,7 +504,10 @@ def main() -> None:
     assert uniform_metadata["returned_batch_size"] == 9
     assert uniform_batch["observation"].shape == (9, 14)
     assert uniform_batch["action"].shape == (9, 2)
+    assert uniform_batch["applied_action"].shape == (9, 2)
     assert uniform_batch["safety_cost"].shape == (9, 2)
+    assert uniform_batch["applied_action"].dtype == np.float32
+    assert np.all(np.isfinite(uniform_batch["applied_action"]))
     assert uniform_batch["translation_block_reason_id"].dtype == np.int64
     assert uniform_batch["curvature_stratum_id"].dtype == np.int64
     uniform_batch["observation"].fill(-123.0)
@@ -384,6 +581,14 @@ def main() -> None:
     restored.load_state_dict(buffer.state_dict())
     _assert_batch_equal(buffer.sample_uniform(8), restored.sample_uniform(8))
 
+    legacy_replay_state = copy.deepcopy(reproducible_state)
+    legacy_replay_state["schema_version"] = 1
+    _assert_raises(
+        lambda: restored.load_state_dict(legacy_replay_state),
+        ValueError,
+        "requires a distinct applied_action field",
+    )
+
     for mutate, message in (
         (
             lambda value: value.__setitem__(
@@ -426,12 +631,33 @@ def main() -> None:
             ),
             "float32",
         ),
+        (
+            lambda value: value.__setitem__(
+                "applied_action",
+                value["applied_action"][:, :1],
+            ),
+            "shape",
+        ),
+        (
+            lambda value: value.__setitem__(
+                "applied_action",
+                value["applied_action"].astype(np.float64),
+            ),
+            "float32",
+        ),
+        (
+            lambda value: value["applied_action"].__setitem__(
+                (0, 0),
+                np.nan,
+            ),
+            "NaN or infinity",
+        ),
     ):
         invalid_state = copy.deepcopy(reproducible_state)
         mutate(invalid_state)
         _assert_raises(
             lambda value=invalid_state: restored.load_state_dict(value),
-            (TypeError, ValueError),
+            (TypeError, ValueError, FloatingPointError),
             message,
         )
 
@@ -450,6 +676,7 @@ def main() -> None:
     for key in (
         "observation",
         "action",
+        "applied_action",
         "safety_cost",
         "translation_block_reason_id",
         "curvature_stratum_id",
@@ -476,6 +703,222 @@ def main() -> None:
         lambda: restored_ring.load_state_dict(invalid_full_ring),
         ValueError,
         "cannot be smaller",
+    )
+
+    split_buffer = _split_fixture()
+    dataset_state = build_dataset_state(
+        split_buffer,
+        split_seed=4602,
+        validation_fraction=0.20,
+        generation_seeds={
+            "lower-boundary": [100, 101],
+            "random": [7],
+        },
+        observation_round_decimals=6,
+    )
+    repeated_dataset_state = build_dataset_state(
+        split_buffer,
+        split_seed=4602,
+        validation_fraction=0.20,
+        generation_seeds={
+            "random": [7],
+            "lower-boundary": [100, 101],
+        },
+        observation_round_decimals=6,
+    )
+    assert (
+        dataset_state["schema_version"]
+        == SAFETY_AUX_DATASET_SCHEMA_VERSION
+    )
+    assert dataset_state["fingerprint"] == repeated_dataset_state["fingerprint"]
+    np.testing.assert_array_equal(
+        dataset_state["split"]["train_indices"],
+        repeated_dataset_state["split"]["train_indices"],
+    )
+    np.testing.assert_array_equal(
+        dataset_state["split"]["validation_indices"],
+        repeated_dataset_state["split"]["validation_indices"],
+    )
+
+    dataset = validate_dataset_state(
+        dataset_state,
+        expected_curvature_boundaries_mm_inv=boundaries,
+    )
+    assert dataset.total_size == 20
+    assert dataset.train_size == 17
+    assert dataset.validation_size == 3
+    train_indices = dataset.train_indices
+    validation_indices = dataset.validation_indices
+    assert np.intersect1d(train_indices, validation_indices).size == 0
+    np.testing.assert_array_equal(
+        np.sort(np.concatenate((train_indices, validation_indices))),
+        np.arange(dataset.total_size, dtype=np.int64),
+    )
+
+    split_replay_state = dataset_state["replay_state"]
+    reason_ids = split_replay_state["translation_block_reason_id"]
+    stratum_ids = split_replay_state["curvature_stratum_id"]
+    for reason_id, stratum_id, expected_count, expected_validation in (
+        (0, 0, 10, 2),
+        (1, 1, 5, 1),
+        (3, 2, 4, 0),
+        (0, 3, 1, 0),
+    ):
+        members = np.flatnonzero(
+            (reason_ids == reason_id) & (stratum_ids == stratum_id)
+        )
+        assert members.size == expected_count
+        assert (
+            np.intersect1d(members, validation_indices).size
+            == expected_validation
+        )
+        if expected_count < 5:
+            np.testing.assert_array_equal(
+                np.intersect1d(members, train_indices),
+                members,
+            )
+
+    semantic_fields = (
+        "observation",
+        "action",
+        "applied_action",
+        "safety_cost",
+        "translation_block_reason_id",
+        "curvature_stratum_id",
+        "terminated",
+        "truncated",
+        "episode_step",
+    )
+    training_state = dataset.training_buffer().state_dict()
+    validation_state = dataset.validation_buffer().state_dict()
+    assert training_state["size"] == train_indices.size
+    assert validation_state["size"] == validation_indices.size
+    for field in semantic_fields:
+        np.testing.assert_array_equal(
+            training_state[field],
+            split_replay_state[field][train_indices],
+        )
+        np.testing.assert_array_equal(
+            validation_state[field],
+            split_replay_state[field][validation_indices],
+        )
+    train_observations = {
+        row.tobytes() for row in training_state["observation"]
+    }
+    validation_observations = {
+        row.tobytes() for row in validation_state["observation"]
+    }
+    assert train_observations.isdisjoint(validation_observations)
+
+    with TemporaryDirectory(prefix="steve-safety-dataset-test-") as directory:
+        dataset_path = Path(directory) / "roundtrip.pt"
+        torch.save(dataset.state_dict(), dataset_path)
+        loaded_dataset = load_dataset(
+            dataset_path,
+            expected_curvature_boundaries_mm_inv=boundaries,
+        )
+        assert loaded_dataset.fingerprint == dataset.fingerprint
+        np.testing.assert_array_equal(
+            loaded_dataset.train_indices,
+            train_indices,
+        )
+        np.testing.assert_array_equal(
+            loaded_dataset.validation_indices,
+            validation_indices,
+        )
+
+    invalid_dataset = copy.deepcopy(dataset_state)
+    del invalid_dataset["split"]["validation_indices"]
+    _assert_raises(
+        lambda: validate_dataset_state(invalid_dataset),
+        ValueError,
+        "keys mismatch",
+    )
+    invalid_dataset = copy.deepcopy(dataset_state)
+    invalid_dataset["split"]["validation_indices"] = np.asarray(
+        [train_indices[0]],
+        dtype=np.int64,
+    )
+    _assert_raises(
+        lambda: validate_dataset_state(invalid_dataset),
+        ValueError,
+        "overlap",
+    )
+    invalid_dataset = copy.deepcopy(dataset_state)
+    invalid_dataset["fingerprint"] = "0" * 64
+    _assert_raises(
+        lambda: validate_dataset_state(invalid_dataset),
+        ValueError,
+        "fingerprint mismatch",
+    )
+    invalid_dataset = copy.deepcopy(dataset_state)
+    invalid_dataset["replay_state"]["translation_block_reason_names"] = tuple(
+        reversed(TRANSLATION_BLOCK_REASON_NAMES)
+    )
+    _assert_raises(
+        lambda: validate_dataset_state(invalid_dataset),
+        ValueError,
+        "reason order",
+    )
+    _assert_raises(
+        lambda: validate_dataset_state(
+            dataset_state,
+            expected_curvature_boundaries_mm_inv=(0.04, 0.10, 0.25),
+        ),
+        ValueError,
+        "curvature-boundary mismatch",
+    )
+
+    duplicate_buffer = _duplicate_fixture()
+    duplicate_report = duplicate_diagnostics(
+        duplicate_buffer,
+        rounding_decimals=6,
+    )
+    assert duplicate_report["sample_count"] == 5
+    assert duplicate_report["exact_duplicate_count"] == 1
+    assert duplicate_report["exact_duplicate_group_count"] == 1
+    assert duplicate_report["exact_unique_composite_count"] == 4
+    assert duplicate_report["exact_max_multiplicity"] == 2
+    assert duplicate_report["repeated_observation_action_count"] == 2
+    assert duplicate_report[
+        "repeated_observation_action_group_count"
+    ] == 1
+    assert duplicate_report["unique_observation_action_count"] == 3
+    assert duplicate_report["observation_action_max_multiplicity"] == 3
+    assert duplicate_report["unique_observation_count"] == 2
+    assert duplicate_report["rounded_observation_duplicate_count"] == 3
+    assert duplicate_report[
+        "rounded_observation_duplicate_group_count"
+    ] == 1
+
+    unique_indices = exact_unique_indices(duplicate_buffer)
+    np.testing.assert_array_equal(
+        unique_indices,
+        np.asarray([0, 2, 3, 4], dtype=np.int64),
+    )
+    duplicate_state = duplicate_buffer.state_dict()
+    deduplicated_state = subset_replay_state(
+        duplicate_buffer,
+        unique_indices,
+        seed=29,
+    )
+    assert duplicate_state["size"] - deduplicated_state["size"] == 1
+    assert deduplicated_state["size"] == 4
+    assert duplicate_diagnostics(deduplicated_state)[
+        "exact_duplicate_count"
+    ] == 0
+    for field in semantic_fields:
+        np.testing.assert_array_equal(
+            deduplicated_state[field],
+            duplicate_state[field][unique_indices],
+        )
+    np.testing.assert_array_equal(
+        deduplicated_state["applied_action"][0],
+        duplicate_state["applied_action"][0],
+    )
+    assert not np.array_equal(
+        deduplicated_state["applied_action"][0],
+        duplicate_state["applied_action"][1],
     )
 
     main_replay = EpisodeReplayBuffer(
@@ -531,10 +974,14 @@ def main() -> None:
             "device-length",
             "curvature-coverage",
         ),
+        lower_boundary_repetitions=2,
+        tree_end_repetitions=3,
+        device_length_repetitions=4,
         random_episodes=2,
         curvature_episodes=3,
+        max_curvature_transitions=125,
         max_episode_steps=200,
-    ) == 1005
+    ) == 552
     same_output_args = parse_args(
         [
             "--output-dataset",
@@ -549,42 +996,11 @@ def main() -> None:
         "different paths",
     )
 
-    recorder = CollectionRecorder(buffer, boundaries)
-    report = build_dataset_report(
-        buffer,
-        recorder,
-        modes=("random",),
-        seeds={"base": 7},
-        environment_config=config["environment"],
-        safety_aux_config=aux_config,
-        curvature_boundaries=boundaries,
-        collection_parameters={
-            "planned_storage_upper_bound": 200,
-            "buffer_capacity": buffer.capacity,
-        },
-        dataset_path=Path("/tmp/example.safety_aux.pt"),
-        report_path=None,
-    )
-    assert report["total_transition_count"] == len(buffer)
-    assert report["collection_parameters"][
-        "planned_storage_upper_bound"
-    ] == 200
-    assert report["storage"]["observation"]["shape"] == [len(buffer), 14]
-    assert (
-        sum(
-            group["count"]
-            for group in report["translation_block_reasons"].values()
-        )
-        == len(buffer)
-    )
-    assert (
-        sum(group["count"] for group in report["curvature_strata"].values())
-        == len(buffer)
-    )
     print(
-        "PASS: SafetyAuxReplayBuffer validation, schemas, uniform/stratified "
-        "sampling, RNG isolation, round-trip restore, config defaults, and "
-        "dataset reporting."
+        "PASS: Safety auxiliary replay validation, applied-action schema, "
+        "uniform/stratified sampling, RNG isolation, deterministic joint "
+        "train/validation split, strict dataset round-trip, corruption "
+        "rejection, and duplicate diagnostics/deduplication."
     )
 
 

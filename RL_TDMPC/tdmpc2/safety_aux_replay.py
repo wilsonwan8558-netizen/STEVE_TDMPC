@@ -1,8 +1,11 @@
 """Transition replay for future balanced Safety Head supervision.
 
 This buffer is intentionally independent from ``EpisodeReplayBuffer``. It
-stores single, temporally aligned ``(observation_t, action_t, safety_cost_t)``
-records and owns a separate NumPy random generator.
+stores single, temporally aligned transition records and owns a separate NumPy
+random generator. The persisted ``action`` field is the requested normalized
+action sent to the environment; ``applied_action`` records the action that the
+intervention passed to the simulator after constraint masks. It is not a
+measurement of realized guidewire motion.
 """
 
 from __future__ import annotations
@@ -22,8 +25,8 @@ from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 from .replay_buffer import validate_safety_cost_names
 
 
-SAFETY_AUX_REPLAY_SCHEMA_VERSION = 1
-_FLOAT_FIELDS = ("observation", "action", "safety_cost")
+SAFETY_AUX_REPLAY_SCHEMA_VERSION = 2
+_FLOAT_FIELDS = ("observation", "action", "applied_action", "safety_cost")
 _ID_FIELDS = ("translation_block_reason_id", "curvature_stratum_id")
 _OPTIONAL_FIELDS = ("terminated", "truncated", "episode_step")
 
@@ -63,7 +66,10 @@ class SafetyAuxReplayBuffer:
         self._observations = np.empty(
             (self.capacity, self.observation_dim), dtype=np.float32
         )
-        self._actions = np.empty(
+        self._requested_actions = np.empty(
+            (self.capacity, self.action_dim), dtype=np.float32
+        )
+        self._applied_actions = np.empty(
             (self.capacity, self.action_dim), dtype=np.float32
         )
         self._safety_cost = np.empty(
@@ -102,11 +108,19 @@ class SafetyAuxReplayBuffer:
         translation_block_reason_id: int,
         curvature_stratum_id: int,
         *,
+        applied_action: np.ndarray,
         terminated: bool = False,
         truncated: bool = False,
         episode_step: int = 0,
     ) -> None:
-        """Validate and insert one pre-step-state/action/post-step-cost record."""
+        """Insert one aligned transition after strict validation.
+
+        ``action`` is the requested normalized action supplied to the
+        environment. ``applied_action`` is the normalized post-mask command
+        passed to the simulator, not realized motion, and is required
+        separately so constrained commands cannot be mistaken for unmasked
+        commands.
+        """
 
         observation_array = self._validated_float_array(
             observation,
@@ -117,6 +131,11 @@ class SafetyAuxReplayBuffer:
             action,
             (self.action_dim,),
             "action",
+        )
+        applied_action_array = self._validated_float_array(
+            applied_action,
+            (self.action_dim,),
+            "applied_action",
         )
         safety_cost_array = self._validated_float_array(
             safety_cost,
@@ -142,7 +161,8 @@ class SafetyAuxReplayBuffer:
 
         index = self._next_index
         self._observations[index] = observation_array
-        self._actions[index] = action_array
+        self._requested_actions[index] = action_array
+        self._applied_actions[index] = applied_action_array
         self._safety_cost[index] = safety_cost_array
         self._translation_block_reason_ids[index] = reason_id
         self._curvature_stratum_ids[index] = stratum_id
@@ -299,7 +319,8 @@ class SafetyAuxReplayBuffer:
             "next_index": self._next_index,
             "total_added": self._total_added,
             "observation": self._observations[valid].copy(),
-            "action": self._actions[valid].copy(),
+            "action": self._requested_actions[valid].copy(),
+            "applied_action": self._applied_actions[valid].copy(),
             "safety_cost": self._safety_cost[valid].copy(),
             "translation_block_reason_id": (
                 self._translation_block_reason_ids[valid].copy()
@@ -319,6 +340,21 @@ class SafetyAuxReplayBuffer:
 
         if not isinstance(state, Mapping):
             raise TypeError("Safety auxiliary replay state must be a mapping")
+        if "schema_version" not in state:
+            raise ValueError(
+                "Safety auxiliary replay state is missing schema_version"
+            )
+        schema_version = self._nonnegative_integer(
+            state["schema_version"], "state schema_version"
+        )
+        if schema_version != SAFETY_AUX_REPLAY_SCHEMA_VERSION:
+            raise ValueError(
+                "Safety auxiliary replay schema version "
+                f"{schema_version} is incompatible with required version "
+                f"{SAFETY_AUX_REPLAY_SCHEMA_VERSION}; version "
+                f"{SAFETY_AUX_REPLAY_SCHEMA_VERSION} requires a distinct "
+                "applied_action field"
+            )
         expected_keys = {
             "schema_version",
             "capacity",
@@ -346,15 +382,6 @@ class SafetyAuxReplayBuffer:
                 f"missing={missing}, unexpected={unexpected}"
             )
 
-        schema_version = self._nonnegative_integer(
-            state["schema_version"], "state schema_version"
-        )
-        if schema_version != SAFETY_AUX_REPLAY_SCHEMA_VERSION:
-            raise ValueError(
-                "Safety auxiliary replay schema version "
-                f"{schema_version} does not match required "
-                f"{SAFETY_AUX_REPLAY_SCHEMA_VERSION}"
-            )
         for key, expected in (
             ("capacity", self.capacity),
             ("observation_dim", self.observation_dim),
@@ -444,6 +471,11 @@ class SafetyAuxReplayBuffer:
             (size, self.action_dim),
             "state action",
         )
+        applied_actions = self._validated_state_float_array(
+            state["applied_action"],
+            (size, self.action_dim),
+            "state applied_action",
+        )
         safety_cost = self._validated_state_float_array(
             state["safety_cost"],
             (size, self.safety_cost_dim),
@@ -493,7 +525,8 @@ class SafetyAuxReplayBuffer:
             ) from exc
 
         self._observations[:size] = observations
-        self._actions[:size] = actions
+        self._requested_actions[:size] = actions
+        self._applied_actions[:size] = applied_actions
         self._safety_cost[:size] = safety_cost
         self._translation_block_reason_ids[:size] = reason_ids
         self._curvature_stratum_ids[:size] = stratum_ids
@@ -562,7 +595,8 @@ class SafetyAuxReplayBuffer:
     def _batch(self, indices: np.ndarray) -> Dict[str, np.ndarray]:
         return {
             "observation": self._observations[indices].copy(),
-            "action": self._actions[indices].copy(),
+            "action": self._requested_actions[indices].copy(),
+            "applied_action": self._applied_actions[indices].copy(),
             "safety_cost": self._safety_cost[indices].copy(),
             "translation_block_reason_id": (
                 self._translation_block_reason_ids[indices].copy()

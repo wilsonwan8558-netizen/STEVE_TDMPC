@@ -248,6 +248,41 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         )
         return raw.reshape(self._env.action_space.shape).astype(np.float32)
 
+    def _normalize_physical_action(self, action: np.ndarray) -> np.ndarray:
+        """Map one physical single-device action back to public [-1, 1] units."""
+
+        physical = np.asarray(action, dtype=np.float32).reshape(-1)
+        if physical.shape != self.action_space.shape:
+            raise RuntimeError(
+                "Expected one physical translation/rotation action with shape "
+                f"{self.action_space.shape}, got {physical.shape}"
+            )
+        span = self._raw_action_high - self._raw_action_low
+        if not np.all(np.isfinite(physical)) or np.any(span <= 0.0):
+            raise FloatingPointError(
+                "Cannot normalize a non-finite action or invalid velocity limits"
+            )
+        normalized = (
+            2.0 * (physical - self._raw_action_low) / span - 1.0
+        )
+        return np.clip(normalized, -1.0, 1.0).astype(
+            np.float32,
+            copy=False,
+        )
+
+    def _read_normalized_action_targets(
+        self,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Return requested/applied intervention actions in public units."""
+
+        requested = self._normalize_physical_action(
+            self._intervention.requested_action
+        )
+        applied = self._normalize_physical_action(
+            self._intervention.applied_action
+        )
+        return requested.copy(), applied.copy()
+
     @staticmethod
     def _finite_float(value: Any, default: float = 0.0) -> float:
         try:
@@ -636,6 +671,14 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
         output_info["safety_metrics"] = self._build_safety_metrics(initial=True)
         output_info["safety_cost"] = zero_safety_cost()
+        output_info["requested_action"] = np.zeros(
+            self.action_space.shape,
+            dtype=np.float32,
+        )
+        output_info["applied_action"] = np.zeros(
+            self.action_space.shape,
+            dtype=np.float32,
+        )
         return self._flatten_observation(observation), output_info
 
     def step(
@@ -654,6 +697,11 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         )
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
         output_info["raw_action"] = raw_action.reshape(-1).copy()
+        requested_action, applied_action = (
+            self._read_normalized_action_targets()
+        )
+        output_info["requested_action"] = requested_action
+        output_info["applied_action"] = applied_action
         output_info["episode_step"] = self._episode_steps
         safety_metrics = self._build_safety_metrics()
         output_info["safety_metrics"] = safety_metrics

@@ -5,6 +5,12 @@ from __future__ import annotations
 import numpy as np
 from gymnasium.utils.env_checker import check_env
 
+from collect_safety_dataset import (
+    CollectionRecorder,
+    collect_device_length_attempt,
+    collect_lower_boundary,
+    collect_tree_end,
+)
 from envs.safety import (
     CURVATURE_STRATUM_NAMES,
     SAFETY_COST_NAMES,
@@ -14,6 +20,7 @@ from envs.safety import (
 )
 from envs.steve_env import StEVEEnv
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
+from tdmpc2.safety_aux_replay import SafetyAuxReplayBuffer
 
 
 SAFETY_FLOAT_KEYS = {
@@ -107,6 +114,20 @@ def assert_safety_cost(env: StEVEEnv, info, *, reset: bool = False) -> None:
     )
 
 
+def assert_action_targets(
+    info,
+    requested: np.ndarray,
+    applied: np.ndarray,
+) -> None:
+    for key in ("requested_action", "applied_action"):
+        assert isinstance(info[key], np.ndarray)
+        assert info[key].shape == (2,)
+        assert info[key].dtype == np.float32
+        assert np.all(np.isfinite(info[key]))
+    np.testing.assert_allclose(info["requested_action"], requested)
+    np.testing.assert_allclose(info["applied_action"], applied)
+
+
 def legacy_unfiltered_max_curvature(positions: np.ndarray) -> float:
     """Reproduce the former unfiltered formula for the regression fixture."""
 
@@ -135,6 +156,171 @@ def legacy_unfiltered_max_curvature(positions: np.ndarray) -> float:
         )
     finite = curvature[np.isfinite(curvature)]
     return float(np.max(finite)) if finite.size else 0.0
+
+
+def _new_controlled_collection(
+    env: StEVEEnv,
+    *,
+    capacity: int,
+    seed: int,
+) -> tuple[SafetyAuxReplayBuffer, CollectionRecorder]:
+    curvature_boundaries = (0.05, 0.10, 0.25)
+    buffer = SafetyAuxReplayBuffer(
+        capacity=capacity,
+        observation_dim=int(np.prod(env.observation_space.shape)),
+        action_dim=int(np.prod(env.action_space.shape)),
+        curvature_boundaries_mm_inv=curvature_boundaries,
+        seed=seed,
+    )
+    return buffer, CollectionRecorder(buffer, curvature_boundaries)
+
+
+def _assert_controlled_action_records(
+    buffer: SafetyAuxReplayBuffer,
+    recorder: CollectionRecorder,
+) -> None:
+    state = buffer.state_dict()
+    requested_actions = state["action"]
+    applied_actions = state["applied_action"]
+    assert requested_actions.shape == (len(buffer), 2)
+    assert applied_actions.shape == (len(buffer), 2)
+    assert requested_actions.dtype == np.float32
+    assert applied_actions.dtype == np.float32
+    assert np.all(np.isfinite(requested_actions))
+    assert np.all(np.isfinite(applied_actions))
+    assert np.all(np.abs(requested_actions) <= 1.0)
+    assert np.all(np.abs(applied_actions) <= 1.0)
+
+    stored_records = [
+        record
+        for record in recorder.controlled_scenarios
+        if record.get("stored")
+    ]
+    assert len(stored_records) == len(buffer)
+    for record in stored_records:
+        sample_index = record["pre_dedup_sample_index"]
+        commanded = np.asarray(
+            record["commanded_normalized_action"],
+            dtype=np.float32,
+        )
+        requested = np.asarray(
+            record["requested_normalized_action"],
+            dtype=np.float32,
+        )
+        applied = np.asarray(
+            record["applied_normalized_action"],
+            dtype=np.float32,
+        )
+        np.testing.assert_allclose(commanded, requested)
+        np.testing.assert_allclose(requested_actions[sample_index], requested)
+        np.testing.assert_allclose(applied_actions[sample_index], applied)
+        assert np.all(np.isfinite(commanded))
+        assert np.all(np.isfinite(requested))
+        assert np.all(np.isfinite(applied))
+
+        reason = record["translation_block_reason"]
+        assert record["status"] == "observed"
+        if reason == "none":
+            np.testing.assert_allclose(requested, applied)
+        else:
+            assert reason in (
+                "lower_insertion_boundary",
+                "vessel_tree_end",
+            )
+            assert abs(float(requested[0])) > 0.0
+            np.testing.assert_allclose(applied[0], 0.0)
+
+
+def assert_repeated_controlled_collection(env: StEVEEnv) -> None:
+    """Exercise Commit 4.6B controlled collection against real SOFA state."""
+
+    lower_buffer, lower_recorder = _new_controlled_collection(
+        env,
+        capacity=8,
+        seed=4602,
+    )
+    collect_lower_boundary(
+        env,
+        lower_recorder,
+        base_seed=401,
+        repetitions=2,
+        magnitudes=(0.5, 1.0),
+    )
+    lower_state = lower_buffer.state_dict()
+    lower_reason_id = TRANSLATION_BLOCK_REASON_NAMES.index(
+        "lower_insertion_boundary"
+    )
+    none_reason_id = TRANSLATION_BLOCK_REASON_NAMES.index("none")
+    lower_reason_ids = lower_state["translation_block_reason_id"]
+    assert len(lower_buffer) == 8
+    assert np.count_nonzero(lower_reason_ids == lower_reason_id) == 4
+    assert np.count_nonzero(lower_reason_ids == none_reason_id) == 4
+    assert lower_recorder.seeds_used["lower_boundary"] == [401, 402]
+    assert len(set(lower_recorder.seeds_used["lower_boundary"])) == 2
+    assert len(lower_recorder.controlled_constructions) == 2
+    for construction in lower_recorder.controlled_constructions:
+        assert construction["status"] == "successful"
+        assert construction["attempted_actions"] == 4
+        assert construction["matched_actions"] == 4
+        assert not construction["terminated"]
+        assert not construction["truncated"]
+    _assert_controlled_action_records(lower_buffer, lower_recorder)
+
+    tree_buffer, tree_recorder = _new_controlled_collection(
+        env,
+        capacity=10,
+        seed=4603,
+    )
+    collect_tree_end(
+        env,
+        tree_recorder,
+        base_seed=301,
+        repetitions=2,
+        magnitudes=(0.5, 1.0),
+    )
+    tree_state = tree_buffer.state_dict()
+    tree_reason_id = TRANSLATION_BLOCK_REASON_NAMES.index("vessel_tree_end")
+    tree_reason_ids = tree_state["translation_block_reason_id"]
+    assert len(tree_buffer) == 10
+    assert np.count_nonzero(tree_reason_ids == tree_reason_id) == 4
+    assert np.count_nonzero(tree_reason_ids == none_reason_id) == 6
+    assert tree_recorder.seeds_used["vessel_tree_end"] == [301, 302]
+    assert len(set(tree_recorder.seeds_used["vessel_tree_end"])) == 2
+    assert len(tree_recorder.controlled_constructions) == 2
+    for construction in tree_recorder.controlled_constructions:
+        assert construction["status"] == "successful"
+        assert construction["approach_steps"] > 0
+        assert construction["attempted_actions"] == 5
+        assert construction["matched_actions"] == 5
+        assert not construction["terminated"]
+        assert not construction["truncated"]
+    _assert_controlled_action_records(tree_buffer, tree_recorder)
+
+    device_buffer, device_recorder = _new_controlled_collection(
+        env,
+        capacity=1,
+        seed=4604,
+    )
+    collect_device_length_attempt(
+        env,
+        device_recorder,
+        base_seed=301,
+        repetitions=1,
+    )
+    assert len(device_buffer) == 0
+    assert device_buffer.total_added == 0
+    assert device_recorder.seeds_used["device_length"] == [301]
+    assert len(device_recorder.unsupported_scenarios) == 1
+    unsupported = device_recorder.unsupported_scenarios[0]
+    assert unsupported["status"] == "unsupported"
+    assert unsupported["first_block_reason"] == "vessel_tree_end"
+    assert not unsupported["stored"]
+    assert len(device_recorder.controlled_constructions) == 1
+    assert device_recorder.controlled_constructions[0] == unsupported
+    assert all(
+        record.get("translation_block_reason") != "device_length_limit"
+        for record in device_recorder.controlled_scenarios
+    )
 
 
 def main() -> None:
@@ -266,6 +452,11 @@ def main() -> None:
         assert np.all(env.action_space.high == 1)
         assert_safety_metrics(reset_info)
         assert_safety_cost(env, reset_info, reset=True)
+        assert_action_targets(
+            reset_info,
+            np.zeros(2, dtype=np.float32),
+            np.zeros(2, dtype=np.float32),
+        )
         reset_metrics = reset_info["safety_metrics"]
         assert reset_metrics["tip_speed_mm_s"] == 0.0
         assert reset_metrics["observed_insertion_speed_mm_s"] == 0.0
@@ -302,6 +493,11 @@ def main() -> None:
         np.testing.assert_allclose(info["raw_action"], [50.0, 3.14], rtol=1e-5)
         assert_safety_metrics(info)
         assert_safety_cost(env, info)
+        assert_action_targets(
+            info,
+            np.ones(2, dtype=np.float32),
+            np.ones(2, dtype=np.float32),
+        )
         assert info["safety_metrics"]["requested_translation_speed_mm_s"] == 50.0
         assert info["safety_metrics"]["applied_translation_speed_mm_s"] == 50.0
         assert not info["safety_metrics"]["translation_action_blocked"]
@@ -435,6 +631,11 @@ def main() -> None:
             env.intervention.applied_action, [[0.0, 0.0]]
         )
         assert_safety_cost(env, blocked_info)
+        assert_action_targets(
+            blocked_info,
+            np.asarray([-1.0, 0.0], dtype=np.float32),
+            np.zeros(2, dtype=np.float32),
+        )
         blocked_cost = dict(
             zip(SAFETY_COST_NAMES, blocked_info["safety_cost"])
         )
@@ -463,6 +664,11 @@ def main() -> None:
         assert not after_block_info["safety_metrics"][
             "translation_action_blocked"
         ]
+        assert_action_targets(
+            after_block_info,
+            np.zeros(2, dtype=np.float32),
+            np.zeros(2, dtype=np.float32),
+        )
 
         # Seed 301 reaches the fixed vessel-tree end under maximum forward
         # insertion. The intervention must preserve the requested command while
@@ -508,6 +714,11 @@ def main() -> None:
             ],
             1.0,
         )
+        assert_action_targets(
+            forward_blocked_info,
+            np.asarray([1.0, 0.0], dtype=np.float32),
+            np.zeros(2, dtype=np.float32),
+        )
 
         # The production 450 mm device limit is unreachable because the fixed
         # tree ends first. Exercise the intervention mask itself with a
@@ -525,6 +736,11 @@ def main() -> None:
             device.length = original_length
         assert_safety_metrics(device_limit_info)
         assert_safety_cost(env, device_limit_info)
+        assert_action_targets(
+            device_limit_info,
+            np.asarray([1.0, 0.0], dtype=np.float32),
+            np.zeros(2, dtype=np.float32),
+        )
         assert (
             device_limit_info["safety_metrics"]["translation_block_reason"]
             == "device_length_limit"
@@ -616,11 +832,13 @@ def main() -> None:
 
         # This invokes extra resets/steps and checks the full Gymnasium contract.
         check_env(env, skip_render_check=True)
+        assert_repeated_controlled_collection(env)
         print(
             "PASS: reset/step, safety metrics/costs, 10 aligned random "
             "transitions, robust curvature, requested/applied actions, "
-            "finite (14,) observations, normalized actions, and a complete "
-            "200-step episode."
+            "finite (14,) observations, normalized actions, a complete "
+            "200-step episode, repeated lower/tree-end controlled labels, "
+            "and explicit unsupported device-length collection."
         )
     finally:
         env.close()

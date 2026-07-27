@@ -914,6 +914,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                         transition_safety_cost,
                         reason_id,
                         stratum_id,
+                        applied_action=info["applied_action"],
                         terminated=bool(terminated),
                         truncated=bool(truncated),
                         episode_step=int(info["episode_step"]),
