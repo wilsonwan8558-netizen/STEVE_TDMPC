@@ -553,7 +553,13 @@ def _test_planning_isolation() -> None:
     plan_source = inspect.getsource(TDMPC2Agent._plan)
     assert "open_loop_rollout" not in plan_source
     assert "teacher_forced_rollout" not in plan_source
-    assert ".safety" not in plan_source
+    # Active Safety-MPC is now an explicit opt-in branch. The default config
+    # used below remains disabled, while the planner source may reference only
+    # the dedicated Translation-risk helper (never post-hoc rollout utilities
+    # or a Curvature output).
+    assert "self.safety_mpc_active" in plan_source
+    assert "_estimate_translation_trajectory_risk" in plan_source
+    assert "safety_curvature" not in plan_source
 
     torch.manual_seed(311)
     np.random.seed(311)

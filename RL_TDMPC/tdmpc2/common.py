@@ -18,6 +18,13 @@ from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
+DEFAULT_SAFETY_MPC_CONFIG = {
+    "enabled": False,
+    "alpha": 0.2,
+    "translation_risk_cap": 1.0,
+    "minimum_task_scale": 1.0e-6,
+    "aggregation": "max",
+}
 DEFAULT_DIAGNOSTICS_CONFIG = {
     "validation_interval": 100,
     "gradient_interval": 100,
@@ -114,6 +121,12 @@ def load_config(path: os.PathLike) -> Dict[str, Any]:
     missing = required.difference(config)
     if missing:
         raise KeyError(f"Configuration is missing sections: {sorted(missing)}")
+    # Safety-aware MPC was added after format-v3 Safety Head checkpoints.
+    # Missing sections therefore resolve to the documented disabled defaults
+    # so those checkpoint configs remain loadable.
+    if "safety_mpc" not in config:
+        config["safety_mpc"] = copy.deepcopy(DEFAULT_SAFETY_MPC_CONFIG)
+    build_safety_mpc_agent_config(config)
     return config
 
 
@@ -193,6 +206,91 @@ def build_safety_agent_config(
         "safety_translation_error_scale": validated_value(
             "translation_error_scale", strictly_positive=True
         ),
+    }
+
+
+def build_safety_mpc_agent_config(
+    config: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Validate Translation-only Safety-MPC settings and flatten them."""
+
+    safety_mpc = config.get(
+        "safety_mpc",
+        DEFAULT_SAFETY_MPC_CONFIG,
+    )
+    if not isinstance(safety_mpc, Mapping):
+        raise TypeError(
+            "Configuration section 'safety_mpc' must be a mapping"
+        )
+
+    expected_keys = set(DEFAULT_SAFETY_MPC_CONFIG)
+    missing_keys = sorted(expected_keys - set(safety_mpc))
+    if missing_keys:
+        raise KeyError(
+            "Configuration safety_mpc section is missing keys: "
+            f"{missing_keys}"
+        )
+    unexpected_keys = sorted(set(safety_mpc) - expected_keys)
+    if unexpected_keys:
+        raise ValueError(
+            "Configuration safety_mpc section has unexpected keys: "
+            f"{unexpected_keys}"
+        )
+
+    enabled = safety_mpc["enabled"]
+    if type(enabled) is not bool:
+        raise TypeError("safety_mpc.enabled must be a bool")
+
+    def validated_float(key: str, *, strictly_positive: bool) -> float:
+        value = safety_mpc[key]
+        if isinstance(value, (bool, np.bool_)) or not isinstance(
+            value,
+            (int, float, np.integer, np.floating),
+        ):
+            raise TypeError(
+                f"safety_mpc.{key} must be a real number"
+            )
+        try:
+            converted = float(value)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(
+                f"safety_mpc.{key} must be a real number"
+            ) from exc
+        if not np.isfinite(converted):
+            raise ValueError(f"safety_mpc.{key} must be finite")
+        if strictly_positive and converted <= 0.0:
+            raise ValueError(
+                f"safety_mpc.{key} must be strictly positive"
+            )
+        if not strictly_positive and converted < 0.0:
+            raise ValueError(
+                f"safety_mpc.{key} must be nonnegative"
+            )
+        return converted
+
+    aggregation = safety_mpc["aggregation"]
+    if type(aggregation) is not str:
+        raise TypeError("safety_mpc.aggregation must be a string")
+    if aggregation != "max":
+        raise ValueError(
+            "safety_mpc.aggregation must be 'max' in this implementation"
+        )
+
+    return {
+        "safety_mpc_enabled": enabled,
+        "safety_mpc_alpha": validated_float(
+            "alpha",
+            strictly_positive=False,
+        ),
+        "safety_mpc_translation_risk_cap": validated_float(
+            "translation_risk_cap",
+            strictly_positive=True,
+        ),
+        "safety_mpc_minimum_task_scale": validated_float(
+            "minimum_task_scale",
+            strictly_positive=True,
+        ),
+        "safety_mpc_aggregation": aggregation,
     }
 
 

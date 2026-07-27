@@ -20,6 +20,7 @@ from envs.safety import SAFETY_COST_NAMES
 from envs.steve_env import make_steve_env
 from tdmpc2.agent import SAFETY_MODEL_SCHEMA_VERSION, TDMPC2Agent
 from tdmpc2.common import (
+    DEFAULT_SAFETY_MPC_CONFIG,
     PROJECT_DIR,
     MetricLogger,
     apply_cli_overrides,
@@ -28,6 +29,7 @@ from tdmpc2.common import (
     build_diagnostics_agent_config,
     build_safety_agent_config,
     build_safety_aux_config,
+    build_safety_mpc_agent_config,
     capture_rng_state,
     curvature_boundaries_from_diagnostics,
     load_torch_checkpoint,
@@ -54,6 +56,7 @@ from tdmpc2.safety_aux_supervision import (
 
 DEFAULT_CONFIG = PROJECT_DIR / "configs" / "steve.yaml"
 CHECKPOINT_FORMAT_VERSION = 3
+SAFETY_MPC_CONFIG_SCHEMA_VERSION = 1
 
 
 def parse_args() -> argparse.Namespace:
@@ -98,7 +101,27 @@ def build_agent_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         **dict(config["training"]),
         **dict(config["planning"]),
         **build_safety_agent_config(config, SAFETY_COST_NAMES),
+        **build_safety_mpc_agent_config(config),
         **build_diagnostics_agent_config(config),
+    }
+
+
+def resolved_safety_mpc_config(
+    config: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Return the canonical nested Safety-MPC checkpoint configuration."""
+
+    flattened = build_safety_mpc_agent_config(config)
+    return {
+        "enabled": flattened["safety_mpc_enabled"],
+        "alpha": flattened["safety_mpc_alpha"],
+        "translation_risk_cap": flattened[
+            "safety_mpc_translation_risk_cap"
+        ],
+        "minimum_task_scale": flattened[
+            "safety_mpc_minimum_task_scale"
+        ],
+        "aggregation": flattened["safety_mpc_aggregation"],
     }
 
 
@@ -208,6 +231,9 @@ def validate_checkpoint_schema(
         raise TypeError(f"{source} embedded config must be a mapping")
     embedded_agent_config = build_agent_config(embedded_config)
     embedded_safety_aux_config = build_safety_aux_config(embedded_config)
+    embedded_safety_mpc_config = resolved_safety_mpc_config(
+        embedded_config
+    )
     embedded_safety_aux_enabled = bool(
         embedded_safety_aux_config["enabled"]
     )
@@ -227,6 +253,65 @@ def validate_checkpoint_schema(
             f"{source} top-level safety_dim {safety_dim} does not match "
             f"embedded config safety_dim {embedded_agent_config['safety_dim']}"
         )
+
+    agent_state = checkpoint.get("agent")
+    if not isinstance(agent_state, Mapping):
+        raise TypeError(f"{source} agent state must be a mapping")
+    legacy_safety_mpc = (
+        "safety_mpc" not in embedded_config
+        and "safety_mpc_config" not in checkpoint
+        and "safety_mpc_config_schema_version" not in checkpoint
+        and "safety_mpc_config" not in agent_state
+    )
+    if legacy_safety_mpc:
+        if embedded_safety_mpc_config != DEFAULT_SAFETY_MPC_CONFIG:
+            raise ValueError(
+                f"{source} legacy Safety-MPC metadata can only resolve to "
+                "the disabled default configuration"
+            )
+        checkpoint_safety_mpc_config = copy.deepcopy(
+            DEFAULT_SAFETY_MPC_CONFIG
+        )
+    else:
+        missing_safety_mpc_locations = []
+        if "safety_mpc" not in embedded_config:
+            missing_safety_mpc_locations.append("embedded config['safety_mpc']")
+        if "safety_mpc_config" not in checkpoint:
+            missing_safety_mpc_locations.append("top-level safety_mpc_config")
+        if "safety_mpc_config_schema_version" not in checkpoint:
+            missing_safety_mpc_locations.append(
+                "top-level safety_mpc_config_schema_version"
+            )
+        if "safety_mpc_config" not in agent_state:
+            missing_safety_mpc_locations.append("agent safety_mpc_config")
+        if missing_safety_mpc_locations:
+            raise ValueError(
+                f"{source} has partial Safety-MPC checkpoint metadata; "
+                f"missing {missing_safety_mpc_locations}"
+            )
+        safety_mpc_schema_version = exact_integer(
+            checkpoint["safety_mpc_config_schema_version"],
+            "safety_mpc_config_schema_version",
+        )
+        if safety_mpc_schema_version != SAFETY_MPC_CONFIG_SCHEMA_VERSION:
+            raise ValueError(
+                f"{source} safety_mpc_config_schema_version "
+                f"{safety_mpc_schema_version} is unsupported; expected "
+                f"{SAFETY_MPC_CONFIG_SCHEMA_VERSION}"
+            )
+        checkpoint_safety_mpc = checkpoint["safety_mpc_config"]
+        if not isinstance(checkpoint_safety_mpc, Mapping):
+            raise TypeError(
+                f"{source} safety_mpc_config must be a mapping"
+            )
+        checkpoint_safety_mpc_config = resolved_safety_mpc_config(
+            {"safety_mpc": checkpoint_safety_mpc}
+        )
+        if checkpoint_safety_mpc_config != embedded_safety_mpc_config:
+            raise ValueError(
+                f"{source} top-level safety_mpc_config does not match its "
+                "embedded configuration"
+            )
 
     def positive_checkpoint_float(key: str) -> float:
         if key not in checkpoint:
@@ -282,6 +367,12 @@ def validate_checkpoint_schema(
     if config is not None:
         requested_agent_config = build_agent_config(config)
         requested_safety_aux_config = build_safety_aux_config(config)
+        requested_safety_mpc_config = resolved_safety_mpc_config(config)
+        if requested_safety_mpc_config != checkpoint_safety_mpc_config:
+            raise ValueError(
+                f"{source} Safety-MPC configuration does not match the "
+                "requested configuration"
+            )
         requested_names = tuple(requested_agent_config["safety_cost_names"])
         if requested_names != checkpoint_names:
             raise ValueError(
@@ -350,9 +441,6 @@ def validate_checkpoint_schema(
                     "requested diagnostics config"
                 )
 
-    agent_state = checkpoint.get("agent")
-    if not isinstance(agent_state, Mapping):
-        raise TypeError(f"{source} agent state must be a mapping")
     required_agent_safety_keys = {
         "safety_model_schema_version",
         "safety_cost_names",
@@ -413,6 +501,20 @@ def validate_checkpoint_schema(
         raise ValueError(
             f"{source} agent safety_config does not match its embedded config"
         )
+    if not legacy_safety_mpc:
+        agent_safety_mpc = agent_state["safety_mpc_config"]
+        if not isinstance(agent_safety_mpc, Mapping):
+            raise TypeError(
+                f"{source} agent safety_mpc_config must be a mapping"
+            )
+        agent_safety_mpc_config = resolved_safety_mpc_config(
+            {"safety_mpc": agent_safety_mpc}
+        )
+        if agent_safety_mpc_config != checkpoint_safety_mpc_config:
+            raise ValueError(
+                f"{source} agent safety_mpc_config does not match the "
+                "top-level and embedded configuration"
+            )
 
     if "safety_aux_replay" in checkpoint:
         raise ValueError(
@@ -591,6 +693,7 @@ def save_checkpoint(
     safety_config = config.get("safety")
     if not isinstance(safety_config, Mapping):
         raise TypeError("Checkpoint config safety section must be a mapping")
+    safety_mpc_config = resolved_safety_mpc_config(config)
     safety_aux_config = build_safety_aux_config(config)
     safety_aux_enabled = bool(safety_aux_config["enabled"])
     if safety_aux_enabled != (safety_auxiliary is not None):
@@ -626,6 +729,8 @@ def save_checkpoint(
                 "Safety auxiliary normal-update counter does not match the "
                 "agent update_count"
             )
+    embedded_config = copy.deepcopy(dict(config))
+    embedded_config["safety_mpc"] = copy.deepcopy(safety_mpc_config)
     payload: Dict[str, Any] = {
         "format_version": CHECKPOINT_FORMAT_VERSION,
         "algorithm": "TD-MPC2",
@@ -641,7 +746,11 @@ def save_checkpoint(
             agent_config["safety_translation_error_scale"]
         ),
         "safety_config": copy.deepcopy(dict(safety_config)),
-        "config": copy.deepcopy(dict(config)),
+        "safety_mpc_config_schema_version": (
+            SAFETY_MPC_CONFIG_SCHEMA_VERSION
+        ),
+        "safety_mpc_config": copy.deepcopy(safety_mpc_config),
+        "config": embedded_config,
         "agent": agent.state_dict(),
         "total_env_steps": int(total_env_steps),
         "episode_index": int(episode_index),
@@ -774,6 +883,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
     raw_diagnostics = config.get("diagnostics")
     diagnostics_config = build_diagnostics_agent_config(config)
     safety_aux_config = build_safety_aux_config(config)
+    safety_mpc_config = resolved_safety_mpc_config(config)
     diagnostics_high_is_explicit = (
         raw_diagnostics is None
         or (
@@ -793,6 +903,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
             if key != "curvature_high_max_mm_inv"
         }
     config["safety_aux"] = copy.deepcopy(safety_aux_config)
+    config["safety_mpc"] = copy.deepcopy(safety_mpc_config)
     curvature_boundaries = (
         curvature_boundaries_from_diagnostics(config)
         if bool(safety_aux_config["enabled"])
@@ -803,6 +914,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         "safety": copy.deepcopy(dict(config["safety"])),
         "diagnostics": copy.deepcopy(dict(config["diagnostics"])),
         "safety_aux": copy.deepcopy(safety_aux_config),
+        "safety_mpc": copy.deepcopy(safety_mpc_config),
         "curvature_stratum_boundaries_mm_inv": (
             list(curvature_boundaries)
             if curvature_boundaries is not None
@@ -812,7 +924,7 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
         "safety_dim": int(agent_config["safety_dim"]),
     }
     print(
-        "Safety and diagnostics configuration:\n"
+        "Safety, Safety-MPC, and diagnostics configuration:\n"
         + json.dumps(startup_configuration, indent=2, sort_keys=True)
     )
 
@@ -984,9 +1096,14 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
             episode_reward = 0.0
             success = False
             simulation_error = False
+            episode_safety_mpc_records: List[Dict[str, float]] = []
+            translation_blockage_count = 0
+            lower_boundary_blockage_count = 0
+            tree_end_blockage_count = 0
 
             terminated = truncated = False
             while not (terminated or truncated) and total_env_steps < total_steps:
+                planner_metrics: Optional[Dict[str, float]] = None
                 use_random_action = (
                     total_env_steps < int(training["seed_steps"])
                     or agent.update_count == 0
@@ -999,6 +1116,16 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                         first_step=len(episode_actions) == 0,
                         eval_mode=False,
                     )
+                    if agent.last_safety_mpc_metrics is not None:
+                        planner_metrics = dict(
+                            agent.last_safety_mpc_metrics
+                        )
+                        for metric_name, metric_value in planner_metrics.items():
+                            if not np.isfinite(float(metric_value)):
+                                raise FloatingPointError(
+                                    "Active Safety-MPC planner metric "
+                                    f"{metric_name!r} is non-finite"
+                                )
 
                 next_observation, reward, terminated, truncated, info = env.step(action)
                 total_env_steps += 1
@@ -1021,6 +1148,53 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                 simulation_error = simulation_error or bool(
                     info.get("simulation_error", False)
                 )
+                safety_metrics = info.get("safety_metrics")
+                if not isinstance(safety_metrics, Mapping):
+                    raise TypeError(
+                        "Environment info['safety_metrics'] must be a mapping"
+                    )
+                blocked_value = safety_metrics.get(
+                    "translation_action_blocked"
+                )
+                if type(blocked_value) not in (bool, np.bool_):
+                    raise TypeError(
+                        "translation_action_blocked must be a bool"
+                    )
+                translation_blocked = bool(blocked_value)
+                block_reason = safety_metrics.get(
+                    "translation_block_reason"
+                )
+                if not isinstance(block_reason, str):
+                    raise TypeError(
+                        "translation_block_reason must be a string"
+                    )
+                if translation_blocked != (block_reason != "none"):
+                    raise RuntimeError(
+                        "Translation blockage flag/reason mismatch in "
+                        f"environment info: {translation_blocked}/{block_reason!r}"
+                    )
+                translation_blockage_count += int(translation_blocked)
+                lower_boundary_blockage_count += int(
+                    block_reason == "lower_insertion_boundary"
+                )
+                tree_end_blockage_count += int(
+                    block_reason == "vessel_tree_end"
+                )
+                if planner_metrics is not None:
+                    episode_safety_mpc_records.append(planner_metrics)
+                    logger.log(
+                        "safety_mpc",
+                        {
+                            "run_id": run_id,
+                            "total_env_steps": total_env_steps,
+                            "episode": episode_index + 1,
+                            "episode_step": len(episode_actions),
+                            "safety_mpc_alpha": safety_mpc_config["alpha"],
+                            **planner_metrics,
+                            "translation_action_blocked": translation_blocked,
+                            "translation_block_reason": block_reason,
+                        },
+                    )
                 observation = next_observation
 
                 episode_done = terminated or truncated or total_env_steps >= total_steps
@@ -1223,6 +1397,15 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
 
             successes += int(success)
             episode_index += 1
+
+            def safety_mpc_episode_mean(name: str) -> Optional[float]:
+                values = [
+                    float(record[name])
+                    for record in episode_safety_mpc_records
+                    if name in record
+                ]
+                return float(np.mean(values)) if values else None
+
             episode_metrics = {
                 "run_id": run_id,
                 "total_env_steps": total_env_steps,
@@ -1234,6 +1417,40 @@ def train(config: Dict[str, Any], resume_path: Optional[Path] = None) -> None:
                 "terminated": bool(terminated),
                 "truncated": bool(truncated),
                 "simulation_error": simulation_error,
+                "translation_blockage_count": translation_blockage_count,
+                "translation_blockage_fraction": (
+                    translation_blockage_count / len(episode_actions)
+                ),
+                "lower_boundary_blockage_count": (
+                    lower_boundary_blockage_count
+                ),
+                "tree_end_blockage_count": tree_end_blockage_count,
+                "safety_mpc_plan_count": len(episode_safety_mpc_records),
+                "safety_mpc_task_scale": safety_mpc_episode_mean(
+                    "safety_mpc_task_scale"
+                ),
+                "safety_mpc_selected_risk": safety_mpc_episode_mean(
+                    "safety_mpc_selected_risk"
+                ),
+                "safety_mpc_selected_penalty": safety_mpc_episode_mean(
+                    "safety_mpc_selected_penalty"
+                ),
+                "safety_mpc_candidate_risk_mean": safety_mpc_episode_mean(
+                    "safety_mpc_candidate_risk_mean"
+                ),
+                "safety_mpc_candidate_risk_max": safety_mpc_episode_mean(
+                    "safety_mpc_candidate_risk_max"
+                ),
+                "safety_mpc_penalty_to_task_scale": (
+                    safety_mpc_episode_mean(
+                        "safety_mpc_penalty_to_task_scale"
+                    )
+                ),
+                "safety_mpc_same_population_task_sacrifice": (
+                    safety_mpc_episode_mean(
+                        "safety_mpc_same_population_task_sacrifice"
+                    )
+                ),
                 "replay_size": len(replay),
             }
             logger.log("episodes", episode_metrics)

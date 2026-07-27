@@ -338,6 +338,19 @@ class WorldModel(nn.Module):
         translation_error = self.safety_translation_error_head(features)
         return torch.cat([curvature, translation_error], dim=-1)
 
+    def translation_safety_transformed(
+        self, latent: torch.Tensor, action: torch.Tensor
+    ) -> torch.Tensor:
+        """Predict only normalized requested/applied Translation Safety.
+
+        This planning-facing path deliberately does not execute the Curvature
+        output branch.  The shared Safety trunk remains identical to training,
+        while Curvature stays monitoring-only and cannot affect active MPPI.
+        """
+
+        features = self.safety_trunk(torch.cat([latent, action], dim=-1))
+        return self.safety_translation_error_head(features)
+
     def transform_safety_targets(self, safety_cost: torch.Tensor) -> torch.Tensor:
         """Map nonnegative physical safety targets into transformed space."""
 
@@ -374,6 +387,35 @@ class WorldModel(nn.Module):
             device=transformed.device, dtype=transformed.dtype
         )
         decoded = scales * torch.expm1(guarded)
+        return torch.nan_to_num(
+            decoded,
+            nan=0.0,
+            posinf=finfo.max,
+            neginf=0.0,
+        ).clamp(min=0.0, max=finfo.max)
+
+    def decode_translation_safety_transformed(
+        self, transformed: torch.Tensor
+    ) -> torch.Tensor:
+        """Decode the one-channel Translation Safety prediction."""
+
+        if not transformed.is_floating_point():
+            raise TypeError(
+                "transformed Translation Safety must use a floating-point dtype"
+            )
+        if transformed.ndim == 0 or transformed.shape[-1] != 1:
+            raise ValueError(
+                "transformed Translation Safety must have final dimension 1, "
+                f"got shape {tuple(transformed.shape)}"
+            )
+        finfo = torch.finfo(transformed.dtype)
+        upper = self._safe_expm1_upper(
+            transformed.dtype,
+            self.safety_translation_error_scale,
+        )
+        guarded = torch.clamp(transformed, min=0.0, max=upper)
+        scale = transformed.new_tensor(self.safety_translation_error_scale)
+        decoded = scale * torch.expm1(guarded)
         return torch.nan_to_num(
             decoded,
             nan=0.0,

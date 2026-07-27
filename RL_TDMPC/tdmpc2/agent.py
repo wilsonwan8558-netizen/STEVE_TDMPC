@@ -8,7 +8,7 @@ removed because they are unrelated to the stEVE state-control task.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 import numpy as np
 import torch
@@ -30,6 +30,20 @@ _SAFETY_CONFIG_KEYS = (
     "safety_curvature_scale_mm_inv",
     "safety_translation_error_scale",
 )
+_SAFETY_MPC_CONFIG_KEYS = (
+    "safety_mpc_enabled",
+    "safety_mpc_alpha",
+    "safety_mpc_translation_risk_cap",
+    "safety_mpc_minimum_task_scale",
+    "safety_mpc_aggregation",
+)
+_DEFAULT_DISABLED_SAFETY_MPC_CONFIG = {
+    "enabled": False,
+    "alpha": 0.2,
+    "translation_risk_cap": 1.0,
+    "minimum_task_scale": 1.0e-6,
+    "aggregation": "max",
+}
 _DIAGNOSTIC_CONFIG_KEYS = (
     "validation_interval",
     "gradient_interval",
@@ -89,6 +103,7 @@ class TDMPC2Agent:
             "safety_cost_names",
             "safety_dim",
             *_SAFETY_CONFIG_KEYS,
+            *_SAFETY_MPC_CONFIG_KEYS,
             *_DIAGNOSTIC_CONFIG_KEYS,
         }
         missing_safety_keys = sorted(required_safety_keys - self.config.keys())
@@ -142,6 +157,74 @@ class TDMPC2Agent:
         for name, value in scale_values.items():
             if not np.isfinite(value) or value <= 0.0:
                 raise ValueError(f"{name} must be finite and strictly positive")
+
+        safety_mpc_enabled = self.config["safety_mpc_enabled"]
+        if type(safety_mpc_enabled) is not bool:
+            raise TypeError("safety_mpc_enabled must be a bool")
+        self.safety_mpc_enabled = safety_mpc_enabled
+
+        def safety_mpc_float(
+            key: str,
+            *,
+            strictly_positive: bool,
+        ) -> float:
+            value = self.config[key]
+            if isinstance(value, (bool, np.bool_)) or not isinstance(
+                value,
+                (int, float, np.integer, np.floating),
+            ):
+                raise TypeError(f"{key} must be a real number, not bool")
+            try:
+                converted = float(value)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise TypeError(f"{key} must be a real number") from exc
+            valid = (
+                np.isfinite(converted)
+                and (
+                    converted > 0.0
+                    if strictly_positive
+                    else converted >= 0.0
+                )
+            )
+            if not valid:
+                qualifier = (
+                    "finite and strictly positive"
+                    if strictly_positive
+                    else "finite and nonnegative"
+                )
+                raise ValueError(f"{key} must be {qualifier}")
+            if strictly_positive:
+                represented = np.asarray(converted, dtype=np.float32).item()
+                if not np.isfinite(represented) or represented <= 0.0:
+                    raise ValueError(
+                        f"{key} must remain finite and strictly positive "
+                        "when represented in float32 planner tensors"
+                    )
+            return converted
+
+        self.safety_mpc_alpha = safety_mpc_float(
+            "safety_mpc_alpha",
+            strictly_positive=False,
+        )
+        self.safety_mpc_translation_risk_cap = safety_mpc_float(
+            "safety_mpc_translation_risk_cap",
+            strictly_positive=True,
+        )
+        self.safety_mpc_minimum_task_scale = safety_mpc_float(
+            "safety_mpc_minimum_task_scale",
+            strictly_positive=True,
+        )
+        safety_mpc_aggregation = self.config["safety_mpc_aggregation"]
+        if type(safety_mpc_aggregation) is not str:
+            raise TypeError("safety_mpc_aggregation must be a string")
+        if safety_mpc_aggregation != "max":
+            raise ValueError("safety_mpc_aggregation must be 'max'")
+        self.safety_mpc_aggregation = safety_mpc_aggregation
+        self.safety_mpc_active = (
+            self.safety_mpc_enabled and self.safety_mpc_alpha > 0.0
+        )
+        self.last_safety_mpc_metrics: Optional[Dict[str, float]] = None
+
         self.validation_interval = int(self.config["validation_interval"])
         self.gradient_interval = int(self.config["gradient_interval"])
         if self.validation_interval <= 0 or self.gradient_interval <= 0:
@@ -243,6 +326,7 @@ class TDMPC2Agent:
         first_step: bool = False,
         eval_mode: bool = False,
     ) -> np.ndarray:
+        self.last_safety_mpc_metrics = None
         observation_tensor = self._tensor_observation(observation)
         if bool(self.config.get("mpc", True)):
             action = self._plan(
@@ -285,6 +369,143 @@ class TDMPC2Agent:
         return returns + discount * (1.0 - termination) * final_q
 
     @torch.no_grad()
+    def _estimate_translation_trajectory_risk(
+        self,
+        latent: torch.Tensor,
+        actions: torch.Tensor,
+    ) -> torch.Tensor:
+        """Return capped maximum Translation Safety risk for each trajectory."""
+
+        if not self.safety_mpc_active:
+            raise RuntimeError(
+                "Translation Safety risk may only be evaluated by active Safety-MPC"
+            )
+        batch_size = int(latent.shape[0])
+        expected_actions = (
+            self.horizon,
+            batch_size,
+            self.action_dim,
+        )
+        if tuple(actions.shape) != expected_actions:
+            raise ValueError(
+                f"Safety-MPC actions must have shape {expected_actions}, got "
+                f"{tuple(actions.shape)}"
+            )
+
+        rollout_latent = latent
+        bounded_risks = []
+        for step in range(self.horizon):
+            transformed = self.model.translation_safety_transformed(
+                rollout_latent,
+                actions[step],
+            )
+            expected_prediction = (batch_size, 1)
+            if tuple(transformed.shape) != expected_prediction:
+                raise RuntimeError(
+                    "Translation Safety transformed output must have shape "
+                    f"{expected_prediction}, got {tuple(transformed.shape)}"
+                )
+            if not bool(torch.isfinite(transformed).all()):
+                raise FloatingPointError(
+                    "Translation Safety transformed prediction contains NaN "
+                    "or infinity"
+                )
+            decoded = self.model.decode_translation_safety_transformed(
+                transformed
+            )
+            if tuple(decoded.shape) != expected_prediction:
+                raise RuntimeError(
+                    "Decoded Translation Safety output must have shape "
+                    f"{expected_prediction}, got {tuple(decoded.shape)}"
+                )
+            if not bool(torch.isfinite(decoded).all()):
+                raise FloatingPointError(
+                    "Decoded Translation Safety prediction contains NaN or infinity"
+                )
+            if bool(torch.any(decoded < 0.0)):
+                raise ValueError(
+                    "Decoded Translation Safety prediction must be nonnegative"
+                )
+            bounded_risks.append(
+                decoded.squeeze(-1).clamp(
+                    min=0.0,
+                    max=self.safety_mpc_translation_risk_cap,
+                )
+            )
+            rollout_latent = self.model.next(
+                rollout_latent,
+                actions[step],
+            )
+
+        per_step_risk = torch.stack(bounded_risks, dim=0)
+        trajectory_risk = per_step_risk.max(dim=0).values
+        if (
+            not bool(torch.isfinite(trajectory_risk).all())
+            or bool(torch.any(trajectory_risk < 0.0))
+        ):
+            raise FloatingPointError(
+                "Safety-MPC trajectory risk is non-finite or negative"
+            )
+        return trajectory_risk
+
+    @torch.no_grad()
+    def _apply_safety_mpc_penalty(
+        self,
+        task_values: torch.Tensor,
+        candidate_risk: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Normalize and subtract active Translation Safety candidate costs."""
+
+        if not self.safety_mpc_active:
+            raise RuntimeError(
+                "Safety-MPC penalty may only be applied when Safety-MPC is active"
+            )
+        if task_values.ndim != 2 or task_values.shape[-1] != 1:
+            raise ValueError(
+                "Safety-MPC task values must have shape (num_samples, 1), "
+                f"got {tuple(task_values.shape)}"
+            )
+        expected_risk = (int(task_values.shape[0]),)
+        if tuple(candidate_risk.shape) != expected_risk:
+            raise ValueError(
+                f"Safety-MPC candidate risk must have shape {expected_risk}, "
+                f"got {tuple(candidate_risk.shape)}"
+            )
+        if not bool(torch.isfinite(task_values).all()):
+            raise FloatingPointError(
+                "Safety-MPC task scores contain NaN or infinity"
+            )
+        if (
+            not bool(torch.isfinite(candidate_risk).all())
+            or bool(torch.any(candidate_risk < 0.0))
+            or bool(
+                torch.any(
+                    candidate_risk > self.safety_mpc_translation_risk_cap
+                )
+            )
+        ):
+            raise FloatingPointError(
+                "Safety-MPC candidate risks must be finite and within the "
+                "configured planning cap"
+            )
+
+        task_scale = task_values.squeeze(-1).std(unbiased=False)
+        if not bool(torch.isfinite(task_scale)):
+            raise FloatingPointError(
+                "Safety-MPC task-score standard deviation is non-finite"
+            )
+        task_scale = task_scale.clamp_min(
+            self.safety_mpc_minimum_task_scale
+        )
+        penalty = self.safety_mpc_alpha * task_scale * candidate_risk
+        planner_values = task_values - penalty.unsqueeze(-1)
+        if not bool(torch.isfinite(planner_values).all()):
+            raise FloatingPointError(
+                "Safety-MPC candidate scores contain NaN or infinity"
+            )
+        return planner_values, task_scale
+
+    @torch.no_grad()
     def _plan(
         self,
         observation: torch.Tensor,
@@ -292,6 +513,7 @@ class TDMPC2Agent:
         first_step: bool,
         eval_mode: bool,
     ) -> torch.Tensor:
+        self.last_safety_mpc_metrics = None
         latent_single = self.model.encode(observation)
         num_samples = int(self.config["num_samples"])
         num_policy = min(int(self.config["num_pi_trajs"]), num_samples)
@@ -324,6 +546,10 @@ class TDMPC2Agent:
 
         score = None
         elite_actions = None
+        final_task_values = None
+        final_planner_values = None
+        final_task_scale = None
+        final_candidate_risk = None
         for _ in range(int(self.config["iterations"])):
             random_actions = mean.unsqueeze(1) + std.unsqueeze(1) * torch.randn(
                 self.horizon,
@@ -333,8 +559,26 @@ class TDMPC2Agent:
             )
             actions[:, num_policy:].copy_(random_actions.clamp(-1.0, 1.0))
             values = torch.nan_to_num(self._estimate_value(latent, actions), nan=0.0)
-            elite_indices = torch.topk(values.squeeze(-1), num_elites).indices
-            elite_values = values[elite_indices]
+            planner_values = values
+            if self.safety_mpc_active:
+                candidate_risk = self._estimate_translation_trajectory_risk(
+                    latent,
+                    actions,
+                )
+                planner_values, task_scale = self._apply_safety_mpc_penalty(
+                    values,
+                    candidate_risk,
+                )
+                final_task_values = values
+                final_planner_values = planner_values
+                final_task_scale = task_scale
+                final_candidate_risk = candidate_risk
+
+            elite_indices = torch.topk(
+                planner_values.squeeze(-1),
+                num_elites,
+            ).indices
+            elite_values = planner_values[elite_indices]
             elite_actions = actions[:, elite_indices]
             max_value = elite_values.max(dim=0).values
             score = torch.exp(
@@ -353,6 +597,50 @@ class TDMPC2Agent:
             )
 
         assert score is not None and elite_actions is not None
+        if self.safety_mpc_active:
+            assert final_task_values is not None
+            assert final_planner_values is not None
+            assert final_task_scale is not None
+            assert final_candidate_risk is not None
+            selected_risk = self._estimate_translation_trajectory_risk(
+                latent_single,
+                mean.unsqueeze(1),
+            ).squeeze(0)
+            selected_penalty = (
+                self.safety_mpc_alpha * final_task_scale * selected_risk
+            )
+            penalty_to_task_scale = selected_penalty / final_task_scale
+            task_scores = final_task_values.squeeze(-1)
+            planner_scores = final_planner_values.squeeze(-1)
+            safe_top_index = torch.argmax(planner_scores)
+            # MPPI ultimately selects an elite-weighted mean rather than a
+            # candidate argmax.  This deliberately named same-population proxy
+            # measures task-score loss at the safe-score top candidate without
+            # claiming a counterfactual baseline-planner trajectory.
+            same_population_task_sacrifice = (
+                task_scores.max() - task_scores[safe_top_index]
+            ).clamp_min(0.0)
+            metric_tensors = {
+                "safety_mpc_task_scale": final_task_scale,
+                "safety_mpc_selected_risk": selected_risk,
+                "safety_mpc_selected_penalty": selected_penalty,
+                "safety_mpc_candidate_risk_mean": final_candidate_risk.mean(),
+                "safety_mpc_candidate_risk_max": final_candidate_risk.max(),
+                "safety_mpc_penalty_to_task_scale": penalty_to_task_scale,
+                "safety_mpc_same_population_task_sacrifice": (
+                    same_population_task_sacrifice
+                ),
+            }
+            if not all(
+                bool(torch.isfinite(value)) for value in metric_tensors.values()
+            ):
+                raise FloatingPointError(
+                    "Safety-MPC planning diagnostics contain NaN or infinity"
+                )
+            self.last_safety_mpc_metrics = {
+                name: float(value.detach().cpu())
+                for name, value in metric_tensors.items()
+            }
         self.previous_mean.copy_(mean)
         if eval_mode:
             # Deterministic final selection; planning samples remain reproducible
@@ -1648,6 +1936,92 @@ class TDMPC2Agent:
             "safety_translation_error_scale": self.safety_translation_error_scale,
         }
 
+    def _safety_mpc_state_config(self) -> Dict[str, Any]:
+        return {
+            "enabled": self.safety_mpc_enabled,
+            "alpha": self.safety_mpc_alpha,
+            "translation_risk_cap": self.safety_mpc_translation_risk_cap,
+            "minimum_task_scale": self.safety_mpc_minimum_task_scale,
+            "aggregation": self.safety_mpc_aggregation,
+        }
+
+    def _validate_safety_mpc_state(self, state: Mapping[str, Any]) -> None:
+        expected = self._safety_mpc_state_config()
+        if "safety_mpc_config" not in state:
+            if expected != _DEFAULT_DISABLED_SAFETY_MPC_CONFIG:
+                raise ValueError(
+                    "Agent checkpoint predates Safety-MPC metadata and may only "
+                    "be loaded with the exact default disabled Safety-MPC config"
+                )
+            return
+
+        received = state["safety_mpc_config"]
+        if not isinstance(received, Mapping):
+            raise TypeError(
+                "Agent checkpoint safety_mpc_config must be a mapping"
+            )
+        missing = sorted(expected.keys() - received.keys())
+        if missing:
+            raise ValueError(
+                "Agent checkpoint safety_mpc_config is missing required keys "
+                f"{missing}"
+            )
+        unexpected = sorted(received.keys() - expected.keys())
+        if unexpected:
+            raise ValueError(
+                "Agent checkpoint safety_mpc_config has unexpected keys "
+                f"{unexpected}"
+            )
+
+        received_enabled = received["enabled"]
+        if type(received_enabled) is not bool:
+            raise TypeError(
+                "Agent checkpoint safety_mpc_config.enabled must be a bool"
+            )
+        if received_enabled is not expected["enabled"]:
+            raise ValueError(
+                "Agent checkpoint Safety-MPC enabled setting does not match "
+                "the current config"
+            )
+
+        for key in (
+            "alpha",
+            "translation_risk_cap",
+            "minimum_task_scale",
+        ):
+            value = received[key]
+            if isinstance(value, (bool, np.bool_)) or not isinstance(
+                value,
+                (int, float, np.integer, np.floating),
+            ):
+                raise TypeError(
+                    f"Agent checkpoint safety_mpc_config.{key} must be a real "
+                    "number, not bool"
+                )
+            try:
+                converted = float(value)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise TypeError(
+                    f"Agent checkpoint safety_mpc_config.{key} must be a real "
+                    "number"
+                ) from exc
+            if not np.isfinite(converted) or converted != expected[key]:
+                raise ValueError(
+                    f"Agent checkpoint Safety-MPC {key}={converted} does not "
+                    f"match current value {expected[key]}"
+                )
+
+        received_aggregation = received["aggregation"]
+        if type(received_aggregation) is not str:
+            raise TypeError(
+                "Agent checkpoint safety_mpc_config.aggregation must be a string"
+            )
+        if received_aggregation != expected["aggregation"]:
+            raise ValueError(
+                "Agent checkpoint Safety-MPC aggregation does not match the "
+                "current config"
+            )
+
     def _validate_safety_state(self, state: Mapping[str, Any]) -> None:
         required = {
             "safety_model_schema_version",
@@ -1703,6 +2077,7 @@ class TDMPC2Agent:
                     f"Agent checkpoint {name}={received_value} does not match "
                     f"current value {expected_value}"
                 )
+        self._validate_safety_mpc_state(state)
 
     def state_dict(self) -> Dict[str, Any]:
         return {
@@ -1710,6 +2085,7 @@ class TDMPC2Agent:
             "safety_cost_names": self.safety_cost_names,
             "safety_dim": self.safety_dim,
             "safety_config": self._safety_state_config(),
+            "safety_mpc_config": self._safety_mpc_state_config(),
             "model": self.model.state_dict(),
             "model_optimizer": self.model_optimizer.state_dict(),
             "policy_optimizer": self.policy_optimizer.state_dict(),
@@ -1736,4 +2112,5 @@ class TDMPC2Agent:
         self.scale.load_state_dict(state["scale"])
         self.previous_mean.copy_(state["previous_mean"].to(self.device))
         self.update_count = int(state.get("update_count", 0))
+        self.last_safety_mpc_metrics = None
         self.model.train(False)

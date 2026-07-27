@@ -29,6 +29,16 @@ safety:
   curvature_scale_mm_inv: 0.1
   translation_error_scale: 1.0
 
+# Translation Safety represents controller action-feasibility risk only.
+# Curvature remains monitoring-only, and the intervention mask remains the
+# final execution-layer protection.
+safety_mpc:
+  enabled: false
+  alpha: 0.2
+  translation_risk_cap: 1.0
+  minimum_task_scale: 0.000001
+  aggregation: max
+
 # Lightweight Safety Head diagnostics. Curvature boundaries only partition
 # logged statistics; they are numerical analysis bins, not clinical thresholds.
 diagnostics:
