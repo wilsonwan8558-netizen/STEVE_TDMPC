@@ -26,6 +26,7 @@ from .replay_buffer import validate_safety_cost_names
 
 
 SAFETY_AUX_REPLAY_SCHEMA_VERSION = 2
+SAFETY_AUX_SAMPLER_SCHEMA_VERSION = 1
 _FLOAT_FIELDS = ("observation", "action", "applied_action", "safety_cost")
 _ID_FIELDS = ("translation_block_reason_id", "curvature_stratum_id")
 _OPTIONAL_FIELDS = ("terminated", "truncated", "episode_step")
@@ -99,6 +100,12 @@ class SafetyAuxReplayBuffer:
     @property
     def overwritten_count(self) -> int:
         return max(0, self._total_added - self._size)
+
+    def reseed_sampler(self, seed: int) -> None:
+        """Reset only this buffer's independent sampler RNG."""
+
+        parsed_seed = self._nonnegative_integer(seed, "sampler seed")
+        self._rng = np.random.default_rng(parsed_seed)
 
     def add(
         self,
@@ -174,14 +181,30 @@ class SafetyAuxReplayBuffer:
         self._total_added += 1
 
     def sample_uniform(
-        self, batch_size: int
+        self,
+        batch_size: int,
+        *,
+        sample_with_replacement: bool = True,
     ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        """Sample stored transitions uniformly with replacement."""
+        """Sample stored transitions uniformly under the requested policy."""
 
         parsed_batch_size = self._validated_batch_size(batch_size)
-        indices = self._rng.integers(
-            0, self._size, size=parsed_batch_size, dtype=np.int64
-        )
+        replacement = self._validated_replacement(sample_with_replacement)
+        if not replacement and parsed_batch_size > self._size:
+            raise ValueError(
+                "Cannot sample uniformly without replacement: requested "
+                f"{parsed_batch_size} samples from {self._size} stored transitions"
+            )
+        if replacement:
+            indices = self._rng.integers(
+                0, self._size, size=parsed_batch_size, dtype=np.int64
+            )
+        else:
+            indices = self._rng.choice(
+                self._size,
+                size=parsed_batch_size,
+                replace=False,
+            ).astype(np.int64)
         return self._batch(indices), self._sampling_metadata(
             mode="uniform",
             indices=indices,
@@ -189,6 +212,7 @@ class SafetyAuxReplayBuffer:
             component_counts={"uniform": parsed_batch_size},
             missing_translation_ids=(),
             missing_curvature_ids=(),
+            sample_with_replacement=replacement,
         )
 
     def sample_stratified(
@@ -200,10 +224,12 @@ class SafetyAuxReplayBuffer:
         curvature_fraction: float = 0.5,
         translation_reason_ids: Optional[Sequence[int]] = None,
         curvature_stratum_ids: Optional[Sequence[int]] = None,
+        sample_with_replacement: bool = True,
     ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Sample across available canonical groups without inventing labels."""
 
         parsed_batch_size = self._validated_batch_size(batch_size)
+        replacement = self._validated_replacement(sample_with_replacement)
         normalized_mode = str(mode).strip().lower().replace("_", "-")
         supported_modes = {
             "translation-balanced",
@@ -234,6 +260,7 @@ class SafetyAuxReplayBuffer:
                 requested_translation,
                 parsed_batch_size,
                 "translation",
+                sample_with_replacement=replacement,
             )
             component_counts = {"translation": parsed_batch_size, "curvature": 0}
         elif normalized_mode == "curvature-balanced":
@@ -242,6 +269,7 @@ class SafetyAuxReplayBuffer:
                 requested_curvature,
                 parsed_batch_size,
                 "curvature",
+                sample_with_replacement=replacement,
             )
             component_counts = {"translation": 0, "curvature": parsed_batch_size}
         else:
@@ -271,12 +299,17 @@ class SafetyAuxReplayBuffer:
                 requested_translation,
                 translation_count,
                 "translation",
+                sample_with_replacement=replacement,
             )
             curvature_indices, missing_curvature = self._balanced_indices(
                 self._curvature_stratum_ids,
                 requested_curvature,
                 curvature_count,
                 "curvature",
+                sample_with_replacement=replacement,
+                excluded_indices=(
+                    translation_indices if not replacement else None
+                ),
             )
             indices = np.concatenate(
                 (translation_indices, curvature_indices)
@@ -295,6 +328,7 @@ class SafetyAuxReplayBuffer:
             component_counts=component_counts,
             missing_translation_ids=missing_translation,
             missing_curvature_ids=missing_curvature,
+            sample_with_replacement=replacement,
         )
 
     def state_dict(self) -> Dict[str, Any]:
@@ -334,6 +368,53 @@ class SafetyAuxReplayBuffer:
             "rng_bit_generator": self._rng.bit_generator.__class__.__name__,
             "rng_state": copy.deepcopy(self._rng.bit_generator.state),
         }
+
+    def sampler_state_dict(self) -> Dict[str, Any]:
+        """Return only sampler RNG state, never the offline dataset contents."""
+
+        return {
+            "schema_version": SAFETY_AUX_SAMPLER_SCHEMA_VERSION,
+            "rng_bit_generator": self._rng.bit_generator.__class__.__name__,
+            "rng_state": copy.deepcopy(self._rng.bit_generator.state),
+        }
+
+    def load_sampler_state_dict(self, state: Mapping[str, Any]) -> None:
+        """Strictly restore only the sampler RNG state.
+
+        Dataset arrays, labels, dimensions, and split membership are deliberately
+        untouched. Checkpoint resume must reload and validate the immutable
+        dataset separately before applying this small state.
+        """
+
+        if not isinstance(state, Mapping):
+            raise TypeError("Safety auxiliary sampler state must be a mapping")
+        expected_keys = {
+            "schema_version",
+            "rng_bit_generator",
+            "rng_state",
+        }
+        missing = sorted(expected_keys - state.keys())
+        unexpected = sorted(state.keys() - expected_keys)
+        if missing or unexpected:
+            raise ValueError(
+                "Safety auxiliary sampler state keys mismatch; "
+                f"missing={missing}, unexpected={unexpected}"
+            )
+        schema_version = self._nonnegative_integer(
+            state["schema_version"],
+            "sampler state schema_version",
+        )
+        if schema_version != SAFETY_AUX_SAMPLER_SCHEMA_VERSION:
+            raise ValueError(
+                "Safety auxiliary sampler schema version "
+                f"{schema_version} is unsupported; expected "
+                f"{SAFETY_AUX_SAMPLER_SCHEMA_VERSION}"
+            )
+        self._rng = self._validated_sampler_rng(
+            state["rng_bit_generator"],
+            state["rng_state"],
+            source="Safety auxiliary sampler state",
+        )
 
     def load_state_dict(self, state: Mapping[str, Any]) -> None:
         """Strictly validate a snapshot before atomically replacing this state."""
@@ -509,20 +590,11 @@ class SafetyAuxReplayBuffer:
         if np.any(episode_steps < 0):
             raise ValueError("state episode_step values must be nonnegative")
 
-        expected_bit_generator = self._rng.bit_generator.__class__.__name__
-        if state["rng_bit_generator"] != expected_bit_generator:
-            raise ValueError(
-                "Safety auxiliary replay RNG bit generator "
-                f"{state['rng_bit_generator']!r} does not match "
-                f"{expected_bit_generator!r}"
-            )
-        restored_rng = np.random.default_rng()
-        try:
-            restored_rng.bit_generator.state = copy.deepcopy(state["rng_state"])
-        except (TypeError, ValueError) as exc:
-            raise ValueError(
-                "Safety auxiliary replay RNG state is invalid"
-            ) from exc
+        restored_rng = self._validated_sampler_rng(
+            state["rng_bit_generator"],
+            state["rng_state"],
+            source="Safety auxiliary replay",
+        )
 
         self._observations[:size] = observations
         self._requested_actions[:size] = actions
@@ -544,13 +616,28 @@ class SafetyAuxReplayBuffer:
         requested_ids: Tuple[int, ...],
         count: int,
         label: str,
+        *,
+        sample_with_replacement: bool,
+        excluded_indices: Optional[np.ndarray] = None,
     ) -> Tuple[np.ndarray, Tuple[int, ...]]:
+        excluded = np.zeros(self._size, dtype=np.bool_)
+        if excluded_indices is not None:
+            parsed_excluded = np.asarray(excluded_indices)
+            if parsed_excluded.ndim != 1:
+                raise ValueError("excluded_indices must be one-dimensional")
+            if parsed_excluded.size and (
+                np.any(parsed_excluded < 0)
+                or np.any(parsed_excluded >= self._size)
+            ):
+                raise ValueError("excluded_indices contain an out-of-range index")
+            excluded[parsed_excluded.astype(np.int64, copy=False)] = True
+
         available = []
         missing = []
         candidates: Dict[int, np.ndarray] = {}
         for group_id in requested_ids:
             group_candidates = np.flatnonzero(
-                labels[: self._size] == group_id
+                (labels[: self._size] == group_id) & ~excluded
             ).astype(np.int64)
             candidates[group_id] = group_candidates
             if group_candidates.size:
@@ -564,21 +651,58 @@ class SafetyAuxReplayBuffer:
                 f"No stored samples belong to the requested {label} groups"
             )
 
-        quotient, remainder = divmod(count, len(available))
-        quotas = {group_id: quotient for group_id in available}
-        if remainder:
-            selected = self._rng.choice(
-                np.asarray(available, dtype=np.int64),
-                size=remainder,
-                replace=False,
+        unique_candidate_count = int(
+            sum(candidates[group_id].size for group_id in available)
+        )
+        if not sample_with_replacement and count > unique_candidate_count:
+            raise ValueError(
+                f"Cannot sample {label}-balanced data without replacement: "
+                f"requested {count} samples from {unique_candidate_count} "
+                "available unique transitions after exclusions"
             )
-            for group_id in selected:
-                quotas[int(group_id)] += 1
+
+        quotas = {group_id: 0 for group_id in available}
+        if sample_with_replacement:
+            quotient, remainder = divmod(count, len(available))
+            quotas = {group_id: quotient for group_id in available}
+            if remainder:
+                selected = self._rng.choice(
+                    np.asarray(available, dtype=np.int64),
+                    size=remainder,
+                    replace=False,
+                )
+                for group_id in selected:
+                    quotas[int(group_id)] += 1
+        else:
+            # Allocate one item at a time among the currently least-represented
+            # non-exhausted groups. This stays as balanced as finite group
+            # capacities permit without fabricating or duplicating transitions.
+            for _ in range(count):
+                eligible = [
+                    group_id
+                    for group_id in available
+                    if quotas[group_id] < candidates[group_id].size
+                ]
+                if not eligible:
+                    raise RuntimeError(
+                        f"Unable to fulfill {label}-balanced sample quotas"
+                    )
+                minimum_quota = min(quotas[group_id] for group_id in eligible)
+                least_represented = np.asarray(
+                    [
+                        group_id
+                        for group_id in eligible
+                        if quotas[group_id] == minimum_quota
+                    ],
+                    dtype=np.int64,
+                )
+                chosen = int(self._rng.choice(least_represented))
+                quotas[chosen] += 1
         sampled = [
             self._rng.choice(
                 candidates[group_id],
                 size=quotas[group_id],
-                replace=True,
+                replace=sample_with_replacement,
             ).astype(np.int64)
             for group_id in available
             if quotas[group_id] > 0
@@ -618,6 +742,7 @@ class SafetyAuxReplayBuffer:
         component_counts: Mapping[str, int],
         missing_translation_ids: Sequence[int],
         missing_curvature_ids: Sequence[int],
+        sample_with_replacement: bool,
     ) -> Dict[str, Any]:
         reason_counts = np.bincount(
             self._translation_block_reason_ids[indices],
@@ -635,11 +760,25 @@ class SafetyAuxReplayBuffer:
             self._curvature_stratum_ids[: self._size],
             minlength=len(self.curvature_stratum_names),
         )
+        unique_sample_count = int(np.unique(indices).size)
+        returned_batch_size = int(indices.size)
+        duplicate_exposure_fraction = (
+            float(1.0 - unique_sample_count / returned_batch_size)
+            if returned_batch_size
+            else 0.0
+        )
+        replacement_used = unique_sample_count < returned_batch_size
         return {
             "mode": mode,
             "requested_batch_size": int(requested_batch_size),
-            "returned_batch_size": int(indices.size),
-            "with_replacement": True,
+            "returned_batch_size": returned_batch_size,
+            # Retain the former key while adding the configuration's exact name.
+            "with_replacement": bool(sample_with_replacement),
+            "sample_with_replacement": bool(sample_with_replacement),
+            "replacement_used": bool(replacement_used),
+            "sampled_indices": [int(index) for index in indices],
+            "unique_sample_count": unique_sample_count,
+            "duplicate_exposure_fraction": duplicate_exposure_fraction,
             "component_counts": {
                 key: int(value) for key, value in component_counts.items()
             },
@@ -698,6 +837,32 @@ class SafetyAuxReplayBuffer:
         if self._size == 0:
             raise RuntimeError("Safety auxiliary replay buffer is empty")
         return parsed
+
+    @staticmethod
+    def _validated_replacement(value: Any) -> bool:
+        if not isinstance(value, (bool, np.bool_)):
+            raise TypeError("sample_with_replacement must be a bool")
+        return bool(value)
+
+    def _validated_sampler_rng(
+        self,
+        bit_generator_name: Any,
+        rng_state: Any,
+        *,
+        source: str,
+    ) -> np.random.Generator:
+        expected_bit_generator = self._rng.bit_generator.__class__.__name__
+        if bit_generator_name != expected_bit_generator:
+            raise ValueError(
+                f"{source} RNG bit generator {bit_generator_name!r} does not "
+                f"match {expected_bit_generator!r}"
+            )
+        restored_rng = np.random.default_rng()
+        try:
+            restored_rng.bit_generator.state = copy.deepcopy(rng_state)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{source} RNG state is invalid") from exc
+        return restored_rng
 
     @staticmethod
     def _validated_float_array(

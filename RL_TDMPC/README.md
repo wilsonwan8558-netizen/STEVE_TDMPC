@@ -297,18 +297,50 @@ split-integrity, and fingerprint validation, then prints total/train/validation
 sizes and their reason, curvature, joint, duplicate, and safety-cost
 statistics as strict JSON.
 
-Auxiliary replay schema version 1 checkpoints do not contain
-`applied_action` and are intentionally incompatible with replay schema version
-2 when `safety_aux.enabled: true`. Existing main checkpoints made with
-auxiliary replay disabled do not carry that state and are unaffected by this
-auxiliary schema migration.
+### Balanced offline Safety supervision
 
-Normal training leaves `safety_aux.enabled: false`. If explicitly enabled, it
-collects and checkpoints the auxiliary replay but never samples it in
-`agent.update()`. The standalone dataset produced by
-`collect_safety_dataset.py` is offline and is not automatically loaded by
-`train.py`. Main replay sampling, TD targets, losses, optimizers, policy,
-action selection, and MPC remain unchanged.
+Normal training leaves offline supervision disabled. Enable it by setting the
+complete strict configuration:
+
+```yaml
+safety:
+  loss_coef: 0.1
+
+safety_aux:
+  enabled: true
+  dataset_path: /tmp/steve_commit46b_safety_aux.pt
+  loss_coef: 1.0
+  batch_size: 64
+  update_interval: 1
+  sampling_mode: mixed
+  translation_fraction: 0.5
+  curvature_fraction: 0.5
+  sample_with_replacement: true
+```
+
+The main temporal replay and its RNG are unchanged. Each scheduled auxiliary
+contribution samples only the dataset's stored training split. `mixed`
+sampling allocates half of the batch across available translation-block
+reasons and half across available curvature strata; absent groups are reported
+and never fabricated. The complete stored validation split is evaluated
+deterministically at `diagnostics.validation_interval`.
+
+For an auxiliary transition, the encoder runs under `torch.no_grad()` and its
+latent is detached before the existing Safety Head receives the requested
+normalized action. The two targets use the same `log1p(cost / scale)`
+transform and per-channel Smooth L1 losses as main Safety training, without
+temporal rho weighting. Only the Safety trunk and its two output branches
+receive auxiliary gradients. Encoder, dynamics, reward, termination, Q, and
+policy parameters receive only their original main-update gradients. The
+existing model optimizer performs one step; no second optimizer is introduced.
+
+Enabled checkpoints store the resolved auxiliary configuration, dataset
+fingerprint and fixed split identity, sampler-only RNG state, and update
+counters. Dataset transitions are not duplicated into checkpoints. Resume
+requires the same strict dataset and reproduces the next auxiliary batch.
+Legacy collection-only enabled auxiliary checkpoints are intentionally
+rejected; existing format-v3 checkpoints created with auxiliary supervision
+disabled remain compatible.
 
 ## Training
 
@@ -419,6 +451,40 @@ python RL_TDMPC/evaluate.py \
 
 Evaluation uses the configuration embedded in the checkpoint unless
 `--config` is supplied.
+
+### Safety Head evaluation
+
+Evaluate the complete fixed auxiliary validation split without constructing a
+SOFA environment:
+
+```bash
+python RL_TDMPC/evaluate_safety_head.py \
+  --checkpoint RL_TDMPC/checkpoints/step_20000.pt \
+  --safety-dataset /tmp/steve_commit46b_safety_aux.pt \
+  --output-json /tmp/steve_safety_offline.json
+```
+
+The report contains overall, per-translation-reason, and four-stratum
+curvature metrics in original and transformed units, plus diagnostic blockage
+precision/recall/F1 at `1e-6`. This is an intervention-blockage diagnostic
+threshold, not a clinical safety limit. Requested actions are used as Safety
+Head inputs, and the validation split is never sampled or modified.
+
+Add explicit policy episodes and targeted real blockage checks to run a
+combined online/offline evaluation:
+
+```bash
+python RL_TDMPC/evaluate_safety_head.py \
+  --checkpoint RL_TDMPC/checkpoints/step_20000.pt \
+  --safety-dataset /tmp/steve_commit46b_safety_aux.pt \
+  --episodes 3 \
+  --targeted-blockage \
+  --output-json /tmp/steve_safety_combined.json
+```
+
+Supplying `--safety-dataset` without `--episodes` or
+`--targeted-blockage` is deliberately offline-only. Safety predictions remain
+diagnostic and are never called by MPC or used to alter actions.
 
 ## Logs
 

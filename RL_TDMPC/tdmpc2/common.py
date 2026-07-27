@@ -25,9 +25,26 @@ DEFAULT_DIAGNOSTICS_CONFIG = {
 }
 DEFAULT_SAFETY_AUX_CONFIG = {
     "enabled": False,
-    "capacity": 100000,
+    "dataset_path": None,
+    "loss_coef": 1.0,
+    "batch_size": 64,
+    "update_interval": 1,
+    "sampling_mode": "mixed",
     "translation_fraction": 0.5,
     "curvature_fraction": 0.5,
+    "sample_with_replacement": True,
+}
+LEGACY_SAFETY_AUX_CONFIG_KEYS = {
+    "enabled",
+    "capacity",
+    "translation_fraction",
+    "curvature_fraction",
+}
+SAFETY_AUX_SAMPLING_MODES = {
+    "uniform",
+    "translation_balanced",
+    "curvature_balanced",
+    "mixed",
 }
 
 
@@ -258,19 +275,60 @@ def curvature_boundaries_from_diagnostics(
 
 
 def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
-    """Validate optional Safety auxiliary replay controls."""
+    """Validate offline balanced Safety supervision controls.
+
+    Commit-4.6C replaces the former online collection buffer with a strict
+    offline dataset.  The one supported legacy form is the exact four-field
+    collection schema with ``enabled=false``; it is normalized to the new
+    disabled schema so old baseline checkpoints remain loadable.  Enabling
+    that legacy form is rejected rather than silently changing its semantics.
+    """
 
     safety_aux = config.get("safety_aux", DEFAULT_SAFETY_AUX_CONFIG)
     if not isinstance(safety_aux, Mapping):
         raise TypeError("Configuration section 'safety_aux' must be a mapping")
+    received_keys = set(safety_aux)
+    if received_keys == LEGACY_SAFETY_AUX_CONFIG_KEYS:
+        legacy_enabled = safety_aux["enabled"]
+        if type(legacy_enabled) is not bool:
+            raise TypeError("safety_aux.enabled must be a bool")
+        if legacy_enabled:
+            raise ValueError(
+                "The legacy four-field safety_aux collection schema cannot be "
+                "enabled for offline auxiliary supervision; configure "
+                "dataset_path and the complete Commit-4.6C safety_aux schema"
+            )
+
+        capacity_value = safety_aux["capacity"]
+        if isinstance(capacity_value, bool) or not isinstance(
+            capacity_value, (int, np.integer)
+        ):
+            raise TypeError(
+                "legacy safety_aux.capacity must be a positive integer"
+            )
+        if int(capacity_value) <= 0:
+            raise ValueError(
+                "legacy safety_aux.capacity must be a positive integer"
+            )
+        normalized = copy_safety_aux_defaults()
+        normalized["translation_fraction"] = _safety_aux_fraction(
+            safety_aux["translation_fraction"],
+            "translation_fraction",
+        )
+        normalized["curvature_fraction"] = _safety_aux_fraction(
+            safety_aux["curvature_fraction"],
+            "curvature_fraction",
+        )
+        return normalized
+
     expected_keys = set(DEFAULT_SAFETY_AUX_CONFIG)
-    unexpected_keys = sorted(set(safety_aux) - expected_keys)
+    unexpected_keys = sorted(received_keys - expected_keys)
     if unexpected_keys:
         raise ValueError(
             "Configuration safety_aux section has unexpected keys: "
             f"{unexpected_keys}"
         )
-    missing_keys = sorted(expected_keys - set(safety_aux))
+    missing_keys = sorted(expected_keys - received_keys)
     if missing_keys:
         raise KeyError(
             "Configuration safety_aux section is missing keys: "
@@ -281,39 +339,72 @@ def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
     if type(enabled) is not bool:
         raise TypeError("safety_aux.enabled must be a bool")
 
-    capacity_value = safety_aux["capacity"]
-    if isinstance(capacity_value, bool):
-        raise TypeError("safety_aux.capacity must be an integer, not bool")
-    try:
-        numeric_capacity = float(capacity_value)
-        capacity = int(capacity_value)
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise TypeError("safety_aux.capacity must be a positive integer") from exc
-    if (
-        not np.isfinite(numeric_capacity)
-        or numeric_capacity != capacity
-        or capacity <= 0
+    dataset_path_value = safety_aux["dataset_path"]
+    if dataset_path_value is None:
+        dataset_path = None
+    elif isinstance(dataset_path_value, (str, os.PathLike)) and not isinstance(
+        dataset_path_value, (bytes, bytearray)
     ):
-        raise ValueError("safety_aux.capacity must be a positive integer")
-
-    def nonnegative_fraction(key: str) -> float:
-        value = safety_aux[key]
-        if isinstance(value, bool):
-            raise TypeError(f"safety_aux.{key} must be a real number, not bool")
-        try:
-            converted = float(value)
-        except (TypeError, ValueError, OverflowError) as exc:
-            raise TypeError(
-                f"safety_aux.{key} must be a real number"
-            ) from exc
-        if not np.isfinite(converted) or converted < 0.0:
+        dataset_path = os.fspath(dataset_path_value)
+        if not isinstance(dataset_path, str) or not dataset_path.strip():
             raise ValueError(
-                f"safety_aux.{key} must be finite and nonnegative"
+                "safety_aux.dataset_path must be null or a non-empty path"
             )
-        return converted
+    else:
+        raise TypeError(
+            "safety_aux.dataset_path must be null or a path-like string"
+        )
+    if enabled and dataset_path is None:
+        raise ValueError(
+            "safety_aux.dataset_path must be a non-empty path when "
+            "safety_aux.enabled=true"
+        )
 
-    translation_fraction = nonnegative_fraction("translation_fraction")
-    curvature_fraction = nonnegative_fraction("curvature_fraction")
+    loss_coef = _safety_aux_finite_float(
+        safety_aux["loss_coef"],
+        "loss_coef",
+        minimum=0.0,
+    )
+    batch_size = _safety_aux_positive_integer(
+        safety_aux["batch_size"],
+        "batch_size",
+    )
+    update_interval = _safety_aux_positive_integer(
+        safety_aux["update_interval"],
+        "update_interval",
+    )
+
+    sampling_mode = safety_aux["sampling_mode"]
+    if not isinstance(sampling_mode, str):
+        raise TypeError("safety_aux.sampling_mode must be a string")
+    if sampling_mode not in SAFETY_AUX_SAMPLING_MODES:
+        raise ValueError(
+            "safety_aux.sampling_mode must be one of "
+            f"{sorted(SAFETY_AUX_SAMPLING_MODES)}, got {sampling_mode!r}"
+        )
+
+    translation_fraction = _safety_aux_fraction(
+        safety_aux["translation_fraction"],
+        "translation_fraction",
+    )
+    curvature_fraction = _safety_aux_fraction(
+        safety_aux["curvature_fraction"],
+        "curvature_fraction",
+    )
+    if sampling_mode == "mixed" and not np.isclose(
+        translation_fraction + curvature_fraction,
+        1.0,
+        rtol=0.0,
+        atol=1.0e-12,
+    ):
+        raise ValueError(
+            "safety_aux.translation_fraction and "
+            "safety_aux.curvature_fraction must sum to 1 for mixed sampling"
+        )
+
+    sample_with_replacement = safety_aux["sample_with_replacement"]
+    if type(sample_with_replacement) is not bool:
+        raise TypeError("safety_aux.sample_with_replacement must be a bool")
 
     # Current configs explicitly carry the third auxiliary boundary and should
     # always validate it. Older format-v3 checkpoint configs may contain only
@@ -333,10 +424,55 @@ def build_safety_aux_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         curvature_boundaries_from_diagnostics(config)
     return {
         "enabled": enabled,
-        "capacity": capacity,
+        "dataset_path": dataset_path,
+        "loss_coef": loss_coef,
+        "batch_size": batch_size,
+        "update_interval": update_interval,
+        "sampling_mode": sampling_mode,
         "translation_fraction": translation_fraction,
         "curvature_fraction": curvature_fraction,
+        "sample_with_replacement": sample_with_replacement,
     }
+
+
+def copy_safety_aux_defaults() -> Dict[str, Any]:
+    """Return a shallow copy of scalar/null auxiliary defaults."""
+
+    return dict(DEFAULT_SAFETY_AUX_CONFIG)
+
+
+def _safety_aux_positive_integer(value: Any, key: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, np.integer)):
+        raise TypeError(f"safety_aux.{key} must be a positive integer")
+    converted = int(value)
+    if converted <= 0:
+        raise ValueError(f"safety_aux.{key} must be a positive integer")
+    return converted
+
+
+def _safety_aux_finite_float(
+    value: Any,
+    key: str,
+    *,
+    minimum: float,
+) -> float:
+    if isinstance(value, bool) or not isinstance(
+        value, (int, float, np.integer, np.floating)
+    ):
+        raise TypeError(f"safety_aux.{key} must be a real number")
+    converted = float(value)
+    if not np.isfinite(converted) or converted < minimum:
+        raise ValueError(
+            f"safety_aux.{key} must be finite and at least {minimum}"
+        )
+    return converted
+
+
+def _safety_aux_fraction(value: Any, key: str) -> float:
+    converted = _safety_aux_finite_float(value, key, minimum=0.0)
+    if converted > 1.0:
+        raise ValueError(f"safety_aux.{key} must be in [0, 1]")
+    return converted
 
 
 def resolve_project_path(path: os.PathLike) -> Path:

@@ -30,6 +30,7 @@ from train import (
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.common import (
     apply_cli_overrides,
+    build_safety_aux_config,
     curvature_boundaries_from_diagnostics,
     load_config,
     load_torch_checkpoint,
@@ -42,7 +43,10 @@ from tdmpc2.replay_buffer import (
     EpisodeReplayBuffer,
 )
 from tdmpc2.safety_diagnostics import safety_batch_diagnostics
-from tdmpc2.safety_aux_replay import SafetyAuxReplayBuffer
+from tdmpc2.safety_aux_supervision import (
+    SAFETY_AUXILIARY_CHECKPOINT_KEY,
+    SafetyAuxiliarySupervisor,
+)
 
 
 class FixedReplay:
@@ -82,6 +86,26 @@ def _assert_parameters_unchanged(
     assert before.keys() == after.keys()
     for name, expected in before.items():
         torch.testing.assert_close(after[name], expected, rtol=0.0, atol=0.0)
+
+
+def _assert_nested_state_equal(left, right) -> None:
+    """Compare optimizer/RNG-style nested state without numeric tolerance."""
+
+    assert type(left) is type(right)
+    if isinstance(left, dict):
+        assert left.keys() == right.keys()
+        for key in left:
+            _assert_nested_state_equal(left[key], right[key])
+    elif isinstance(left, (list, tuple)):
+        assert len(left) == len(right)
+        for left_item, right_item in zip(left, right):
+            _assert_nested_state_equal(left_item, right_item)
+    elif isinstance(left, torch.Tensor):
+        torch.testing.assert_close(left, right, rtol=0.0, atol=0.0)
+    elif isinstance(left, np.ndarray):
+        np.testing.assert_array_equal(left, right)
+    else:
+        assert left == right
 
 
 def main() -> None:
@@ -749,6 +773,303 @@ def main() -> None:
         fixed_safety_cost,
     )
 
+    # Commit 4.6C: independent offline transitions supervise only the Safety
+    # Head. Their loss uses the same target transform and channel coefficients
+    # as main replay Safety training, but has no temporal rho weighting.
+    auxiliary_batch = {
+        "observation": (
+            fixed_observations[0].detach().cpu().numpy().astype(
+                np.float32,
+                copy=True,
+            )
+        ),
+        "action": (
+            fixed_actions[0].detach().cpu().numpy().astype(
+                np.float32,
+                copy=True,
+            )
+        ),
+        "safety_cost": (
+            fixed_safety_cost[0].detach().cpu().numpy().astype(
+                np.float32,
+                copy=True,
+            )
+        ),
+    }
+    tiny_clip_config = copy.deepcopy(config)
+    tiny_clip_config["grad_clip_norm"] = 1.0e-5
+    tiny_clip_config["gradient_interval"] = 1
+    tiny_clip_config["validation_interval"] = 1000
+    torch.manual_seed(4603)
+    auxiliary_baseline_agent = TDMPC2Agent(
+        14,
+        2,
+        tiny_clip_config,
+        episode_length=200,
+        device=device,
+    )
+    torch.manual_seed(4603)
+    auxiliary_agent = TDMPC2Agent(
+        14,
+        2,
+        tiny_clip_config,
+        episode_length=200,
+        device=device,
+    )
+
+    direct_auxiliary_info = (
+        auxiliary_agent._compute_auxiliary_safety_loss(auxiliary_batch)
+    )
+    with torch.no_grad():
+        auxiliary_observation_tensor = torch.as_tensor(
+            auxiliary_batch["observation"],
+            device=device,
+        )
+        auxiliary_action_tensor = torch.as_tensor(
+            auxiliary_batch["action"],
+            device=device,
+        )
+        auxiliary_cost_tensor = torch.as_tensor(
+            auxiliary_batch["safety_cost"],
+            device=device,
+        )
+        detached_auxiliary_latent = auxiliary_agent.model.encode(
+            auxiliary_observation_tensor
+        ).detach()
+        assert not detached_auxiliary_latent.requires_grad
+        expected_auxiliary_prediction = (
+            auxiliary_agent.model.safety_transformed(
+                detached_auxiliary_latent,
+                auxiliary_action_tensor,
+            )
+        )
+        expected_auxiliary_target = (
+            auxiliary_agent.model.transform_safety_targets(
+                auxiliary_cost_tensor
+            )
+        )
+        expected_auxiliary_channel_losses = F.smooth_l1_loss(
+            expected_auxiliary_prediction,
+            expected_auxiliary_target,
+            reduction="none",
+        ).mean(dim=0)
+        expected_auxiliary_loss = (
+            auxiliary_agent.safety_curvature_loss_coef
+            * expected_auxiliary_channel_losses[0]
+            + auxiliary_agent.safety_translation_error_loss_coef
+            * expected_auxiliary_channel_losses[1]
+        )
+    torch.testing.assert_close(
+        direct_auxiliary_info["safety_aux_curvature_loss"],
+        expected_auxiliary_channel_losses[0],
+    )
+    torch.testing.assert_close(
+        direct_auxiliary_info["safety_aux_translation_error_loss"],
+        expected_auxiliary_channel_losses[1],
+    )
+    torch.testing.assert_close(
+        direct_auxiliary_info["safety_aux_loss"],
+        expected_auxiliary_loss,
+    )
+    assert float(direct_auxiliary_info["safety_aux_batch_size"]) == batch_size
+
+    invalid_auxiliary_batch = copy.deepcopy(auxiliary_batch)
+    invalid_auxiliary_batch["observation"] = invalid_auxiliary_batch[
+        "observation"
+    ][:, :-1]
+    try:
+        auxiliary_agent._compute_auxiliary_safety_loss(
+            invalid_auxiliary_batch
+        )
+    except ValueError as exc:
+        assert "(B, 14)" in str(exc)
+    else:
+        raise AssertionError(
+            "Auxiliary Safety loss accepted a wrong observation shape"
+        )
+
+    def cloned_main_replay() -> EpisodeReplayBuffer:
+        clone = EpisodeReplayBuffer(
+            100,
+            14,
+            2,
+            3,
+            4,
+            safety_cost_names=safety_cost_names,
+            seed=999,
+        )
+        clone.load_state_dict(copy.deepcopy(replay.state_dict()))
+        return clone
+
+    baseline_main_replay = cloned_main_replay()
+    auxiliary_main_replay = cloned_main_replay()
+    safety_parameters_before_auxiliary = {
+        name: parameter.detach().clone()
+        for name, parameter in auxiliary_agent.model.named_parameters()
+        if name.startswith("safety_")
+    }
+    with patch.object(
+        auxiliary_baseline_agent,
+        "_compute_auxiliary_safety_loss",
+        side_effect=AssertionError(
+            "Unscheduled update evaluated auxiliary Safety data"
+        ),
+    ) as unscheduled_auxiliary_spy:
+        torch.manual_seed(4604)
+        auxiliary_baseline_metrics = auxiliary_baseline_agent.update(
+            baseline_main_replay
+        )
+    assert unscheduled_auxiliary_spy.call_count == 0
+    for key in (
+        "safety_aux_loss",
+        "safety_aux_curvature_loss",
+        "safety_aux_translation_error_loss",
+        "safety_aux_batch_size",
+        "aux_grad_norm_safety_head",
+    ):
+        assert np.isnan(auxiliary_baseline_metrics[key])
+
+    torch.manual_seed(4604)
+    auxiliary_metrics = auxiliary_agent.update(
+        auxiliary_main_replay,
+        safety_aux_batch=auxiliary_batch,
+        safety_aux_loss_coef=1.0,
+    )
+    np.testing.assert_allclose(
+        auxiliary_metrics["total_loss"],
+        auxiliary_baseline_metrics["total_loss"]
+        + auxiliary_metrics["safety_aux_loss"],
+        rtol=1.0e-6,
+    )
+    for key in (
+        "consistency_loss",
+        "reward_loss",
+        "value_loss",
+        "termination_loss",
+        "policy_loss",
+        "policy_entropy",
+    ):
+        np.testing.assert_allclose(
+            auxiliary_metrics[key],
+            auxiliary_baseline_metrics[key],
+            rtol=0.0,
+            atol=0.0,
+        )
+    assert auxiliary_metrics["safety_aux_batch_size"] == batch_size
+    np.testing.assert_allclose(
+        auxiliary_metrics["safety_aux_curvature_loss"],
+        float(expected_auxiliary_channel_losses[0]),
+        rtol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        auxiliary_metrics["safety_aux_translation_error_loss"],
+        float(expected_auxiliary_channel_losses[1]),
+        rtol=1.0e-6,
+    )
+    for module_name in (
+        "safety_head",
+        "safety_trunk",
+        "safety_curvature_branch",
+        "safety_translation_error_branch",
+    ):
+        assert np.isfinite(
+            auxiliary_metrics[f"aux_grad_norm_{module_name}"]
+        )
+        assert auxiliary_metrics[f"aux_grad_norm_{module_name}"] > 0.0
+        assert np.isfinite(
+            auxiliary_metrics[f"main_grad_norm_{module_name}"]
+        )
+        assert np.isfinite(
+            auxiliary_metrics[f"combined_grad_norm_{module_name}"]
+        )
+    for forbidden_module in (
+        "encoder",
+        "dynamics",
+        "reward_head",
+        "termination_head",
+        "q_ensemble",
+        "policy",
+    ):
+        assert auxiliary_metrics[
+            f"aux_grad_norm_{forbidden_module}"
+        ] == 0.0
+        np.testing.assert_allclose(
+            auxiliary_metrics[
+                f"combined_grad_norm_{forbidden_module}"
+            ],
+            auxiliary_metrics[f"main_grad_norm_{forbidden_module}"],
+            rtol=0.0,
+            atol=0.0,
+        )
+    assert (
+        auxiliary_metrics["model_grad_norm"]
+        > tiny_clip_config["grad_clip_norm"]
+    )
+    assert (
+        auxiliary_metrics["aux_grad_norm_safety_head"]
+        > auxiliary_metrics["aux_grad_norm_safety_head_clipped"]
+    )
+    assert (
+        auxiliary_metrics["aux_grad_norm_safety_head_clipped"]
+        <= tiny_clip_config["grad_clip_norm"] + 1.0e-7
+    )
+
+    auxiliary_parameters = dict(auxiliary_agent.model.named_parameters())
+    for name, baseline_parameter in (
+        auxiliary_baseline_agent.model.named_parameters()
+    ):
+        if not name.startswith("safety_"):
+            torch.testing.assert_close(
+                auxiliary_parameters[name],
+                baseline_parameter,
+                rtol=0.0,
+                atol=0.0,
+            )
+    for module_prefix in (
+        "safety_trunk",
+        "safety_curvature_head",
+        "safety_translation_error_head",
+    ):
+        assert any(
+            not torch.equal(
+                safety_parameters_before_auxiliary[name],
+                parameter,
+            )
+            for name, parameter in auxiliary_parameters.items()
+            if name.startswith(module_prefix)
+        )
+
+    _assert_nested_state_equal(
+        baseline_main_replay.state_dict()["rng_state"],
+        auxiliary_main_replay.state_dict()["rng_state"],
+    )
+    for baseline_sample, auxiliary_sample in zip(
+        baseline_main_replay.sample(device),
+        auxiliary_main_replay.sample(device),
+    ):
+        torch.testing.assert_close(
+            baseline_sample,
+            auxiliary_sample,
+            rtol=0.0,
+            atol=0.0,
+        )
+    torch.manual_seed(4605)
+    baseline_planning_action = auxiliary_baseline_agent.act(
+        observations[0],
+        first_step=True,
+        eval_mode=True,
+    )
+    torch.manual_seed(4605)
+    auxiliary_planning_action = auxiliary_agent.act(
+        observations[0],
+        first_step=True,
+        eval_mode=True,
+    )
+    np.testing.assert_array_equal(
+        baseline_planning_action,
+        auxiliary_planning_action,
+    )
+
     # Disable all baseline model coefficients so every encoder/dynamics/head
     # gradient below is attributable to the Safety auxiliary objective.
     safety_only_config = copy.deepcopy(config)
@@ -831,14 +1152,47 @@ def main() -> None:
         name: parameter.detach().clone()
         for name, parameter in safety_agent.model.named_parameters()
     }
+    validation_model_optimizer_before = copy.deepcopy(
+        safety_agent.model_optimizer.state_dict()
+    )
+    validation_policy_optimizer_before = copy.deepcopy(
+        safety_agent.policy_optimizer.state_dict()
+    )
+    validation_rng_before = torch.get_rng_state().clone()
     safety_agent.model.train(True)
     direct_validation_metrics = safety_agent.safety_validation_metrics(
         validation_batch
     )
+    repeated_validation_metrics = safety_agent.safety_validation_metrics(
+        validation_batch
+    )
     assert safety_agent.model.training
+    assert direct_validation_metrics.keys() == repeated_validation_metrics.keys()
+    for name in direct_validation_metrics:
+        torch.testing.assert_close(
+            direct_validation_metrics[name],
+            repeated_validation_metrics[name],
+            rtol=0.0,
+            atol=0.0,
+            equal_nan=True,
+        )
     _assert_parameters_unchanged(
         validation_parameters_before,
         safety_agent.model,
+    )
+    _assert_nested_state_equal(
+        validation_model_optimizer_before,
+        safety_agent.model_optimizer.state_dict(),
+    )
+    _assert_nested_state_equal(
+        validation_policy_optimizer_before,
+        safety_agent.policy_optimizer.state_dict(),
+    )
+    torch.testing.assert_close(
+        validation_rng_before,
+        torch.get_rng_state(),
+        rtol=0.0,
+        atol=0.0,
     )
     assert all(
         parameter.grad is None
@@ -861,6 +1215,34 @@ def main() -> None:
             ]
         )
         == horizon * batch_size // 2
+    )
+    np.testing.assert_allclose(
+        float(direct_validation_metrics["val_safety_target_curvature_mean"]),
+        float(validation_cost[..., 0].mean()),
+        rtol=1.0e-7,
+    )
+    np.testing.assert_allclose(
+        float(
+            direct_validation_metrics[
+                "val_safety_target_translation_error_mean"
+            ]
+        ),
+        float(validation_cost[..., 1].mean()),
+        rtol=1.0e-7,
+    )
+    np.testing.assert_allclose(
+        float(direct_validation_metrics["val_safety_target_curvature_max"]),
+        float(validation_cost[..., 0].max()),
+        rtol=1.0e-7,
+    )
+    np.testing.assert_allclose(
+        float(
+            direct_validation_metrics[
+                "val_safety_target_translation_error_max"
+            ]
+        ),
+        float(validation_cost[..., 1].max()),
+        rtol=1.0e-7,
     )
     safety_agent.model.train(False)
 
@@ -1412,7 +1794,7 @@ def main() -> None:
             checkpoint_path,
             map_location=device,
         )
-        assert "safety_aux_replay" not in checkpoint
+        assert SAFETY_AUXILIARY_CHECKPOINT_KEY not in checkpoint
         validate_checkpoint_schema(
             checkpoint,
             config=checkpoint_config,
@@ -1421,9 +1803,13 @@ def main() -> None:
         disabled_aux_variant = copy.deepcopy(checkpoint_config)
         disabled_aux_variant["safety_aux"].update(
             {
-                "capacity": 17,
-                "translation_fraction": 4.0,
+                "loss_coef": 4.0,
+                "batch_size": 17,
+                "update_interval": 3,
+                "sampling_mode": "uniform",
+                "translation_fraction": 0.75,
                 "curvature_fraction": 0.0,
+                "sample_with_replacement": False,
             }
         )
         disabled_aux_variant["diagnostics"][
@@ -1435,7 +1821,7 @@ def main() -> None:
             source="Disabled Safety auxiliary config variant",
         )
         forbidden_disabled_aux_state = copy.deepcopy(checkpoint)
-        forbidden_disabled_aux_state["safety_aux_replay"] = None
+        forbidden_disabled_aux_state[SAFETY_AUXILIARY_CHECKPOINT_KEY] = None
         try:
             validate_checkpoint_schema(
                 forbidden_disabled_aux_state,
@@ -1445,7 +1831,45 @@ def main() -> None:
             assert "safety_aux.enabled=false" in str(exc)
         else:
             raise AssertionError(
-                "Disabled checkpoint accepted a safety_aux_replay key"
+                "Disabled checkpoint accepted a safety_auxiliary state key"
+            )
+        legacy_collection_checkpoint = copy.deepcopy(checkpoint)
+        legacy_collection_checkpoint["config"]["safety_aux"] = {
+            "enabled": True,
+            "capacity": 100000,
+            "translation_fraction": 0.5,
+            "curvature_fraction": 0.5,
+        }
+        legacy_collection_checkpoint["safety_aux_replay"] = {
+            "schema_version": 2,
+        }
+        try:
+            validate_checkpoint_schema(
+                legacy_collection_checkpoint,
+                source="Legacy enabled collection-only checkpoint",
+            )
+        except ValueError as exc:
+            assert "legacy four-field" in str(exc)
+            assert "cannot be enabled" in str(exc)
+        else:
+            raise AssertionError(
+                "Checkpoint validation accepted the legacy enabled collection "
+                "schema"
+            )
+        legacy_collection_key_checkpoint = copy.deepcopy(checkpoint)
+        legacy_collection_key_checkpoint["safety_aux_replay"] = {
+            "schema_version": 2,
+        }
+        try:
+            validate_checkpoint_schema(
+                legacy_collection_key_checkpoint,
+                source="Legacy collection-only state checkpoint",
+            )
+        except ValueError as exc:
+            assert "collection-only safety_aux_replay" in str(exc)
+        else:
+            raise AssertionError(
+                "Checkpoint validation accepted a legacy collection-only state"
             )
         commit4_checkpoint = copy.deepcopy(checkpoint)
         commit4_checkpoint["config"].pop("diagnostics")
@@ -1507,28 +1931,47 @@ def main() -> None:
         assert checkpoint_agent.update_count == safety_agent.update_count
         assert checkpoint_agent.model_optimizer.param_groups[-1]["name"] == "safety"
 
+        auxiliary_dataset_path = Path(
+            "/tmp/steve_commit46b_safety_aux.pt"
+        ).resolve()
+        assert auxiliary_dataset_path.is_file()
         auxiliary_checkpoint_config = copy.deepcopy(checkpoint_config)
-        auxiliary_checkpoint_config["safety_aux"]["enabled"] = True
-        auxiliary_replay = SafetyAuxReplayBuffer(
-            100000,
-            14,
-            2,
+        auxiliary_checkpoint_config["safety_aux"].update(
+            {
+                "enabled": True,
+                "dataset_path": str(auxiliary_dataset_path),
+                "loss_coef": 1.0,
+                "batch_size": 64,
+                "update_interval": 1,
+                "sampling_mode": "mixed",
+                "translation_fraction": 0.5,
+                "curvature_fraction": 0.5,
+                "sample_with_replacement": True,
+            }
+        )
+        auxiliary_config = build_safety_aux_config(
+            auxiliary_checkpoint_config
+        )
+        auxiliary_boundaries = curvature_boundaries_from_diagnostics(
+            auxiliary_checkpoint_config
+        )
+        auxiliary_supervisor = SafetyAuxiliarySupervisor(
+            auxiliary_config,
+            observation_dim=14,
+            action_dim=2,
             safety_cost_names=safety_cost_names,
-            curvature_boundaries_mm_inv=(
-                curvature_boundaries_from_diagnostics(
-                    auxiliary_checkpoint_config
-                )
-            ),
+            curvature_boundaries_mm_inv=auxiliary_boundaries,
             seed=77,
         )
-        auxiliary_replay.add(
-            observations[0].copy(),
-            actions[0].copy(),
-            safety_cost[0].copy(),
-            0,
-            0,
-            applied_action=actions[0].copy(),
-            episode_step=1,
+        for normal_update_count in range(1, safety_agent.update_count + 1):
+            scheduled_batch, scheduled_metadata = (
+                auxiliary_supervisor.sample_for_update(normal_update_count)
+            )
+            assert scheduled_batch is not None
+            assert scheduled_metadata is not None
+        assert (
+            auxiliary_supervisor.last_normal_update_count
+            == safety_agent.update_count
         )
         auxiliary_checkpoint_path = (
             Path(temp_dir) / "schema_v3_with_safety_aux.pt"
@@ -1542,7 +1985,7 @@ def main() -> None:
             episode_index=1,
             success_count=0,
             include_replay=True,
-            safety_aux_replay=auxiliary_replay,
+            safety_auxiliary=auxiliary_supervisor,
         )
         auxiliary_checkpoint = load_torch_checkpoint(
             auxiliary_checkpoint_path,
@@ -1553,38 +1996,261 @@ def main() -> None:
             config=auxiliary_checkpoint_config,
             source="Safety auxiliary smoke-test checkpoint",
         )
-        assert len(
-            auxiliary_checkpoint["safety_aux_replay"]["observation"]
-        ) == 1
+        auxiliary_state = auxiliary_checkpoint[
+            SAFETY_AUXILIARY_CHECKPOINT_KEY
+        ]
+        assert auxiliary_state["enabled"] is True
+        assert auxiliary_state["dataset"]["fingerprint"] == (
+            auxiliary_supervisor.fingerprint
+        )
+        assert auxiliary_state["dataset"]["split"]["validation_indices"].shape == (
+            219,
+        )
+        assert "observation" not in auxiliary_state["sampler"]
+
+        expected_next_auxiliary = auxiliary_supervisor.sample_for_update(
+            safety_agent.update_count + 1
+        )
+        resumed_auxiliary_supervisor = SafetyAuxiliarySupervisor(
+            auxiliary_config,
+            observation_dim=14,
+            action_dim=2,
+            safety_cost_names=safety_cost_names,
+            curvature_boundaries_mm_inv=auxiliary_boundaries,
+            seed=9999,
+        )
+        resumed_auxiliary_supervisor.load_state_dict(
+            auxiliary_state,
+            expected_normal_update_count=safety_agent.update_count,
+        )
+        actual_next_auxiliary = (
+            resumed_auxiliary_supervisor.sample_for_update(
+                safety_agent.update_count + 1
+            )
+        )
+        _assert_nested_state_equal(
+            expected_next_auxiliary,
+            actual_next_auxiliary,
+        )
+
         missing_auxiliary_state = copy.deepcopy(auxiliary_checkpoint)
-        missing_auxiliary_state.pop("safety_aux_replay")
+        missing_auxiliary_state.pop(SAFETY_AUXILIARY_CHECKPOINT_KEY)
         try:
             validate_checkpoint_schema(
                 missing_auxiliary_state,
-                source="Missing Safety auxiliary replay checkpoint",
+                source="Missing Safety auxiliary supervisor checkpoint",
             )
         except ValueError as exc:
             assert "missing" in str(exc)
-            assert "safety_aux_replay" in str(exc)
+            assert SAFETY_AUXILIARY_CHECKPOINT_KEY in str(exc)
         else:
             raise AssertionError(
                 "Checkpoint validation accepted enabled safety_aux without state"
             )
-        mismatched_auxiliary_state = copy.deepcopy(auxiliary_checkpoint)
-        mismatched_auxiliary_state["safety_aux_replay"][
-            "translation_block_reason_names"
-        ] = tuple(reversed(TRANSLATION_BLOCK_REASON_NAMES))
+
+        fingerprint_mismatch = copy.deepcopy(auxiliary_checkpoint)
+        fingerprint_mismatch[SAFETY_AUXILIARY_CHECKPOINT_KEY]["dataset"][
+            "fingerprint"
+        ] = "0" * 64
         try:
             validate_checkpoint_schema(
-                mismatched_auxiliary_state,
-                source="Reordered auxiliary reason checkpoint",
+                fingerprint_mismatch,
+                config=auxiliary_checkpoint_config,
+                source="Auxiliary fingerprint mismatch checkpoint",
             )
         except ValueError as exc:
-            assert "reason order" in str(exc)
+            assert "fingerprint" in str(exc)
         else:
             raise AssertionError(
-                "Checkpoint validation accepted reordered auxiliary reasons"
+                "Checkpoint validation accepted an auxiliary fingerprint mismatch"
             )
+
+        split_mismatch = copy.deepcopy(auxiliary_checkpoint)
+        split_train_indices = split_mismatch[
+            SAFETY_AUXILIARY_CHECKPOINT_KEY
+        ]["dataset"]["split"]["train_indices"]
+        split_train_indices[[0, 1]] = split_train_indices[[1, 0]]
+        try:
+            validate_checkpoint_schema(
+                split_mismatch,
+                config=auxiliary_checkpoint_config,
+                source="Auxiliary fixed-split mismatch checkpoint",
+            )
+        except ValueError as exc:
+            assert "fixed split" in str(exc)
+        else:
+            raise AssertionError(
+                "Checkpoint validation accepted an auxiliary split mismatch"
+            )
+
+        missing_dataset_checkpoint = copy.deepcopy(auxiliary_checkpoint)
+        missing_dataset_path = (
+            Path(temp_dir) / "missing_safety_aux_dataset.pt"
+        )
+        missing_dataset_checkpoint["config"]["safety_aux"][
+            "dataset_path"
+        ] = str(missing_dataset_path)
+        try:
+            validate_checkpoint_schema(
+                missing_dataset_checkpoint,
+                source="Missing auxiliary dataset checkpoint",
+            )
+        except FileNotFoundError as exc:
+            assert "does not exist" in str(exc)
+            assert str(missing_dataset_path) in str(exc)
+        else:
+            raise AssertionError(
+                "Checkpoint validation accepted a missing auxiliary dataset"
+            )
+
+        counter_mismatch = copy.deepcopy(auxiliary_checkpoint)
+        counter_mismatch[SAFETY_AUXILIARY_CHECKPOINT_KEY][
+            "auxiliary_update_count"
+        ] += 1
+        try:
+            validate_checkpoint_schema(
+                counter_mismatch,
+                config=auxiliary_checkpoint_config,
+                source="Auxiliary state-counter mismatch checkpoint",
+            )
+        except ValueError as exc:
+            assert "counter is inconsistent" in str(exc)
+        else:
+            raise AssertionError(
+                "Checkpoint validation accepted an auxiliary counter mismatch"
+            )
+
+        try:
+            validate_checkpoint_schema(
+                auxiliary_checkpoint,
+                config=checkpoint_config,
+                source="Enabled checkpoint with disabled requested config",
+            )
+        except ValueError as exc:
+            assert "safety_aux.enabled" in str(exc)
+            assert "requested config" in str(exc)
+        else:
+            raise AssertionError(
+                "Enabled auxiliary checkpoint accepted a disabled config"
+            )
+        try:
+            validate_checkpoint_schema(
+                checkpoint,
+                config=auxiliary_checkpoint_config,
+                source="Disabled checkpoint with enabled requested config",
+            )
+        except ValueError as exc:
+            assert "safety_aux.enabled" in str(exc)
+            assert "requested config" in str(exc)
+        else:
+            raise AssertionError(
+                "Disabled auxiliary checkpoint accepted an enabled config"
+            )
+
+        try:
+            save_checkpoint(
+                path=Path(temp_dir) / "missing_auxiliary_state_on_save.pt",
+                config=auxiliary_checkpoint_config,
+                agent=safety_agent,
+                replay=replay,
+                total_env_steps=8,
+                episode_index=1,
+                success_count=0,
+                include_replay=False,
+            )
+        except ValueError as exc:
+            assert "supervisor disagree" in str(exc)
+        else:
+            raise AssertionError(
+                "Enabled auxiliary checkpoint save accepted no supervisor"
+            )
+        try:
+            save_checkpoint(
+                path=Path(temp_dir) / "unexpected_auxiliary_state_on_save.pt",
+                config=checkpoint_config,
+                agent=safety_agent,
+                replay=replay,
+                total_env_steps=8,
+                episode_index=1,
+                success_count=0,
+                include_replay=False,
+                safety_auxiliary=resumed_auxiliary_supervisor,
+            )
+        except ValueError as exc:
+            assert "supervisor disagree" in str(exc)
+        else:
+            raise AssertionError(
+                "Disabled auxiliary checkpoint save accepted a supervisor"
+            )
+
+        offline_arguments = safety_head_evaluation.parse_args(
+            [
+                "--checkpoint",
+                str(auxiliary_checkpoint_path),
+                "--safety-dataset",
+                str(auxiliary_dataset_path),
+                "--device",
+                "cpu",
+                "--safety-batch-size",
+                "64",
+            ]
+        )
+        with patch.object(
+            safety_head_evaluation,
+            "_make_evaluation_environment",
+            side_effect=AssertionError(
+                "Offline dataset-only evaluation constructed stEVE"
+            ),
+        ), patch("builtins.print"):
+            first_offline_report = safety_head_evaluation.run(
+                offline_arguments
+            )
+            second_offline_report = safety_head_evaluation.run(
+                offline_arguments
+            )
+        assert first_offline_report["online_environment_constructed"] is False
+        assert first_offline_report["evaluation_modes"] == [
+            "fixed-offline-validation"
+        ]
+        first_fixed_validation = first_offline_report["fixed_validation"]
+        second_fixed_validation = second_offline_report["fixed_validation"]
+        assert first_fixed_validation["dataset"]["total_size"] == 1109
+        assert first_fixed_validation["dataset"]["train_size"] == 890
+        assert first_fixed_validation["dataset"]["validation_size"] == 219
+        assert first_fixed_validation["evaluation"]["sample_count"] == 219
+        assert first_fixed_validation["metrics"]["sample_count"] == 219
+        assert (
+            first_fixed_validation["evaluation"]["inference_batch_count"]
+            == 4
+        )
+        offline_metrics = first_fixed_validation["metrics"]
+        reason_groups = offline_metrics["per_translation_reason"]
+        curvature_groups = offline_metrics["per_curvature_stratum"]
+        assert tuple(reason_groups) == tuple(TRANSLATION_BLOCK_REASON_NAMES)
+        assert tuple(curvature_groups) == (
+            "low",
+            "medium",
+            "high",
+            "extreme",
+        )
+        assert sum(group["count"] for group in reason_groups.values()) == 219
+        assert sum(group["count"] for group in curvature_groups.values()) == 219
+        for empty_reason in ("device_length_limit", "other"):
+            empty_group = reason_groups[empty_reason]
+            assert empty_group["count"] == 0
+            assert all(
+                value is None
+                for channel in empty_group["channels"].values()
+                for value in channel.values()
+            )
+        _assert_nested_state_equal(
+            first_fixed_validation["metrics"],
+            second_fixed_validation["metrics"],
+        )
+        _assert_nested_state_equal(
+            first_fixed_validation["checkpoint_dataset_identity"],
+            second_fixed_validation["checkpoint_dataset_identity"],
+        )
 
         class FakeEvaluationEnv:
             def __init__(self) -> None:

@@ -466,6 +466,419 @@ class TDMPC2Agent:
             **diagnostics,
         }
 
+    def _compute_auxiliary_safety_loss(
+        self,
+        auxiliary_batch: Mapping[str, Any],
+    ) -> Dict[str, torch.Tensor]:
+        """Compute detached, single-transition Safety Head supervision.
+
+        Auxiliary observations are deliberately encoded without autograd and
+        detached again before entering the Safety Head.  This is a fixed
+        isolation boundary: auxiliary supervision can train the Safety trunk
+        and output branches, but cannot train the encoder or latent dynamics.
+        The requested action (``batch["action"]``), rather than the post-mask
+        applied action, preserves the main replay's ``(z_t, a_t, c_t)``
+        convention.
+        """
+
+        if not isinstance(auxiliary_batch, Mapping):
+            raise TypeError("Auxiliary Safety batch must be a mapping")
+        required_keys = {"observation", "action", "safety_cost"}
+        missing_keys = sorted(required_keys - auxiliary_batch.keys())
+        if missing_keys:
+            raise ValueError(
+                "Auxiliary Safety batch is missing required fields "
+                f"{missing_keys}"
+            )
+
+        def tensor_field(
+            name: str,
+            final_dim: int,
+        ) -> torch.Tensor:
+            value = auxiliary_batch[name]
+            if not isinstance(value, np.ndarray):
+                raise TypeError(
+                    f"Auxiliary Safety {name} must be a numpy.ndarray"
+                )
+            if value.dtype != np.float32:
+                raise TypeError(
+                    f"Auxiliary Safety {name} must use float32, "
+                    f"got {value.dtype}"
+                )
+            tensor = torch.as_tensor(value, device=self.device)
+            if tensor.ndim != 2 or tensor.shape[1] != final_dim:
+                raise ValueError(
+                    f"Auxiliary Safety {name} must have shape "
+                    f"(B, {final_dim}), got {tuple(tensor.shape)}"
+                )
+            if tensor.shape[0] <= 0:
+                raise ValueError("Auxiliary Safety batch must not be empty")
+            if not torch.isfinite(tensor).all():
+                raise FloatingPointError(
+                    f"Auxiliary Safety {name} contains NaN or infinity"
+                )
+            return tensor
+
+        observations = tensor_field("observation", self.observation_dim)
+        actions = tensor_field("action", self.action_dim)
+        safety_cost = tensor_field("safety_cost", self.safety_dim)
+        batch_size = observations.shape[0]
+        if actions.shape[0] != batch_size or safety_cost.shape[0] != batch_size:
+            raise ValueError(
+                "Auxiliary Safety observation, action, and safety_cost batch "
+                "dimensions must match"
+            )
+        if torch.any(safety_cost < 0.0):
+            raise ValueError("Auxiliary Safety cost values must be nonnegative")
+
+        with torch.no_grad():
+            latent = self.model.encode(observations)
+        latent = latent.detach()
+        if latent.requires_grad:
+            raise RuntimeError("Auxiliary Safety latent unexpectedly requires grad")
+
+        prediction_transformed = self.model.safety_transformed(latent, actions)
+        target_transformed = self.model.transform_safety_targets(safety_cost)
+        expected_shape = (batch_size, self.safety_dim)
+        if tuple(prediction_transformed.shape) != expected_shape:
+            raise RuntimeError(
+                "WorldModel.safety_transformed returned auxiliary shape "
+                f"{tuple(prediction_transformed.shape)}; expected "
+                f"{expected_shape}"
+            )
+        if tuple(target_transformed.shape) != expected_shape:
+            raise RuntimeError(
+                "WorldModel.transform_safety_targets returned auxiliary shape "
+                f"{tuple(target_transformed.shape)}; expected {expected_shape}"
+            )
+        if not torch.isfinite(prediction_transformed).all():
+            raise FloatingPointError(
+                "Auxiliary Safety prediction contains NaN or infinity"
+            )
+        if not torch.isfinite(target_transformed).all():
+            raise FloatingPointError(
+                "Auxiliary Safety transformed target contains NaN or infinity"
+            )
+
+        # Independent auxiliary transitions have no temporal rho weighting.
+        channel_losses = F.smooth_l1_loss(
+            prediction_transformed,
+            target_transformed,
+            reduction="none",
+        ).mean(dim=0)
+        curvature_loss = channel_losses[0]
+        translation_error_loss = channel_losses[1]
+        combined_loss = (
+            self.safety_curvature_loss_coef * curvature_loss
+            + self.safety_translation_error_loss_coef
+            * translation_error_loss
+        )
+        if not torch.isfinite(combined_loss):
+            raise FloatingPointError("Auxiliary Safety loss is not finite")
+        return {
+            "safety_aux_loss": combined_loss,
+            "safety_aux_curvature_loss": curvature_loss,
+            "safety_aux_translation_error_loss": translation_error_loss,
+            "safety_aux_batch_size": combined_loss.new_tensor(
+                float(batch_size)
+            ),
+        }
+
+    def _disabled_auxiliary_info(self) -> Dict[str, torch.Tensor]:
+        """Return stable unavailable metrics without evaluating auxiliary data."""
+
+        unavailable = torch.full((), float("nan"), device=self.device)
+        names = (
+            "safety_aux_loss",
+            "safety_aux_curvature_loss",
+            "safety_aux_translation_error_loss",
+            "safety_aux_batch_size",
+        )
+        return {name: unavailable.clone() for name in names}
+
+    def _disabled_auxiliary_gradient_info(self) -> Dict[str, torch.Tensor]:
+        """Return unavailable auxiliary-gradient metrics for unscheduled updates."""
+
+        unavailable = torch.full((), float("nan"), device=self.device)
+        module_names = (
+            "safety_head",
+            "safety_trunk",
+            "safety_curvature_branch",
+            "safety_translation_error_branch",
+            "encoder",
+            "dynamics",
+            "reward_head",
+            "termination_head",
+            "q_ensemble",
+            "policy",
+        )
+        output: Dict[str, torch.Tensor] = {}
+        for module_name in module_names:
+            for source in ("main", "aux", "combined"):
+                output[
+                    f"{source}_grad_norm_{module_name}"
+                ] = unavailable.clone()
+        output["aux_grad_norm_safety_head_clipped"] = unavailable.clone()
+        output["combined_grad_norm_safety_head_after_clipping"] = (
+            unavailable.clone()
+        )
+        return output
+
+    def _gradient_values_norm(
+        self,
+        gradients,
+    ) -> torch.Tensor:
+        """Return an L2 norm for detached gradient tensors/``None`` values."""
+
+        squared_norm = torch.zeros((), device=self.device)
+        for gradient in gradients:
+            if gradient is not None:
+                squared_norm = (
+                    squared_norm + gradient.detach().pow(2).sum()
+                )
+        return squared_norm.sqrt()
+
+    @staticmethod
+    def _combined_gradient_values(main_gradients, auxiliary_gradients):
+        """Add aligned optional gradient sequences without mutating either."""
+
+        combined = []
+        for main_gradient, auxiliary_gradient in zip(
+            main_gradients,
+            auxiliary_gradients,
+        ):
+            if main_gradient is None:
+                combined.append(auxiliary_gradient)
+            elif auxiliary_gradient is None:
+                combined.append(main_gradient)
+            else:
+                combined.append(main_gradient + auxiliary_gradient)
+        return tuple(combined)
+
+    def _isolated_auxiliary_gradient_step(
+        self,
+        *,
+        total_loss: torch.Tensor,
+        main_safety_objective: Optional[torch.Tensor],
+        auxiliary_objective: torch.Tensor,
+        diagnostic_gradient_due: bool,
+        safety_shared_gradients: Mapping[str, torch.Tensor],
+    ):
+        """Backpropagate once while isolating auxiliary global-clip effects.
+
+        A naive global clip of ``main + auxiliary`` gradients would let a large
+        auxiliary Safety gradient change the clip factor applied to encoder,
+        dynamics, reward, termination, and Q parameters.  This method preserves
+        the exact main-gradient clipping operation: it snapshots pure main and
+        auxiliary Safety gradients, performs the single total backward pass,
+        restores pure main Safety gradients for the existing global clip, then
+        independently clips and adds only the auxiliary Safety gradients before
+        the single optimizer step.
+        """
+
+        safety_groups = {
+            "safety_trunk": tuple(self.model.safety_trunk.parameters()),
+            "safety_curvature_branch": tuple(
+                self.model.safety_curvature_head.parameters()
+            ),
+            "safety_translation_error_branch": tuple(
+                self.model.safety_translation_error_head.parameters()
+            ),
+        }
+        safety_parameters = tuple(
+            parameter
+            for parameters in safety_groups.values()
+            for parameter in parameters
+        )
+        forbidden_groups = {
+            "encoder": tuple(self.model.encoder.parameters()),
+            "dynamics": tuple(self.model.dynamics.parameters()),
+            "reward_head": tuple(self.model.reward_head.parameters()),
+            "termination_head": tuple(
+                self.model.termination_head.parameters()
+            ),
+            "q_ensemble": tuple(self.model.q_ensemble.parameters()),
+            "policy": tuple(self.model.policy.parameters()),
+        }
+        forbidden_parameters = tuple(
+            parameter
+            for parameters in forbidden_groups.values()
+            for parameter in parameters
+        )
+
+        if main_safety_objective is None:
+            main_safety_gradients = tuple(None for _ in safety_parameters)
+        else:
+            main_safety_gradients = torch.autograd.grad(
+                main_safety_objective,
+                safety_parameters,
+                retain_graph=True,
+                allow_unused=True,
+            )
+        auxiliary_all_gradients = torch.autograd.grad(
+            auxiliary_objective,
+            (*safety_parameters, *forbidden_parameters),
+            retain_graph=True,
+            allow_unused=True,
+        )
+        auxiliary_safety_gradients = tuple(
+            auxiliary_all_gradients[: len(safety_parameters)]
+        )
+        auxiliary_forbidden_gradients = tuple(
+            auxiliary_all_gradients[len(safety_parameters) :]
+        )
+        if any(
+            gradient is not None
+            for gradient in auxiliary_forbidden_gradients
+        ):
+            raise RuntimeError(
+                "Detached auxiliary Safety loss unexpectedly has an autograd "
+                "path to a forbidden non-Safety module"
+            )
+
+        total_loss.backward()
+        gradient_info: Dict[str, torch.Tensor] = {}
+
+        main_by_id = {
+            id(parameter): gradient
+            for parameter, gradient in zip(
+                safety_parameters,
+                main_safety_gradients,
+            )
+        }
+        auxiliary_by_id = {
+            id(parameter): gradient
+            for parameter, gradient in zip(
+                safety_parameters,
+                auxiliary_safety_gradients,
+            )
+        }
+
+        def values_for(parameters, source: str):
+            if source == "main":
+                return tuple(
+                    main_by_id[id(parameter)] for parameter in parameters
+                )
+            if source == "aux":
+                return tuple(
+                    auxiliary_by_id[id(parameter)] for parameter in parameters
+                )
+            return self._combined_gradient_values(
+                values_for(parameters, "main"),
+                values_for(parameters, "aux"),
+            )
+
+        auxiliary_gradient_info: Dict[str, torch.Tensor] = {}
+        for group_name, parameters in safety_groups.items():
+            for source in ("main", "aux", "combined"):
+                auxiliary_gradient_info[
+                    f"{source}_grad_norm_{group_name}"
+                ] = self._gradient_values_norm(
+                    values_for(parameters, source)
+                )
+        for source in ("main", "aux", "combined"):
+            auxiliary_gradient_info[
+                f"{source}_grad_norm_safety_head"
+            ] = self._gradient_values_norm(
+                values_for(safety_parameters, source)
+            )
+
+        forbidden_offset = 0
+        for group_name, parameters in forbidden_groups.items():
+            group_size = len(parameters)
+            auxiliary_values = auxiliary_forbidden_gradients[
+                forbidden_offset : forbidden_offset + group_size
+            ]
+            forbidden_offset += group_size
+            # The policy uses a separate optimizer and can still hold gradients
+            # from the preceding policy step. It has no path from either model
+            # objective, so do not misreport those stale tensors as main grads.
+            main_values = (
+                tuple(None for _ in parameters)
+                if group_name == "policy"
+                else tuple(parameter.grad for parameter in parameters)
+            )
+            combined_values = self._combined_gradient_values(
+                main_values,
+                auxiliary_values,
+            )
+            auxiliary_gradient_info[
+                f"main_grad_norm_{group_name}"
+            ] = self._gradient_values_norm(main_values)
+            auxiliary_gradient_info[
+                f"aux_grad_norm_{group_name}"
+            ] = self._gradient_values_norm(auxiliary_values)
+            auxiliary_gradient_info[
+                f"combined_grad_norm_{group_name}"
+            ] = self._gradient_values_norm(combined_values)
+
+        # Restore pure main Safety gradients before applying TD-MPC2's existing
+        # global model-gradient clip. Non-Safety gradients already contain only
+        # the main objective because the auxiliary graph is detached.
+        for parameter, gradient in zip(
+            safety_parameters,
+            main_safety_gradients,
+        ):
+            parameter.grad = (
+                None
+                if gradient is None
+                else gradient.detach().clone()
+            )
+        if diagnostic_gradient_due:
+            # Preserve the established metric semantics: these are pure-main
+            # pre-clipping gradients. Separate auxiliary/combined metrics above
+            # expose the additional supervision.
+            gradient_info.update(
+                self._gradient_diagnostics(safety_shared_gradients)
+            )
+        model_grad_norm = torch.nn.utils.clip_grad_norm_(
+            [
+                parameter
+                for group in self.model_optimizer.param_groups
+                for parameter in group["params"]
+            ],
+            float(self.config["grad_clip_norm"]),
+        )
+
+        auxiliary_norm = self._gradient_values_norm(
+            auxiliary_safety_gradients
+        )
+        if not torch.isfinite(auxiliary_norm):
+            raise FloatingPointError(
+                "Auxiliary Safety gradient norm is not finite"
+            )
+        maximum_norm = float(self.config["grad_clip_norm"])
+        clip_scale = torch.clamp(
+            auxiliary_norm.new_tensor(maximum_norm)
+            / (auxiliary_norm + 1.0e-6),
+            max=1.0,
+        )
+        clipped_auxiliary_gradients = tuple(
+            None
+            if gradient is None
+            else gradient.detach() * clip_scale
+            for gradient in auxiliary_safety_gradients
+        )
+        for parameter, gradient in zip(
+            safety_parameters,
+            clipped_auxiliary_gradients,
+        ):
+            if gradient is None:
+                continue
+            if parameter.grad is None:
+                parameter.grad = gradient.clone()
+            else:
+                parameter.grad.add_(gradient)
+        auxiliary_gradient_info[
+            "aux_grad_norm_safety_head_clipped"
+        ] = self._gradient_values_norm(clipped_auxiliary_gradients)
+        auxiliary_gradient_info[
+            "combined_grad_norm_safety_head_after_clipping"
+        ] = self._gradient_values_norm(
+            tuple(parameter.grad for parameter in safety_parameters)
+        )
+        return model_grad_norm, gradient_info, auxiliary_gradient_info
+
     @torch.no_grad()
     def safety_validation_metrics(
         self,
@@ -584,7 +997,7 @@ class TDMPC2Agent:
                     self.model.safety_translation_error_head
                 )
             ),
-            # These total shared-module norms make the auxiliary-only values
+            # These total shared-module norms make the main Safety-only values
             # below interpretable when checking whether Safety dominates.
             "total_grad_norm_encoder": self._module_gradient_norm(
                 self.model.encoder
@@ -606,7 +1019,7 @@ class TDMPC2Agent:
         self,
         scaled_safety_loss: torch.Tensor,
     ) -> Dict[str, torch.Tensor]:
-        """Measure auxiliary-only encoder/dynamics gradients without mutation."""
+        """Measure main Safety-only encoder/dynamics gradients without mutation."""
 
         encoder_parameters = list(self.model.encoder.parameters())
         dynamics_parameters = list(self.model.dynamics.parameters())
@@ -682,9 +1095,33 @@ class TDMPC2Agent:
                 info[f"safety_curvature_{group}_{metric}"] = unavailable
         return info
 
-    def update(self, replay_buffer) -> Dict[str, float]:
+    def update(
+        self,
+        replay,
+        *,
+        safety_aux_batch: Optional[Mapping[str, Any]] = None,
+        safety_aux_loss_coef: float = 0.0,
+    ) -> Dict[str, float]:
+        if isinstance(safety_aux_loss_coef, (bool, np.bool_)):
+            raise TypeError(
+                "safety_aux_loss_coef must be a real number, not bool"
+            )
+        try:
+            parsed_auxiliary_loss_coef = float(safety_aux_loss_coef)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise TypeError(
+                "safety_aux_loss_coef must be a real number"
+            ) from exc
+        if (
+            not np.isfinite(parsed_auxiliary_loss_coef)
+            or parsed_auxiliary_loss_coef < 0.0
+        ):
+            raise ValueError(
+                "safety_aux_loss_coef must be finite and nonnegative"
+            )
+
         observations, actions, rewards, terminated, safety_cost = (
-            replay_buffer.sample(self.device)
+            replay.sample(self.device)
         )
         rho = float(self.config["rho"])
         weights = torch.pow(
@@ -746,12 +1183,30 @@ class TDMPC2Agent:
                 safety_cost,
                 weights,
             )
-        total_loss = (
+        main_total_loss = (
             float(self.config["consistency_coef"]) * consistency_loss
             + float(self.config["reward_coef"]) * reward_loss
             + float(self.config["value_coef"]) * value_loss
             + float(self.config["termination_coef"]) * termination_loss
             + self.safety_loss_coef * safety_info["safety_loss"]
+        )
+        auxiliary_info = self._disabled_auxiliary_info()
+        auxiliary_gradient_info = (
+            self._disabled_auxiliary_gradient_info()
+        )
+        auxiliary_objective: Optional[torch.Tensor] = None
+        if safety_aux_batch is not None:
+            auxiliary_info = self._compute_auxiliary_safety_loss(
+                safety_aux_batch
+            )
+            auxiliary_objective = (
+                parsed_auxiliary_loss_coef
+                * auxiliary_info["safety_aux_loss"]
+            )
+        total_loss = (
+            main_total_loss
+            if auxiliary_objective is None
+            else main_total_loss + auxiliary_objective
         )
 
         self.model_optimizer.zero_grad(set_to_none=True)
@@ -771,20 +1226,40 @@ class TDMPC2Agent:
                 "safety_grad_norm_encoder": zero,
                 "safety_grad_norm_dynamics": zero.clone(),
             }
-        total_loss.backward()
         gradient_info: Dict[str, torch.Tensor] = {}
-        if diagnostic_gradient_due:
-            gradient_info = self._gradient_diagnostics(
-                safety_shared_gradients
+        if auxiliary_objective is None:
+            # Preserve the existing update path exactly when auxiliary
+            # supervision is disabled or not scheduled.
+            total_loss.backward()
+            if diagnostic_gradient_due:
+                gradient_info = self._gradient_diagnostics(
+                    safety_shared_gradients
+                )
+            model_grad_norm = torch.nn.utils.clip_grad_norm_(
+                [
+                    parameter
+                    for group in self.model_optimizer.param_groups
+                    for parameter in group["params"]
+                ],
+                float(self.config["grad_clip_norm"]),
             )
-        model_grad_norm = torch.nn.utils.clip_grad_norm_(
-            [
-                parameter
-                for group in self.model_optimizer.param_groups
-                for parameter in group["params"]
-            ],
-            float(self.config["grad_clip_norm"]),
-        )
+        else:
+            main_safety_objective = (
+                self.safety_loss_coef * safety_info["safety_loss"]
+                if self.safety_training_enabled
+                else None
+            )
+            (
+                model_grad_norm,
+                gradient_info,
+                auxiliary_gradient_info,
+            ) = self._isolated_auxiliary_gradient_step(
+                total_loss=total_loss,
+                main_safety_objective=main_safety_objective,
+                auxiliary_objective=auxiliary_objective,
+                diagnostic_gradient_due=diagnostic_gradient_due,
+                safety_shared_gradients=safety_shared_gradients,
+            )
         self.model_optimizer.step()
 
         policy_info = self._update_policy(latent_rollout_tensor.detach())
@@ -797,7 +1272,7 @@ class TDMPC2Agent:
             and next_update_count % self.validation_interval == 0
         ):
             diagnostic_sampler = getattr(
-                replay_buffer,
+                replay,
                 "sample_diagnostics",
                 None,
             )
@@ -828,7 +1303,15 @@ class TDMPC2Agent:
             },
             **{
                 name: float(value.detach().cpu())
+                for name, value in auxiliary_info.items()
+            },
+            **{
+                name: float(value.detach().cpu())
                 for name, value in gradient_info.items()
+            },
+            **{
+                name: float(value.detach().cpu())
+                for name, value in auxiliary_gradient_info.items()
             },
             **{
                 name: float(value.detach().cpu())

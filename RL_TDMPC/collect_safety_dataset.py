@@ -52,6 +52,7 @@ DEFAULT_DEVICE_LENGTH_SEED = 301
 DEFAULT_SPLIT_SEED = 4602
 DEFAULT_VALIDATION_FRACTION = 0.20
 DEFAULT_OBSERVATION_ROUND_DECIMALS = 6
+DEFAULT_COLLECTION_CAPACITY = 100000
 LOWER_BOUNDARY_TOLERANCE_MM = 1.0e-3
 COLLECTION_MODES: Tuple[str, ...] = (
     "random",
@@ -129,8 +130,11 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         "--capacity",
         type=int,
-        default=None,
-        help="Override safety_aux.capacity",
+        default=DEFAULT_COLLECTION_CAPACITY,
+        help=(
+            "Collector-owned transition capacity, independent of the training "
+            "safety_aux configuration"
+        ),
     )
     parser.add_argument(
         "--output-dataset",
@@ -1283,8 +1287,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     diagnostics_config = build_diagnostics_agent_config(config)
     config["diagnostics"] = copy.deepcopy(diagnostics_config)
     safety_aux_config = build_safety_aux_config(config)
-    if args.capacity is not None:
-        safety_aux_config["capacity"] = int(args.capacity)
+    collection_capacity = int(args.capacity)
     curvature_boundaries = curvature_boundaries_from_diagnostics(config)
     max_episode_steps = int(config["environment"]["max_episode_steps"])
     planned_storage_upper_bound = _planned_storage_upper_bound(
@@ -1301,10 +1304,10 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         max_curvature_transitions=int(args.max_curvature_transitions),
         max_episode_steps=max_episode_steps,
     )
-    if int(safety_aux_config["capacity"]) < planned_storage_upper_bound:
+    if collection_capacity < planned_storage_upper_bound:
         raise ValueError(
-            "Safety auxiliary replay capacity is too small for no-overwrite "
-            f"collection: capacity={safety_aux_config['capacity']}, required at "
+            "Collector capacity is too small for no-overwrite collection: "
+            f"capacity={collection_capacity}, required at "
             f"least {planned_storage_upper_bound} for the selected modes"
         )
 
@@ -1313,7 +1316,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         observation_dim = int(np.prod(env.observation_space.shape))
         action_dim = int(np.prod(env.action_space.shape))
         buffer = SafetyAuxReplayBuffer(
-            int(safety_aux_config["capacity"]),
+            collection_capacity,
             observation_dim,
             action_dim,
             safety_cost_names=SAFETY_COST_NAMES,
@@ -1476,7 +1479,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             "deduplicate_exact": bool(args.deduplicate_exact),
             "max_episode_steps": max_episode_steps,
             "planned_storage_upper_bound": planned_storage_upper_bound,
-            "buffer_capacity": int(safety_aux_config["capacity"]),
+            "buffer_capacity": collection_capacity,
         }
         report = build_dataset_report(
             dataset,

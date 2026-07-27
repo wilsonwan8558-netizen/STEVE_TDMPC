@@ -23,7 +23,7 @@ model:
   log_std_max: 2.0
 
 safety:
-  loss_coef: 1.0
+  loss_coef: 0.1
   curvature_loss_coef: 1.0
   translation_error_loss_coef: 1.0
   curvature_scale_mm_inv: 0.1
@@ -38,13 +38,19 @@ diagnostics:
   curvature_medium_max_mm_inv: 0.1
   curvature_high_max_mm_inv: 0.25
 
-# Optional collection-only replay for future balanced Safety Head supervision.
-# Curvature strata use the three canonical boundaries in diagnostics above.
+# Optional balanced offline supervision for the Safety Head. When enabled,
+# dataset_path must reference a strict Commit-4.6B dataset. Auxiliary latents
+# are detached; this data never enters the main EpisodeReplayBuffer.
 safety_aux:
   enabled: false
-  capacity: 100000
+  dataset_path: null
+  loss_coef: 1.0
+  batch_size: 64
+  update_interval: 1
+  sampling_mode: mixed
   translation_fraction: 0.5
   curvature_fraction: 0.5
+  sample_with_replacement: true
 
 training:
   total_steps: 1000000
