@@ -16,6 +16,12 @@ import torch
 import eve.intervention.monoplanestatic as monoplane_module
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 from eve.intervention.monoplanestatic import MonoPlaneStatic
+from evaluate import (
+    apply_evaluation_safety_mpc_config,
+    paths_alias,
+    resolve_evaluation_safety_mpc_config,
+    state_sha256,
+)
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.common import (
     DEFAULT_SAFETY_MPC_CONFIG,
@@ -834,6 +840,181 @@ def _test_agent_and_checkpoint_strictness() -> None:
     )
 
 
+def _test_evaluation_only_override_isolation() -> None:
+    assert paths_alias(Path("/tmp/eval-checkpoint.pt"), Path("/tmp/eval-checkpoint.pt"))
+    assert not paths_alias(
+        Path("/tmp/eval-checkpoint.pt"),
+        Path("/tmp/eval-output.json"),
+    )
+    checkpoint_config = _full_config(enabled=True, alpha=0.0)
+    checkpoint_settings = resolved_safety_mpc_config(checkpoint_config)
+    original_config = copy.deepcopy(checkpoint_config)
+
+    assert resolve_evaluation_safety_mpc_config(
+        checkpoint_config,
+        override="checkpoint",
+        alpha=None,
+    ) == checkpoint_settings
+    disabled_settings = resolve_evaluation_safety_mpc_config(
+        checkpoint_config,
+        override="disabled",
+        alpha=None,
+    )
+    assert disabled_settings == {
+        **checkpoint_settings,
+        "enabled": False,
+    }
+    enabled_settings = resolve_evaluation_safety_mpc_config(
+        checkpoint_config,
+        override="enabled",
+        alpha=0.1,
+    )
+    assert enabled_settings == {
+        **checkpoint_settings,
+        "enabled": True,
+        "alpha": 0.1,
+    }
+    assert checkpoint_config == original_config
+
+    invalid_arguments = (
+        ("checkpoint", 0.1),
+        ("disabled", 0.1),
+        ("enabled", None),
+        ("enabled", 0.0),
+        ("enabled", -0.1),
+        ("enabled", float("nan")),
+        ("other", None),
+    )
+    for override, alpha in invalid_arguments:
+        _assert_raises(
+            lambda override=override, alpha=alpha: (
+                resolve_evaluation_safety_mpc_config(
+                    checkpoint_config,
+                    override=override,
+                    alpha=alpha,
+                )
+            ),
+            ValueError,
+        )
+
+    reference = _agent(checkpoint_config, seed=1701)
+    checkpoint_state = copy.deepcopy(reference.state_dict())
+    checkpoint_model_hash = state_sha256(checkpoint_state["model"])
+    observation = np.linspace(-0.7, 0.7, 14, dtype=np.float32)
+
+    disabled_actions = []
+    for seed in (1801, 1801):
+        candidate = _agent(checkpoint_config, seed=1702)
+        candidate.load_state_dict(checkpoint_state)
+        config_hash = state_sha256(candidate.config)
+        model_hash = state_sha256(candidate.model.state_dict())
+        model_optimizer_hash = state_sha256(
+            candidate.model_optimizer.state_dict()
+        )
+        policy_optimizer_hash = state_sha256(
+            candidate.policy_optimizer.state_dict()
+        )
+        apply_evaluation_safety_mpc_config(
+            candidate,
+            checkpoint_settings=checkpoint_settings,
+            evaluation_settings=disabled_settings,
+        )
+        assert not candidate.safety_mpc_enabled
+        assert not candidate.safety_mpc_active
+        assert candidate.safety_mpc_alpha == 0.0
+        assert state_sha256(candidate.config) == config_hash
+        torch.manual_seed(seed)
+        disabled_actions.append(
+            candidate.act(
+                observation,
+                first_step=True,
+                eval_mode=True,
+            )
+        )
+        assert candidate.last_safety_mpc_metrics is None
+        assert state_sha256(candidate.model.state_dict()) == model_hash
+        assert state_sha256(candidate.model.state_dict()) == checkpoint_model_hash
+        assert (
+            state_sha256(candidate.model_optimizer.state_dict())
+            == model_optimizer_hash
+        )
+        assert (
+            state_sha256(candidate.policy_optimizer.state_dict())
+            == policy_optimizer_hash
+        )
+        assert all(
+            parameter.grad is None
+            for parameter in candidate.model.parameters()
+        )
+    np.testing.assert_array_equal(disabled_actions[0], disabled_actions[1])
+
+    active = _agent(checkpoint_config, seed=1703)
+    active.load_state_dict(checkpoint_state)
+    active_model_hash = state_sha256(active.model.state_dict())
+    active_model_optimizer_hash = state_sha256(
+        active.model_optimizer.state_dict()
+    )
+    active_policy_optimizer_hash = state_sha256(
+        active.policy_optimizer.state_dict()
+    )
+    active_config_hash = state_sha256(active.config)
+    apply_evaluation_safety_mpc_config(
+        active,
+        checkpoint_settings=checkpoint_settings,
+        evaluation_settings=enabled_settings,
+    )
+    assert active.safety_mpc_enabled
+    assert active.safety_mpc_active
+    assert active.safety_mpc_alpha == 0.1
+    assert state_sha256(active.config) == active_config_hash
+    with patch.object(
+        active.model.safety_curvature_head,
+        "forward",
+        side_effect=AssertionError(
+            "Curvature branch must remain monitoring-only"
+        ),
+    ):
+        with patch.object(
+            active.model,
+            "safety_transformed",
+            side_effect=AssertionError(
+                "Two-channel Safety API must not be used by active planning"
+            ),
+        ):
+            torch.manual_seed(1801)
+            action = active.act(
+                observation,
+                first_step=True,
+                eval_mode=True,
+            )
+    assert np.all(np.isfinite(action))
+    assert active.last_safety_mpc_metrics is not None
+    assert state_sha256(active.model.state_dict()) == active_model_hash
+    assert active_model_hash == checkpoint_model_hash
+    assert (
+        state_sha256(active.model_optimizer.state_dict())
+        == active_model_optimizer_hash
+    )
+    assert (
+        state_sha256(active.policy_optimizer.state_dict())
+        == active_policy_optimizer_hash
+    )
+    assert all(
+        parameter.grad is None for parameter in active.model.parameters()
+    )
+
+    changed_cap = copy.deepcopy(enabled_settings)
+    changed_cap["translation_risk_cap"] = 0.5
+    _assert_raises(
+        lambda: apply_evaluation_safety_mpc_config(
+            active,
+            checkpoint_settings=checkpoint_settings,
+            evaluation_settings=changed_cap,
+        ),
+        ValueError,
+    )
+
+
 def main() -> None:
     _test_strict_config_builder()
     _test_disabled_and_alpha_zero_identity()
@@ -842,11 +1023,13 @@ def main() -> None:
     _test_translation_effect_risk_cap_and_invalid_predictions()
     _test_intervention_mask_unchanged()
     _test_agent_and_checkpoint_strictness()
+    _test_evaluation_only_override_isolation()
     print(
         "PASS: strict Safety-MPC config/checkpoint state, disabled and alpha-zero "
         "bitwise isolation, active population-scale penalty/floor, per-iteration "
-        "Translation-only planning, finite capped risk/actions/metrics, and "
-        "unchanged lower/tree-end intervention masking."
+        "Translation-only planning, finite capped risk/actions/metrics, unchanged "
+        "lower/tree-end intervention masking, and isolated deterministic "
+        "evaluation-only planner overrides."
     )
 
 
