@@ -16,6 +16,11 @@ import torch
 import yaml
 from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 
+from .integral_lagrangian import (
+    DEFAULT_INTEGRAL_LAGRANGIAN_CONFIG,
+    validate_integral_lagrangian_config,
+)
+
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_SAFETY_MPC_CONFIG = {
@@ -127,6 +132,11 @@ def load_config(path: os.PathLike) -> Dict[str, Any]:
     if "safety_mpc" not in config:
         config["safety_mpc"] = copy.deepcopy(DEFAULT_SAFETY_MPC_CONFIG)
     build_safety_mpc_agent_config(config)
+    if "integral_lagrangian" not in config:
+        config["integral_lagrangian"] = copy.deepcopy(
+            DEFAULT_INTEGRAL_LAGRANGIAN_CONFIG
+        )
+    build_integral_lagrangian_config(config)
     return config
 
 
@@ -292,6 +302,18 @@ def build_safety_mpc_agent_config(
         ),
         "safety_mpc_aggregation": aggregation,
     }
+
+
+def build_integral_lagrangian_config(
+    config: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Validate evaluation-only Integral Lagrangian settings."""
+
+    section = config.get(
+        "integral_lagrangian",
+        DEFAULT_INTEGRAL_LAGRANGIAN_CONFIG,
+    )
+    return validate_integral_lagrangian_config(section)
 
 
 def build_diagnostics_agent_config(

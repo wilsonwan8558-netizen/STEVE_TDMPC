@@ -39,6 +39,18 @@ safety_mpc:
   minimum_task_scale: 0.000001
   aggregation: max
 
+# Evaluation-only episode-level dual controller. The real observed feedback is
+# the vessel-tree-end blockage fraction; predicted Translation risk remains the
+# MPPI candidate-scoring signal. Training never consumes these settings.
+integral_lagrangian:
+  enabled: false
+  initial_alpha: 0.1
+  integral_gain: 0.1
+  cost_limit: 0.01
+  alpha_max: 0.5
+  rolling_window_episodes: 5
+  warmup_episodes: 5
+
 # Lightweight Safety Head diagnostics. Curvature boundaries only partition
 # logged statistics; they are numerical analysis bins, not clinical thresholds.
 diagnostics:

@@ -220,8 +220,14 @@ class TDMPC2Agent:
         if safety_mpc_aggregation != "max":
             raise ValueError("safety_mpc_aggregation must be 'max'")
         self.safety_mpc_aggregation = safety_mpc_aggregation
+        # The configured values above are immutable checkpoint metadata.
+        # Evaluation-only overrides use separate runtime fields so adapting
+        # alpha can never leak into ``state_dict()['safety_mpc_config']``.
+        self._safety_mpc_runtime_enabled = self.safety_mpc_enabled
+        self._safety_mpc_runtime_alpha = self.safety_mpc_alpha
         self.safety_mpc_active = (
-            self.safety_mpc_enabled and self.safety_mpc_alpha > 0.0
+            self._safety_mpc_runtime_enabled
+            and self._safety_mpc_runtime_alpha > 0.0
         )
         self.last_safety_mpc_metrics: Optional[Dict[str, float]] = None
 
@@ -307,6 +313,58 @@ class TDMPC2Agent:
             self.horizon, self.action_dim, device=self.device
         )
         self.update_count = 0
+
+    @property
+    def safety_mpc_runtime_enabled(self) -> bool:
+        """Whether the current process is applying Safety-MPC scoring."""
+
+        return self._safety_mpc_runtime_enabled
+
+    @property
+    def safety_mpc_runtime_alpha(self) -> float:
+        """Return the evaluation-time alpha without changing checkpoint state."""
+
+        return self._safety_mpc_runtime_alpha
+
+    def set_safety_mpc_runtime_alpha(
+        self,
+        alpha: float,
+        *,
+        enabled: Optional[bool] = None,
+    ) -> None:
+        """Atomically set evaluation-only Safety-MPC alpha and active state."""
+
+        if isinstance(alpha, (bool, np.bool_)) or not isinstance(
+            alpha,
+            (int, float, np.integer, np.floating),
+        ):
+            raise TypeError("Runtime Safety-MPC alpha must be a real number")
+        converted = float(alpha)
+        if not np.isfinite(converted) or converted < 0.0:
+            raise ValueError(
+                "Runtime Safety-MPC alpha must be finite and nonnegative"
+            )
+        with np.errstate(over="ignore", under="ignore"):
+            represented = np.asarray(converted, dtype=np.float32).item()
+        if (
+            not np.isfinite(represented)
+            or represented < 0.0
+            or (converted > 0.0 and represented == 0.0)
+        ):
+            raise ValueError(
+                "Runtime Safety-MPC alpha must remain finite and preserve "
+                "its zero/nonzero status in float32"
+            )
+        if enabled is None:
+            runtime_enabled = self._safety_mpc_runtime_enabled
+        else:
+            if type(enabled) is not bool:
+                raise TypeError("Runtime Safety-MPC enabled must be a bool")
+            runtime_enabled = enabled
+        self._safety_mpc_runtime_enabled = runtime_enabled
+        self._safety_mpc_runtime_alpha = converted
+        self.safety_mpc_active = runtime_enabled and converted > 0.0
+        self.last_safety_mpc_metrics = None
 
     def _tensor_observation(self, observation: np.ndarray) -> torch.Tensor:
         tensor = torch.as_tensor(
@@ -497,7 +555,7 @@ class TDMPC2Agent:
         task_scale = task_scale.clamp_min(
             self.safety_mpc_minimum_task_scale
         )
-        penalty = self.safety_mpc_alpha * task_scale * candidate_risk
+        penalty = self.safety_mpc_runtime_alpha * task_scale * candidate_risk
         planner_values = task_values - penalty.unsqueeze(-1)
         if not bool(torch.isfinite(planner_values).all()):
             raise FloatingPointError(
@@ -607,7 +665,9 @@ class TDMPC2Agent:
                 mean.unsqueeze(1),
             ).squeeze(0)
             selected_penalty = (
-                self.safety_mpc_alpha * final_task_scale * selected_risk
+                self.safety_mpc_runtime_alpha
+                * final_task_scale
+                * selected_risk
             )
             penalty_to_task_scale = selected_penalty / final_task_scale
             task_scores = final_task_values.squeeze(-1)
@@ -2112,5 +2172,8 @@ class TDMPC2Agent:
         self.scale.load_state_dict(state["scale"])
         self.previous_mean.copy_(state["previous_mean"].to(self.device))
         self.update_count = int(state.get("update_count", 0))
-        self.last_safety_mpc_metrics = None
+        self.set_safety_mpc_runtime_alpha(
+            self.safety_mpc_alpha,
+            enabled=self.safety_mpc_enabled,
+        )
         self.model.train(False)

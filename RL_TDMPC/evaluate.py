@@ -23,6 +23,7 @@ from tdmpc2.common import (
     MetricLogger,
     atomic_json_save,
     build_diagnostics_agent_config,
+    build_integral_lagrangian_config,
     build_safety_agent_config,
     build_safety_mpc_agent_config,
     load_config,
@@ -30,9 +31,11 @@ from tdmpc2.common import (
     select_device,
     set_seed,
 )
+from tdmpc2.integral_lagrangian import IntegralLagrangianController
 
 
-EVALUATION_REPORT_SCHEMA_VERSION = 1
+BASELINE_EVALUATION_REPORT_SCHEMA_VERSION = 1
+EVALUATION_REPORT_SCHEMA_VERSION = 2
 _PLANNER_METRIC_NAMES = (
     "safety_mpc_selected_risk",
     "safety_mpc_selected_penalty",
@@ -66,9 +69,28 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=None,
         help=(
-            "Required positive alpha with --eval-safety-mpc enabled; rejected "
-            "for checkpoint/disabled modes."
+            "Required nonnegative alpha with --eval-safety-mpc enabled; "
+            "rejected for checkpoint/disabled modes."
         ),
+    )
+    parser.add_argument(
+        "--eval-integral-lagrangian",
+        choices=("enabled", "disabled"),
+        default=None,
+        help=(
+            "Explicit evaluation-only dual-controller override. By default "
+            "the checkpoint/config integral_lagrangian setting is used."
+        ),
+    )
+    parser.add_argument("--eval-dual-initial-alpha", type=float, default=None)
+    parser.add_argument("--eval-dual-integral-gain", type=float, default=None)
+    parser.add_argument("--eval-dual-cost-limit", type=float, default=None)
+    parser.add_argument("--eval-dual-alpha-max", type=float, default=None)
+    parser.add_argument(
+        "--eval-dual-window-episodes", type=int, default=None
+    )
+    parser.add_argument(
+        "--eval-dual-warmup-episodes", type=int, default=None
     )
     parser.add_argument(
         "--output-json",
@@ -152,8 +174,10 @@ def resolve_evaluation_safety_mpc_config(
         raise ValueError(
             "--eval-safety-mpc enabled requires --eval-safety-mpc-alpha"
         )
-    if isinstance(alpha, bool) or not np.isfinite(float(alpha)) or float(alpha) <= 0:
-        raise ValueError("Evaluation Safety-MPC alpha must be finite and positive")
+    if isinstance(alpha, bool) or not np.isfinite(float(alpha)) or float(alpha) < 0:
+        raise ValueError(
+            "Evaluation Safety-MPC alpha must be finite and nonnegative"
+        )
     evaluation_settings = copy.deepcopy(checkpoint_settings)
     evaluation_settings["enabled"] = True
     evaluation_settings["alpha"] = float(alpha)
@@ -161,6 +185,87 @@ def resolve_evaluation_safety_mpc_config(
     # configuration schema than training.
     resolved_safety_mpc_config({"safety_mpc": evaluation_settings})
     return evaluation_settings
+
+
+def resolve_evaluation_integral_lagrangian_config(
+    checkpoint_config: Mapping[str, Any],
+    *,
+    override: Optional[str],
+    initial_alpha: Optional[float],
+    integral_gain: Optional[float],
+    cost_limit: Optional[float],
+    alpha_max: Optional[float],
+    rolling_window_episodes: Optional[int],
+    warmup_episodes: Optional[int],
+) -> Dict[str, Any]:
+    """Resolve strict evaluation-only dual settings without mutating config."""
+
+    checkpoint_settings = build_integral_lagrangian_config(checkpoint_config)
+    overrides = {
+        "initial_alpha": initial_alpha,
+        "integral_gain": integral_gain,
+        "cost_limit": cost_limit,
+        "alpha_max": alpha_max,
+        "rolling_window_episodes": rolling_window_episodes,
+        "warmup_episodes": warmup_episodes,
+    }
+    supplied_keys = [key for key, value in overrides.items() if value is not None]
+    if override is None:
+        if supplied_keys:
+            raise ValueError(
+                "Dual parameter overrides require explicit "
+                "--eval-integral-lagrangian enabled"
+            )
+        return copy.deepcopy(checkpoint_settings)
+    if override == "disabled":
+        if supplied_keys:
+            raise ValueError(
+                "Dual parameter overrides are invalid when Integral "
+                "Lagrangian evaluation is disabled"
+            )
+        resolved = copy.deepcopy(checkpoint_settings)
+        resolved["enabled"] = False
+        return build_integral_lagrangian_config(
+            {"integral_lagrangian": resolved}
+        )
+    if override != "enabled":
+        raise ValueError(
+            f"Unsupported Integral Lagrangian override {override!r}"
+        )
+    resolved = copy.deepcopy(checkpoint_settings)
+    resolved["enabled"] = True
+    for key, value in overrides.items():
+        if value is not None:
+            resolved[key] = value
+    return build_integral_lagrangian_config(
+        {"integral_lagrangian": resolved}
+    )
+
+
+def validate_evaluation_planner_compatibility(
+    safety_mpc: Mapping[str, Any],
+    integral_lagrangian: Mapping[str, Any],
+    *,
+    mpc_enabled: bool = True,
+) -> None:
+    """Reject an active dual controller without active Safety-MPC scoring."""
+
+    if integral_lagrangian["enabled"] and not safety_mpc["enabled"]:
+        raise ValueError(
+            "Integral Lagrangian evaluation requires Safety-MPC to be enabled"
+        )
+    if integral_lagrangian["enabled"] and not mpc_enabled:
+        raise ValueError(
+            "Integral Lagrangian evaluation requires planning.mpc=true"
+        )
+    if (
+        safety_mpc["enabled"]
+        and float(safety_mpc["alpha"]) > 0.0
+        and not mpc_enabled
+    ):
+        raise ValueError(
+            "Active Safety-MPC evaluation requires planning.mpc=true"
+        )
 
 
 def apply_evaluation_safety_mpc_config(
@@ -181,12 +286,10 @@ def apply_evaluation_safety_mpc_config(
             raise ValueError(
                 f"Evaluation-only Safety-MPC cannot override {key}"
             )
-    agent.safety_mpc_enabled = bool(evaluation_settings["enabled"])
-    agent.safety_mpc_alpha = float(evaluation_settings["alpha"])
-    agent.safety_mpc_active = (
-        agent.safety_mpc_enabled and agent.safety_mpc_alpha > 0.0
+    agent.set_safety_mpc_runtime_alpha(
+        float(evaluation_settings["alpha"]),
+        enabled=bool(evaluation_settings["enabled"]),
     )
-    agent.last_safety_mpc_metrics = None
 
 
 def _update_state_digest(digest: Any, value: Any) -> None:
@@ -282,6 +385,32 @@ def finite_statistics(
     return statistics
 
 
+def compute_episode_tree_end_blockage_fraction(
+    vessel_tree_end_blockage_count: int,
+    episode_transition_count: int,
+) -> float:
+    """Compute the sole real-environment feedback used by the dual update."""
+
+    for name, value in (
+        ("vessel_tree_end_blockage_count", vessel_tree_end_blockage_count),
+        ("episode_transition_count", episode_transition_count),
+    ):
+        if isinstance(value, (bool, np.bool_)) or not isinstance(
+            value, (int, np.integer)
+        ):
+            raise TypeError(f"{name} must be an integer")
+        if int(value) < 0:
+            raise ValueError(f"{name} must be nonnegative")
+    if vessel_tree_end_blockage_count > episode_transition_count:
+        raise ValueError(
+            "vessel_tree_end_blockage_count cannot exceed "
+            "episode_transition_count"
+        )
+    return float(vessel_tree_end_blockage_count) / max(
+        int(episode_transition_count), 1
+    )
+
+
 def main() -> None:
     args = parse_args()
     checkpoint_path = args.checkpoint.expanduser().resolve()
@@ -309,7 +438,11 @@ def main() -> None:
         config=config,
         source=f"Evaluation checkpoint {checkpoint_path}",
     )
-    checkpoint_safety_mpc = resolved_safety_mpc_config(config)
+    checkpoint_config = checkpoint["config"]
+    checkpoint_safety_mpc = resolved_safety_mpc_config(checkpoint_config)
+    checkpoint_integral_lagrangian = build_integral_lagrangian_config(
+        checkpoint_config
+    )
     checkpoint_metadata_snapshot = {
         "top_level": copy.deepcopy(checkpoint.get("safety_mpc_config")),
         "embedded": copy.deepcopy(checkpoint["config"].get("safety_mpc")),
@@ -322,14 +455,58 @@ def main() -> None:
         override=args.eval_safety_mpc,
         alpha=args.eval_safety_mpc_alpha,
     )
-    settings_report = {
+    evaluation_integral_lagrangian = (
+        resolve_evaluation_integral_lagrangian_config(
+            config,
+            override=args.eval_integral_lagrangian,
+            initial_alpha=args.eval_dual_initial_alpha,
+            integral_gain=args.eval_dual_integral_gain,
+            cost_limit=args.eval_dual_cost_limit,
+            alpha_max=args.eval_dual_alpha_max,
+            rolling_window_episodes=args.eval_dual_window_episodes,
+            warmup_episodes=args.eval_dual_warmup_episodes,
+        )
+    )
+    validate_evaluation_planner_compatibility(
+        evaluation_safety_mpc,
+        evaluation_integral_lagrangian,
+        mpc_enabled=bool(config["planning"]["mpc"]),
+    )
+    safety_settings_report = {
         "checkpoint_safety_mpc": checkpoint_safety_mpc,
         "evaluation_safety_mpc": evaluation_safety_mpc,
         "override_applied": evaluation_safety_mpc != checkpoint_safety_mpc,
         "override_mode": args.eval_safety_mpc,
     }
+    integral_settings_report = {
+        "checkpoint_integral_lagrangian": checkpoint_integral_lagrangian,
+        "evaluation_integral_lagrangian": evaluation_integral_lagrangian,
+        "integral_lagrangian_override_applied": (
+            evaluation_integral_lagrangian
+            != checkpoint_integral_lagrangian
+        ),
+        "integral_lagrangian_override_mode": (
+            args.eval_integral_lagrangian
+            if args.eval_integral_lagrangian is not None
+            else ("external_config" if args.config is not None else "checkpoint")
+        ),
+        "integral_lagrangian_effective_initial_alpha_source": (
+            "integral_lagrangian.initial_alpha"
+            if evaluation_integral_lagrangian["enabled"]
+            else "safety_mpc.alpha"
+        ),
+        "effective_initial_planner_alpha": (
+            evaluation_integral_lagrangian["initial_alpha"]
+            if evaluation_integral_lagrangian["enabled"]
+            else evaluation_safety_mpc["alpha"]
+        ),
+    }
+    settings_report = {
+        **safety_settings_report,
+        **integral_settings_report,
+    }
     print(
-        "Safety-MPC checkpoint/evaluation settings:\n"
+        "Safety-MPC and Integral Lagrangian checkpoint/evaluation settings:\n"
         + json.dumps(
             settings_report,
             indent=2,
@@ -394,6 +571,18 @@ def main() -> None:
         checkpoint_settings=checkpoint_safety_mpc,
         evaluation_settings=evaluation_safety_mpc,
     )
+    integral_controller: Optional[IntegralLagrangianController] = None
+    if evaluation_integral_lagrangian["enabled"]:
+        integral_controller = IntegralLagrangianController(
+            evaluation_integral_lagrangian
+        )
+        # Construction resets the controller, but keeping reset explicit makes
+        # the new-evaluation-run boundary auditable.
+        integral_controller.reset()
+        agent.set_safety_mpc_runtime_alpha(
+            integral_controller.current_alpha,
+            enabled=True,
+        )
     log_directory = (
         args.log_directory
         if args.log_directory is not None
@@ -416,6 +605,7 @@ def main() -> None:
     }
     simulation_error_transition_count = 0
     simulation_error_episode_count = 0
+    expected_active_planner_call_count = 0
     video_writer: Optional[cv2.VideoWriter] = None
     video_path = args.video.expanduser().resolve() if record_video else None
     video_fps = float(
@@ -459,6 +649,15 @@ def main() -> None:
     try:
         for episode in range(episodes):
             episode_seed = base_seed + episode
+            if integral_controller is not None:
+                # Alpha is fixed for the entire episode. The controller only
+                # changes its own next-episode state after termination below.
+                agent.set_safety_mpc_runtime_alpha(
+                    integral_controller.current_alpha,
+                    enabled=True,
+                )
+            episode_runtime_alpha = agent.safety_mpc_runtime_alpha
+            episode_safety_mpc_active = agent.safety_mpc_active
             # The world-model planner is sampling-based. Reseeding makes the
             # no-exploration eval trajectory reproducible across program runs.
             set_seed(episode_seed)
@@ -485,7 +684,11 @@ def main() -> None:
                     eval_mode=True,
                 )
                 planner_metrics = agent.last_safety_mpc_metrics
-                if agent.safety_mpc_active:
+                if agent.safety_mpc_active != episode_safety_mpc_active:
+                    raise RuntimeError(
+                        "Safety-MPC active state changed inside an episode"
+                    )
+                if episode_safety_mpc_active:
                     if not isinstance(planner_metrics, Mapping):
                         raise RuntimeError(
                             "Active Safety-MPC did not expose planner metrics"
@@ -570,7 +773,7 @@ def main() -> None:
                     "Translation blockage count does not match reason totals"
                 )
             planner_call_count = len(episode_selected_risks)
-            if agent.safety_mpc_active:
+            if episode_safety_mpc_active:
                 if not (
                     planner_call_count
                     == len(episode_selected_penalties)
@@ -582,6 +785,35 @@ def main() -> None:
                     )
             elif planner_call_count != 0:
                 raise RuntimeError("Inactive planner metric count must be zero")
+            expected_active_planner_call_count += (
+                episode_length if episode_safety_mpc_active else 0
+            )
+
+            episode_tree_end_blockage_count = episode_reason_counts[
+                "vessel_tree_end"
+            ]
+            episode_tree_end_blockage_fraction = (
+                compute_episode_tree_end_blockage_fraction(
+                    episode_tree_end_blockage_count, episode_length
+                )
+            )
+            integral_episode_record: Optional[Dict[str, Any]] = None
+            if integral_controller is not None:
+                integral_episode_record = (
+                    integral_controller.observe_episode_cost(
+                        episode_tree_end_blockage_fraction
+                    )
+                )
+                if not np.isclose(
+                    integral_episode_record["alpha_before_update"],
+                    episode_runtime_alpha,
+                    rtol=0.0,
+                    atol=0.0,
+                ):
+                    raise RuntimeError(
+                        "Integral controller alpha was not aligned with the "
+                        "completed episode"
+                    )
 
             rewards.append(episode_reward)
             lengths.append(episode_length)
@@ -620,7 +852,7 @@ def main() -> None:
                     episode_reason_counts["device_length_limit"]
                 ),
                 "vessel_tree_end_blockage_count": (
-                    episode_reason_counts["vessel_tree_end"]
+                    episode_tree_end_blockage_count
                 ),
                 "other_blockage_count": episode_reason_counts["other"],
                 "simulation_error_transition_count": (
@@ -641,50 +873,103 @@ def main() -> None:
                     include_std=True,
                 ),
             }
+            if integral_episode_record is not None:
+                episode_result.update(
+                    {
+                        "episode_tree_end_blockage_fraction": (
+                            episode_tree_end_blockage_fraction
+                        ),
+                        "integral_lagrangian": integral_episode_record,
+                    }
+                )
             episode_results.append(episode_result)
-            logger.log(
-                "episodes",
-                {
-                    "checkpoint_step": int(checkpoint.get("total_env_steps", -1)),
-                    "episode": episode + 1,
-                    "seed": episode_seed,
-                    "episode_reward": episode_reward,
-                    "episode_length": episode_length,
-                    "success": success,
-                    "simulation_error": simulation_error,
-                    "translation_blockage_count": episode_blockage_count,
-                    "translation_blockage_fraction": (
-                        episode_blockage_count / episode_length
-                    ),
-                    "lower_insertion_boundary_blockage_count": (
-                        episode_reason_counts["lower_insertion_boundary"]
-                    ),
-                    "vessel_tree_end_blockage_count": (
-                        episode_reason_counts["vessel_tree_end"]
-                    ),
-                    "planner_call_count": planner_call_count,
-                    "selected_translation_risk_mean": (
-                        episode_result["selected_translation_risk"]["mean"]
-                        if episode_result["selected_translation_risk"]
-                        else None
-                    ),
-                    "selected_safety_penalty_mean": (
-                        episode_result["selected_safety_penalty"]["mean"]
-                        if episode_result["selected_safety_penalty"]
-                        else None
-                    ),
-                    "task_scale_mean": (
-                        episode_result["task_scale"]["mean"]
-                        if episode_result["task_scale"]
-                        else None
-                    ),
-                },
-            )
-            print(
+            episode_log_record = {
+                "checkpoint_step": int(checkpoint.get("total_env_steps", -1)),
+                "episode": episode + 1,
+                "seed": episode_seed,
+                "episode_reward": episode_reward,
+                "episode_length": episode_length,
+                "success": success,
+                "simulation_error": simulation_error,
+                "translation_blockage_count": episode_blockage_count,
+                "translation_blockage_fraction": (
+                    episode_blockage_count / episode_length
+                ),
+                "lower_insertion_boundary_blockage_count": (
+                    episode_reason_counts["lower_insertion_boundary"]
+                ),
+                "vessel_tree_end_blockage_count": (
+                    episode_tree_end_blockage_count
+                ),
+                "planner_call_count": planner_call_count,
+                "selected_translation_risk_mean": (
+                    episode_result["selected_translation_risk"]["mean"]
+                    if episode_result["selected_translation_risk"]
+                    else None
+                ),
+                "selected_safety_penalty_mean": (
+                    episode_result["selected_safety_penalty"]["mean"]
+                    if episode_result["selected_safety_penalty"]
+                    else None
+                ),
+                "task_scale_mean": (
+                    episode_result["task_scale"]["mean"]
+                    if episode_result["task_scale"]
+                    else None
+                ),
+            }
+            if integral_episode_record is not None:
+                episode_log_record.update(
+                    {
+                        "episode_tree_end_blockage_fraction": (
+                            episode_tree_end_blockage_fraction
+                        ),
+                        "dual_enabled": True,
+                        "dual_rolling_mean_cost": integral_episode_record[
+                            "rolling_mean_cost"
+                        ],
+                        "dual_cost_limit": integral_episode_record[
+                            "cost_limit"
+                        ],
+                        "dual_error": integral_episode_record["dual_error"],
+                        "dual_alpha_before_update": episode_runtime_alpha,
+                        "dual_alpha_after_update": integral_episode_record[
+                            "alpha_after_update"
+                        ],
+                        "dual_alpha_update_amount": integral_episode_record[
+                            "alpha_update_amount"
+                        ],
+                        "dual_lower_clipping_active": (
+                            integral_episode_record[
+                                "lower_clipping_active"
+                            ]
+                        ),
+                        "dual_upper_clipping_active": (
+                            integral_episode_record[
+                                "upper_clipping_active"
+                            ]
+                        ),
+                        "dual_warmup_active": integral_episode_record[
+                            "warmup_active"
+                        ],
+                        "dual_update_applied": integral_episode_record[
+                            "dual_update_applied"
+                        ],
+                    }
+                )
+            logger.log("episodes", episode_log_record)
+            episode_message = (
                 f"episode={episode + 1} reward={episode_reward:.3f} "
                 f"length={episode_length} success={int(success)} "
                 f"blockage={episode_blockage_count}"
             )
+            if integral_episode_record is not None:
+                episode_message += (
+                    f" tree_end_cost={episode_tree_end_blockage_fraction:.6f} "
+                    f"alpha={episode_runtime_alpha:.6f}->"
+                    f"{integral_episode_record['alpha_after_update']:.6f}"
+                )
+            print(episode_message)
     finally:
         if video_writer is not None:
             video_writer.release()
@@ -707,18 +992,22 @@ def main() -> None:
             "Aggregate translation block reasons do not cover all transitions"
         )
     active_planner_call_count = len(selected_risks)
-    if agent.safety_mpc_active:
-        if not (
-            active_planner_call_count
-            == len(selected_penalties)
-            == len(task_scales)
-            == total_transition_count
-        ):
-            raise RuntimeError(
-                "Aggregate active planner metrics do not cover all transitions"
-            )
-    elif active_planner_call_count != 0:
-        raise RuntimeError("Inactive Safety-MPC produced aggregate planner metrics")
+    if not (
+        active_planner_call_count
+        == len(selected_penalties)
+        == len(task_scales)
+        == expected_active_planner_call_count
+    ):
+        raise RuntimeError(
+            "Aggregate planner metrics do not match the episodes in which "
+            "Safety-MPC was active"
+        )
+
+    integral_summary = (
+        integral_controller.summary()
+        if integral_controller is not None
+        else None
+    )
 
     summary = {
         "checkpoint_step": int(checkpoint.get("total_env_steps", -1)),
@@ -766,6 +1055,8 @@ def main() -> None:
             include_std=True,
         ),
     }
+    if integral_summary is not None:
+        summary["integral_lagrangian"] = integral_summary
 
     checkpoint_metadata_after = {
         "top_level": checkpoint.get("safety_mpc_config"),
@@ -827,13 +1118,28 @@ def main() -> None:
             and parameter_gradient_count_after == 0
         ),
         "runtime_override_fields": [
-            "safety_mpc_enabled",
-            "safety_mpc_alpha",
+            (
+                "safety_mpc_runtime_enabled"
+                if integral_controller is not None
+                else "safety_mpc_enabled"
+            ),
+            (
+                "safety_mpc_runtime_alpha"
+                if integral_controller is not None
+                else "safety_mpc_alpha"
+            ),
             "safety_mpc_active",
         ],
         "curvature_used_in_planning": False,
         "intervention_mask_modified": False,
     }
+    if integral_controller is not None:
+        isolation.update(
+            {
+                "integral_lagrangian_evaluation_only": True,
+                "dual_feedback_uses_predicted_risk": False,
+            }
+        )
     required_isolation_checks = (
         "checkpoint_file_unchanged",
         "loaded_model_matches_checkpoint",
@@ -915,36 +1221,108 @@ def main() -> None:
                 if summary["task_scale"]
                 else None
             ),
+            **(
+                {
+                    "dual_initial_alpha": integral_summary["initial_alpha"],
+                    "dual_final_alpha": integral_summary["final_alpha"],
+                    "dual_minimum_alpha": integral_summary["minimum_alpha"],
+                    "dual_maximum_alpha": integral_summary["maximum_alpha"],
+                    "dual_alpha_mean": integral_summary["alpha_mean"],
+                    "dual_update_count": integral_summary[
+                        "dual_update_count"
+                    ],
+                    "dual_lower_clip_count": integral_summary[
+                        "lower_clip_count"
+                    ],
+                    "dual_upper_clip_count": integral_summary[
+                        "upper_clip_count"
+                    ],
+                    "dual_alpha_trajectory": integral_summary[
+                        "alpha_trajectory"
+                    ],
+                    "dual_episode_alpha_trajectory": integral_summary[
+                        "episode_alpha_trajectory"
+                    ],
+                    "dual_alpha_statistics_basis": integral_summary[
+                        "alpha_statistics_basis"
+                    ],
+                    "dual_episode_applied_minimum_alpha": integral_summary[
+                        "episode_applied_minimum_alpha"
+                    ],
+                    "dual_episode_applied_maximum_alpha": integral_summary[
+                        "episode_applied_maximum_alpha"
+                    ],
+                    "dual_episode_applied_alpha_mean": integral_summary[
+                        "episode_applied_alpha_mean"
+                    ],
+                    "dual_observed_cost_trajectory": integral_summary[
+                        "observed_cost_trajectory"
+                    ],
+                    "dual_rolling_cost_trajectory": integral_summary[
+                        "rolling_cost_trajectory"
+                    ],
+                }
+                if integral_summary is not None
+                else {}
+            ),
         },
     )
 
+    report_settings = {
+        **(
+            settings_report
+            if integral_controller is not None
+            else safety_settings_report
+        ),
+        "device": str(device),
+        "episode_count": episodes,
+        "base_seed": base_seed,
+        "seeds": [base_seed + index for index in range(episodes)],
+        "max_episode_steps": int(
+            config["environment"]["max_episode_steps"]
+        ),
+        "deterministic": True,
+        "environment_config": copy.deepcopy(config["environment"]),
+    }
+    report_semantics = {
+        "translation_safety_only": True,
+        "curvature_monitoring_only": True,
+        "selected_risk_is_weighted_mean_plan_risk": True,
+        "blockage_source": "info.safety_metrics",
+    }
+    if integral_controller is not None:
+        report_semantics.update(
+            {
+                "dual_feedback_signal": (
+                    "vessel_tree_end_blockage_count / "
+                    "max(episode_transition_count, 1)"
+                ),
+                "predicted_translation_risk_used_only_for_candidate_scoring": (
+                    True
+                ),
+                "alpha_updated_only_after_completed_episode": True,
+            }
+        )
+
     report = {
-        "schema_version": EVALUATION_REPORT_SCHEMA_VERSION,
-        "evaluation": "same_checkpoint_translation_safety_mpc_ablation",
+        "schema_version": (
+            EVALUATION_REPORT_SCHEMA_VERSION
+            if integral_controller is not None
+            else BASELINE_EVALUATION_REPORT_SCHEMA_VERSION
+        ),
+        "evaluation": (
+            "integral_lagrangian_translation_safety_mpc"
+            if integral_controller is not None
+            else "same_checkpoint_translation_safety_mpc_ablation"
+        ),
         "checkpoint": {
             "path": str(checkpoint_path),
             "total_env_steps": int(checkpoint.get("total_env_steps", -1)),
             "file_sha256": checkpoint_file_hash_before,
             "model_state_sha256": checkpoint_model_hash,
         },
-        "settings": {
-            **settings_report,
-            "device": str(device),
-            "episode_count": episodes,
-            "base_seed": base_seed,
-            "seeds": [base_seed + index for index in range(episodes)],
-            "max_episode_steps": int(
-                config["environment"]["max_episode_steps"]
-            ),
-            "deterministic": True,
-            "environment_config": copy.deepcopy(config["environment"]),
-        },
-        "semantics": {
-            "translation_safety_only": True,
-            "curvature_monitoring_only": True,
-            "selected_risk_is_weighted_mean_plan_risk": True,
-            "blockage_source": "info.safety_metrics",
-        },
+        "settings": report_settings,
+        "semantics": report_semantics,
         "episodes": episode_results,
         "summary": summary,
         "isolation": isolation,

@@ -480,6 +480,76 @@ python RL_TDMPC/evaluate.py \
 Evaluation uses the configuration embedded in the checkpoint unless
 `--config` is supplied.
 
+### Safety-MPC evaluation modes
+
+The fixed-alpha evaluation-only override remains available. Alpha may be zero,
+which preserves baseline planner scoring exactly:
+
+```bash
+python RL_TDMPC/evaluate.py \
+  --checkpoint RL_TDMPC/checkpoints/step_20000.pt \
+  --eval-safety-mpc enabled \
+  --eval-safety-mpc-alpha 0.1
+```
+
+Phase 1 Integral Lagrangian Safety-MPC optionally adapts alpha once after each
+completed evaluation episode:
+
+```text
+alpha_next = clip(
+    alpha + integral_gain * (rolling_mean_cost - cost_limit),
+    0,
+    alpha_max,
+)
+```
+
+The observed episode cost is the real executed-environment quantity
+`vessel_tree_end_blockage_count / max(episode_transition_count, 1)`. Predicted
+Translation risk is still used only to score MPPI candidates; it is not dual
+feedback. Alpha is constant within an episode, persists across episodes in one
+evaluation process, and resets to `initial_alpha` for each new process.
+
+Enable the controller explicitly while enabling Safety-MPC:
+
+```bash
+python RL_TDMPC/evaluate.py \
+  --checkpoint RL_TDMPC/checkpoints/step_20000.pt \
+  --eval-safety-mpc enabled \
+  --eval-safety-mpc-alpha 0.1 \
+  --eval-integral-lagrangian enabled \
+  --output-json /tmp/steve_integral_evaluation.json
+```
+
+The defaults come from the checkpoint/config `integral_lagrangian` section:
+`initial_alpha=0.1`, `integral_gain=0.1`, `cost_limit=0.01`,
+`alpha_max=0.5`, a five-episode rolling window, and five warmup episodes. The
+first five episodes collect costs without updating; the first update occurs
+after episode six. Evaluation-only overrides are available through
+`--eval-dual-initial-alpha`, `--eval-dual-integral-gain`,
+`--eval-dual-cost-limit`, `--eval-dual-alpha-max`,
+`--eval-dual-window-episodes`, and `--eval-dual-warmup-episodes`. These numeric
+flags require the explicit `--eval-integral-lagrangian enabled` flag.
+
+Integral runs use strict JSON schema version 2, which records every episode's
+real cost, rolling cost, dual error, before/after alpha, clipping and warmup
+state. Fixed-alpha and disabled runs retain the existing version-1 report
+schema. The Integral run summary contains the complete alpha, observed-cost,
+and rolling-cost trajectories.
+`alpha_trajectory` contains the initial state plus every post-episode state;
+the requested alpha mean/minimum/maximum use that complete controller-state
+trajectory. Separate `episode_applied_*` statistics and
+`episode_alpha_trajectory` describe only values actually used by the planner.
+This controller is evaluation-only: training resume does not accept these CLI
+overrides, and model, optimizer, replay, reward, Safety Head, Curvature
+monitoring, and the intervention mask are unchanged.
+
+Run the fixed-planner regression and focused Integral Lagrangian checks with:
+
+```bash
+python RL_TDMPC/smoke_test_safety_mpc_active.py
+python RL_TDMPC/smoke_test_safety_mpc_integral.py
+```
+
 ### Safety Head evaluation
 
 Evaluate the complete fixed auxiliary validation split without constructing a
