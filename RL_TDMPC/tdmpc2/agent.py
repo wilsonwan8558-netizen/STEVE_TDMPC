@@ -220,8 +220,15 @@ class TDMPC2Agent:
         if safety_mpc_aggregation != "max":
             raise ValueError("safety_mpc_aggregation must be 'max'")
         self.safety_mpc_aggregation = safety_mpc_aggregation
+        # Checkpoint configuration above remains immutable. Evaluation-only
+        # planner modes use separate runtime fields, so an adaptive multiplier
+        # can never leak into state_dict() or training-resume validation.
+        self._safety_mpc_runtime_enabled = self.safety_mpc_enabled
+        self._safety_mpc_runtime_alpha = self.safety_mpc_alpha
+        self._safety_mpc_runtime_force_active = False
         self.safety_mpc_active = (
-            self.safety_mpc_enabled and self.safety_mpc_alpha > 0.0
+            self._safety_mpc_runtime_enabled
+            and self._safety_mpc_runtime_alpha > 0.0
         )
         self.last_safety_mpc_metrics: Optional[Dict[str, float]] = None
 
@@ -307,6 +314,74 @@ class TDMPC2Agent:
             self.horizon, self.action_dim, device=self.device
         )
         self.update_count = 0
+
+    @property
+    def safety_mpc_runtime_enabled(self) -> bool:
+        return self._safety_mpc_runtime_enabled
+
+    @property
+    def safety_mpc_runtime_alpha(self) -> float:
+        return self._safety_mpc_runtime_alpha
+
+    @property
+    def safety_mpc_runtime_force_active(self) -> bool:
+        return self._safety_mpc_runtime_force_active
+
+    def set_safety_mpc_runtime_alpha(
+        self,
+        alpha: float,
+        *,
+        enabled: Optional[bool] = None,
+        force_active: bool = False,
+    ) -> None:
+        """Set evaluation-only Safety-MPC weight without changing metadata.
+
+        ``force_active`` is reserved for adaptive Lagrangian evaluation. It
+        keeps Translation-risk prediction active when lambda reaches zero, so
+        a later risk violation can increase lambda again. Fixed and disabled
+        modes leave it false and retain their historical active-state rule.
+        """
+
+        if isinstance(alpha, (bool, np.bool_)) or not isinstance(
+            alpha,
+            (int, float, np.integer, np.floating),
+        ):
+            raise TypeError("Runtime Safety-MPC alpha must be a real number")
+        converted = float(alpha)
+        if not np.isfinite(converted) or converted < 0.0:
+            raise ValueError(
+                "Runtime Safety-MPC alpha must be finite and nonnegative"
+            )
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            represented = np.asarray(converted, dtype=np.float32).item()
+        if (
+            not np.isfinite(represented)
+            or represented < 0.0
+            or (converted > 0.0 and represented == 0.0)
+        ):
+            raise ValueError(
+                "Runtime Safety-MPC alpha must remain finite and preserve its "
+                "zero/nonzero status in float32"
+            )
+        if enabled is None:
+            runtime_enabled = self._safety_mpc_runtime_enabled
+        else:
+            if type(enabled) is not bool:
+                raise TypeError("Runtime Safety-MPC enabled must be a bool")
+            runtime_enabled = enabled
+        if type(force_active) is not bool:
+            raise TypeError("Runtime Safety-MPC force_active must be a bool")
+        if force_active and not runtime_enabled:
+            raise ValueError(
+                "Runtime Safety-MPC force_active requires enabled=true"
+            )
+        self._safety_mpc_runtime_enabled = runtime_enabled
+        self._safety_mpc_runtime_alpha = converted
+        self._safety_mpc_runtime_force_active = force_active
+        self.safety_mpc_active = runtime_enabled and (
+            converted > 0.0 or force_active
+        )
+        self.last_safety_mpc_metrics = None
 
     def _tensor_observation(self, observation: np.ndarray) -> torch.Tensor:
         tensor = torch.as_tensor(
@@ -497,7 +572,7 @@ class TDMPC2Agent:
         task_scale = task_scale.clamp_min(
             self.safety_mpc_minimum_task_scale
         )
-        penalty = self.safety_mpc_alpha * task_scale * candidate_risk
+        penalty = self.safety_mpc_runtime_alpha * task_scale * candidate_risk
         planner_values = task_values - penalty.unsqueeze(-1)
         if not bool(torch.isfinite(planner_values).all()):
             raise FloatingPointError(
@@ -607,7 +682,9 @@ class TDMPC2Agent:
                 mean.unsqueeze(1),
             ).squeeze(0)
             selected_penalty = (
-                self.safety_mpc_alpha * final_task_scale * selected_risk
+                self.safety_mpc_runtime_alpha
+                * final_task_scale
+                * selected_risk
             )
             penalty_to_task_scale = selected_penalty / final_task_scale
             task_scores = final_task_values.squeeze(-1)
@@ -631,6 +708,20 @@ class TDMPC2Agent:
                     same_population_task_sacrifice
                 ),
             }
+            if self.safety_mpc_runtime_force_active:
+                # Reuse already-computed final-population values. An extra
+                # _estimate_value call would sample the terminal policy, advance
+                # the Torch RNG, and thereby alter the next MPPI decision.
+                metric_tensors.update(
+                    {
+                        "safety_mpc_safe_top_task_score": (
+                            task_scores[safe_top_index]
+                        ),
+                        "safety_mpc_safe_top_planner_score": (
+                            planner_scores[safe_top_index]
+                        ),
+                    }
+                )
             if not all(
                 bool(torch.isfinite(value)) for value in metric_tensors.values()
             ):
@@ -2112,5 +2203,8 @@ class TDMPC2Agent:
         self.scale.load_state_dict(state["scale"])
         self.previous_mean.copy_(state["previous_mean"].to(self.device))
         self.update_count = int(state.get("update_count", 0))
-        self.last_safety_mpc_metrics = None
+        self.set_safety_mpc_runtime_alpha(
+            self.safety_mpc_alpha,
+            enabled=self.safety_mpc_enabled,
+        )
         self.model.train(False)

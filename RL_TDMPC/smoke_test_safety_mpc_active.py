@@ -919,9 +919,16 @@ def _test_evaluation_only_override_isolation() -> None:
             checkpoint_settings=checkpoint_settings,
             evaluation_settings=disabled_settings,
         )
-        assert not candidate.safety_mpc_enabled
-        assert not candidate.safety_mpc_active
+        assert candidate.safety_mpc_enabled
         assert candidate.safety_mpc_alpha == 0.0
+        assert not candidate.safety_mpc_runtime_enabled
+        assert candidate.safety_mpc_runtime_alpha == 0.0
+        assert not candidate.safety_mpc_runtime_force_active
+        assert not candidate.safety_mpc_active
+        assert (
+            candidate.state_dict()["safety_mpc_config"]
+            == checkpoint_state["safety_mpc_config"]
+        )
         assert state_sha256(candidate.config) == config_hash
         torch.manual_seed(seed)
         disabled_actions.append(
@@ -964,8 +971,15 @@ def _test_evaluation_only_override_isolation() -> None:
         evaluation_settings=enabled_settings,
     )
     assert active.safety_mpc_enabled
+    assert active.safety_mpc_alpha == 0.0
+    assert active.safety_mpc_runtime_enabled
+    assert active.safety_mpc_runtime_alpha == 0.1
+    assert not active.safety_mpc_runtime_force_active
     assert active.safety_mpc_active
-    assert active.safety_mpc_alpha == 0.1
+    assert (
+        active.state_dict()["safety_mpc_config"]
+        == checkpoint_state["safety_mpc_config"]
+    )
     assert state_sha256(active.config) == active_config_hash
     with patch.object(
         active.model.safety_curvature_head,

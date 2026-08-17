@@ -19,6 +19,11 @@ from envs.safety import SAFETY_COST_NAMES
 from envs.steve_env import make_steve_env
 from train import resolved_safety_mpc_config, validate_checkpoint_schema
 from tdmpc2.agent import TDMPC2Agent
+from tdmpc2.adaptive_lagrangian import (
+    DEFAULT_ADAPTIVE_LAGRANGIAN_CONFIG,
+    AdaptiveLagrangianController,
+    validate_adaptive_lagrangian_config,
+)
 from tdmpc2.common import (
     MetricLogger,
     atomic_json_save,
@@ -32,11 +37,19 @@ from tdmpc2.common import (
 )
 
 
-EVALUATION_REPORT_SCHEMA_VERSION = 1
+BASELINE_EVALUATION_REPORT_SCHEMA_VERSION = 1
+EVALUATION_REPORT_SCHEMA_VERSION = 2
 _PLANNER_METRIC_NAMES = (
     "safety_mpc_selected_risk",
     "safety_mpc_selected_penalty",
     "safety_mpc_task_scale",
+)
+_LAGRANGIAN_PLANNER_METRIC_NAMES = (
+    *_PLANNER_METRIC_NAMES,
+    "safety_mpc_penalty_to_task_scale",
+    "safety_mpc_safe_top_task_score",
+    "safety_mpc_safe_top_planner_score",
+    "safety_mpc_same_population_task_sacrifice",
 )
 
 
@@ -54,11 +67,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", type=str, default=None)
     parser.add_argument(
         "--eval-safety-mpc",
-        choices=("checkpoint", "disabled", "enabled"),
+        choices=("checkpoint", "disabled", "enabled", "lagrangian"),
         default="checkpoint",
         help=(
             "Evaluation-only planner setting. The checkpoint setting is used "
-            "by default; disabled/enabled are explicit runtime-only overrides."
+            "by default; disabled/enabled/lagrangian are explicit runtime-only "
+            "overrides."
         ),
     )
     parser.add_argument(
@@ -69,6 +83,17 @@ def parse_args() -> argparse.Namespace:
             "Required positive alpha with --eval-safety-mpc enabled; rejected "
             "for checkpoint/disabled modes."
         ),
+    )
+    parser.add_argument("--eval-lagrangian-epsilon", type=float, default=None)
+    parser.add_argument("--eval-lagrangian-eta", type=float, default=None)
+    parser.add_argument(
+        "--eval-lagrangian-lambda-initial", type=float, default=None
+    )
+    parser.add_argument(
+        "--eval-lagrangian-lambda-min", type=float, default=None
+    )
+    parser.add_argument(
+        "--eval-lagrangian-lambda-max", type=float, default=None
     )
     parser.add_argument(
         "--output-json",
@@ -122,6 +147,7 @@ def resolve_evaluation_safety_mpc_config(
     *,
     override: str,
     alpha: Optional[float],
+    lagrangian_initial: Optional[float] = None,
 ) -> Dict[str, Any]:
     """Resolve an explicit runtime-only planner override.
 
@@ -146,6 +172,18 @@ def resolve_evaluation_safety_mpc_config(
         evaluation_settings = copy.deepcopy(checkpoint_settings)
         evaluation_settings["enabled"] = False
         return evaluation_settings
+    if override == "lagrangian":
+        if alpha is not None:
+            raise ValueError(
+                "--eval-safety-mpc-alpha is invalid with lagrangian mode"
+            )
+        if lagrangian_initial is None:
+            raise ValueError("Lagrangian mode requires a resolved lambda_initial")
+        evaluation_settings = copy.deepcopy(checkpoint_settings)
+        evaluation_settings["enabled"] = True
+        evaluation_settings["alpha"] = float(lagrangian_initial)
+        resolved_safety_mpc_config({"safety_mpc": evaluation_settings})
+        return evaluation_settings
     if override != "enabled":
         raise ValueError(f"Unsupported evaluation Safety-MPC override {override!r}")
     if alpha is None:
@@ -161,6 +199,41 @@ def resolve_evaluation_safety_mpc_config(
     # configuration schema than training.
     resolved_safety_mpc_config({"safety_mpc": evaluation_settings})
     return evaluation_settings
+
+
+def resolve_evaluation_adaptive_lagrangian_config(
+    *,
+    mode: str,
+    epsilon: Optional[float],
+    eta: Optional[float],
+    lambda_initial: Optional[float],
+    lambda_min: Optional[float],
+    lambda_max: Optional[float],
+) -> Optional[Dict[str, float]]:
+    """Resolve strict CLI-only adaptive settings without touching config."""
+
+    supplied = {
+        "epsilon": epsilon,
+        "eta": eta,
+        "lambda_initial": lambda_initial,
+        "lambda_min": lambda_min,
+        "lambda_max": lambda_max,
+    }
+    supplied_names = [name for name, value in supplied.items() if value is not None]
+    if mode != "lagrangian":
+        if supplied_names:
+            raise ValueError(
+                "Adaptive Lagrangian parameters require "
+                "--eval-safety-mpc lagrangian"
+            )
+        return None
+    resolved: Dict[str, Any] = copy.deepcopy(
+        DEFAULT_ADAPTIVE_LAGRANGIAN_CONFIG
+    )
+    for name, value in supplied.items():
+        if value is not None:
+            resolved[name] = value
+    return validate_adaptive_lagrangian_config(resolved)
 
 
 def apply_evaluation_safety_mpc_config(
@@ -181,12 +254,10 @@ def apply_evaluation_safety_mpc_config(
             raise ValueError(
                 f"Evaluation-only Safety-MPC cannot override {key}"
             )
-    agent.safety_mpc_enabled = bool(evaluation_settings["enabled"])
-    agent.safety_mpc_alpha = float(evaluation_settings["alpha"])
-    agent.safety_mpc_active = (
-        agent.safety_mpc_enabled and agent.safety_mpc_alpha > 0.0
+    agent.set_safety_mpc_runtime_alpha(
+        float(evaluation_settings["alpha"]),
+        enabled=bool(evaluation_settings["enabled"]),
     )
-    agent.last_safety_mpc_metrics = None
 
 
 def _update_state_digest(digest: Any, value: Any) -> None:
@@ -262,6 +333,7 @@ def finite_statistics(
     *,
     include_median: bool = False,
     include_std: bool = False,
+    include_min: bool = False,
     include_max: bool = False,
 ) -> Optional[Dict[str, Any]]:
     if not values:
@@ -277,6 +349,8 @@ def finite_statistics(
         statistics["median"] = float(np.median(array))
     if include_std:
         statistics["std"] = float(np.std(array))
+    if include_min:
+        statistics["min"] = float(np.min(array))
     if include_max:
         statistics["max"] = float(np.max(array))
     return statistics
@@ -317,17 +391,50 @@ def main() -> None:
             checkpoint["agent"].get("safety_mpc_config")
         ),
     }
+    evaluation_adaptive_lagrangian = (
+        resolve_evaluation_adaptive_lagrangian_config(
+            mode=args.eval_safety_mpc,
+            epsilon=args.eval_lagrangian_epsilon,
+            eta=args.eval_lagrangian_eta,
+            lambda_initial=args.eval_lagrangian_lambda_initial,
+            lambda_min=args.eval_lagrangian_lambda_min,
+            lambda_max=args.eval_lagrangian_lambda_max,
+        )
+    )
     evaluation_safety_mpc = resolve_evaluation_safety_mpc_config(
         config,
         override=args.eval_safety_mpc,
         alpha=args.eval_safety_mpc_alpha,
+        lagrangian_initial=(
+            evaluation_adaptive_lagrangian["lambda_initial"]
+            if evaluation_adaptive_lagrangian is not None
+            else None
+        ),
     )
+    if evaluation_adaptive_lagrangian is not None:
+        if not bool(config["planning"]["mpc"]):
+            raise ValueError("Lagrangian Safety-MPC requires planning.mpc=true")
+        if (
+            evaluation_adaptive_lagrangian["epsilon"]
+            > evaluation_safety_mpc["translation_risk_cap"]
+        ):
+            raise ValueError(
+                "Lagrangian epsilon cannot exceed translation_risk_cap"
+            )
     settings_report = {
         "checkpoint_safety_mpc": checkpoint_safety_mpc,
         "evaluation_safety_mpc": evaluation_safety_mpc,
         "override_applied": evaluation_safety_mpc != checkpoint_safety_mpc,
         "override_mode": args.eval_safety_mpc,
     }
+    if evaluation_adaptive_lagrangian is not None:
+        settings_report.update(
+            {
+                "evaluation_controller_mode": "lagrangian",
+                "adaptive_lagrangian": evaluation_adaptive_lagrangian,
+                "adaptive_lagrangian_override_applied": True,
+            }
+        )
     print(
         "Safety-MPC checkpoint/evaluation settings:\n"
         + json.dumps(
@@ -383,6 +490,9 @@ def main() -> None:
     )
     scale_hash_before = state_sha256(agent.scale.state_dict())
     agent_config_hash_before = state_sha256(agent.config)
+    agent_safety_mpc_metadata_before = copy.deepcopy(
+        agent.state_dict()["safety_mpc_config"]
+    )
     update_count_before = agent.update_count
     parameter_gradient_count_before = sum(
         int(parameter.grad is not None)
@@ -394,6 +504,16 @@ def main() -> None:
         checkpoint_settings=checkpoint_safety_mpc,
         evaluation_settings=evaluation_safety_mpc,
     )
+    adaptive_controller: Optional[AdaptiveLagrangianController] = None
+    if evaluation_adaptive_lagrangian is not None:
+        adaptive_controller = AdaptiveLagrangianController(
+            evaluation_adaptive_lagrangian
+        )
+        agent.set_safety_mpc_runtime_alpha(
+            adaptive_controller.current_lambda,
+            enabled=True,
+            force_active=True,
+        )
     log_directory = (
         args.log_directory
         if args.log_directory is not None
@@ -408,6 +528,14 @@ def main() -> None:
     selected_risks: List[float] = []
     selected_penalties: List[float] = []
     task_scales: List[float] = []
+    lagrangian_applied_lambdas: List[float] = []
+    lagrangian_risks: List[float] = []
+    lagrangian_residuals: List[float] = []
+    lagrangian_safe_top_task_scores: List[float] = []
+    lagrangian_safe_top_planner_scores: List[float] = []
+    lagrangian_same_population_task_sacrifices: List[float] = []
+    lagrangian_action_norms: List[float] = []
+    lagrangian_episode_summaries: List[Dict[str, Any]] = []
     total_translation_blockage_count = 0
     total_transition_count = 0
     blockage_episode_count = 0
@@ -459,6 +587,13 @@ def main() -> None:
     try:
         for episode in range(episodes):
             episode_seed = base_seed + episode
+            if adaptive_controller is not None:
+                adaptive_controller.reset_episode()
+                agent.set_safety_mpc_runtime_alpha(
+                    adaptive_controller.current_lambda,
+                    enabled=True,
+                    force_active=True,
+                )
             # The world-model planner is sampling-based. Reseeding makes the
             # no-exploration eval trajectory reproducible across program runs.
             set_seed(episode_seed)
@@ -478,7 +613,21 @@ def main() -> None:
             episode_selected_risks: List[float] = []
             episode_selected_penalties: List[float] = []
             episode_task_scales: List[float] = []
+            episode_lagrangian_steps: List[Dict[str, Any]] = []
             while not (terminated or truncated):
+                lambda_used_for_action = (
+                    adaptive_controller.current_lambda
+                    if adaptive_controller is not None
+                    else None
+                )
+                if (
+                    adaptive_controller is not None
+                    and agent.safety_mpc_runtime_alpha
+                    != lambda_used_for_action
+                ):
+                    raise RuntimeError(
+                        "Agent runtime lambda is not aligned with the controller"
+                    )
                 action = agent.act(
                     observation,
                     first_step=episode_length == 0,
@@ -491,7 +640,12 @@ def main() -> None:
                             "Active Safety-MPC did not expose planner metrics"
                         )
                     planner_values: Dict[str, float] = {}
-                    for name in _PLANNER_METRIC_NAMES:
+                    required_metrics = (
+                        _LAGRANGIAN_PLANNER_METRIC_NAMES
+                        if adaptive_controller is not None
+                        else _PLANNER_METRIC_NAMES
+                    )
+                    for name in required_metrics:
                         if name not in planner_metrics:
                             raise KeyError(
                                 f"Active Safety-MPC metric {name!r} is missing"
@@ -559,6 +713,112 @@ def main() -> None:
                     )
                 episode_blockage_count += int(translation_blocked)
                 episode_reason_counts[block_reason] += 1
+                if adaptive_controller is not None:
+                    assert lambda_used_for_action is not None
+                    predicted_risk = planner_values[
+                        "safety_mpc_selected_risk"
+                    ]
+                    expected_penalty_ratio = lambda_used_for_action * predicted_risk
+                    if not np.isclose(
+                        planner_values["safety_mpc_penalty_to_task_scale"],
+                        expected_penalty_ratio,
+                        rtol=1.0e-5,
+                        atol=1.0e-8,
+                    ):
+                        raise RuntimeError(
+                            "Planner penalty is not aligned with lambda_t and risk_t"
+                        )
+                    inserted_length = float(
+                        safety_metrics["inserted_length_mm"]
+                    )
+                    requested_translation = float(
+                        safety_metrics["requested_translation_speed_mm_s"]
+                    )
+                    applied_translation = float(
+                        safety_metrics["applied_translation_speed_mm_s"]
+                    )
+                    if not all(
+                        np.isfinite(value)
+                        for value in (
+                            inserted_length,
+                            requested_translation,
+                            applied_translation,
+                        )
+                    ):
+                        raise FloatingPointError(
+                            "Adaptive Lagrangian environment diagnostics are non-finite"
+                        )
+                    action_values = np.asarray(action, dtype=np.float64)
+                    if (
+                        action_values.shape != (agent.action_dim,)
+                        or not np.all(np.isfinite(action_values))
+                    ):
+                        raise FloatingPointError(
+                            "Adaptive Lagrangian selected action is invalid"
+                        )
+                    # Commit the controller state only after the transition and
+                    # all diagnostics for (lambda_t, action_t, risk_t) validate.
+                    dual_record = adaptive_controller.observe_step_risk(
+                        predicted_risk
+                    )
+                    if dual_record["lambda_before_update"] != lambda_used_for_action:
+                        raise RuntimeError(
+                            "Adaptive lambda changed before the environment step"
+                        )
+                    agent.set_safety_mpc_runtime_alpha(
+                        adaptive_controller.current_lambda,
+                        enabled=True,
+                        force_active=True,
+                    )
+                    episode_lagrangian_steps.append(
+                        {
+                            "timestep": episode_length,
+                            **dual_record,
+                            "safe_top_candidate_task_score": planner_values[
+                                "safety_mpc_safe_top_task_score"
+                            ],
+                            "safe_top_candidate_planner_score": planner_values[
+                                "safety_mpc_safe_top_planner_score"
+                            ],
+                            "same_population_task_sacrifice": planner_values[
+                                "safety_mpc_same_population_task_sacrifice"
+                            ],
+                            "task_scale": planner_values[
+                                "safety_mpc_task_scale"
+                            ],
+                            "safety_penalty": planner_values[
+                                "safety_mpc_selected_penalty"
+                            ],
+                            "penalty_to_task_scale_ratio": planner_values[
+                                "safety_mpc_penalty_to_task_scale"
+                            ],
+                            "selected_action": action_values.tolist(),
+                            "selected_action_l2_norm": float(
+                                np.linalg.norm(action_values)
+                            ),
+                            "inserted_length_mm": inserted_length,
+                            "requested_translation_speed_mm_s": (
+                                requested_translation
+                            ),
+                            "applied_translation_speed_mm_s": applied_translation,
+                            "translation_action_blocked": translation_blocked,
+                            "translation_block_reason": block_reason,
+                        }
+                    )
+                    lagrangian_safe_top_task_scores.append(
+                        planner_values["safety_mpc_safe_top_task_score"]
+                    )
+                    lagrangian_safe_top_planner_scores.append(
+                        planner_values["safety_mpc_safe_top_planner_score"]
+                    )
+                    lagrangian_same_population_task_sacrifices.append(
+                        planner_values[
+                            "safety_mpc_same_population_task_sacrifice"
+                        ]
+                    )
+                    lagrangian_action_norms.append(
+                        float(np.linalg.norm(action_values))
+                    )
 
             non_none_reason_count = sum(
                 count
@@ -582,6 +842,51 @@ def main() -> None:
                     )
             elif planner_call_count != 0:
                 raise RuntimeError("Inactive planner metric count must be zero")
+
+            episode_lagrangian_summary: Optional[Dict[str, Any]] = None
+            if adaptive_controller is not None:
+                episode_lagrangian_summary = adaptive_controller.summary()
+                expected_step_count = episode_length
+                trajectory_names = (
+                    "applied_lambda_trajectory",
+                    "predicted_risk_trajectory",
+                    "constraint_residual_trajectory",
+                    "lambda_update_trajectory",
+                )
+                if (
+                    episode_lagrangian_summary["step_update_count"]
+                    != expected_step_count
+                    or len(episode_lagrangian_summary["lambda_state_trajectory"])
+                    != expected_step_count + 1
+                    or any(
+                        len(episode_lagrangian_summary[name])
+                        != expected_step_count
+                        for name in trajectory_names
+                    )
+                    or len(episode_lagrangian_steps) != expected_step_count
+                ):
+                    raise RuntimeError(
+                        "Adaptive Lagrangian trajectories do not align with "
+                        "environment transitions"
+                    )
+                lagrangian_applied_lambdas.extend(
+                    episode_lagrangian_summary["applied_lambda_trajectory"]
+                )
+                lagrangian_risks.extend(
+                    episode_lagrangian_summary["predicted_risk_trajectory"]
+                )
+                lagrangian_residuals.extend(
+                    episode_lagrangian_summary[
+                        "constraint_residual_trajectory"
+                    ]
+                )
+                lagrangian_episode_summaries.append(
+                    {
+                        "episode_index": episode + 1,
+                        "seed": episode_seed,
+                        **episode_lagrangian_summary,
+                    }
+                )
 
             rewards.append(episode_reward)
             lengths.append(episode_length)
@@ -641,7 +946,49 @@ def main() -> None:
                     include_std=True,
                 ),
             }
+            if episode_lagrangian_summary is not None:
+                episode_result["adaptive_lagrangian"] = {
+                    "summary": episode_lagrangian_summary,
+                    "steps": episode_lagrangian_steps,
+                }
             episode_results.append(episode_result)
+            adaptive_episode_log: Dict[str, Any] = {}
+            if episode_lagrangian_summary is not None:
+                adaptive_episode_log = {
+                    "lagrangian_lambda_initial": (
+                        episode_lagrangian_summary["lambda_initial"]
+                    ),
+                    "lagrangian_lambda_final": (
+                        episode_lagrangian_summary["lambda_final"]
+                    ),
+                    "lagrangian_lambda_mean": (
+                        episode_lagrangian_summary["applied_lambda_mean"]
+                    ),
+                    "lagrangian_lambda_min": (
+                        episode_lagrangian_summary["applied_lambda_min"]
+                    ),
+                    "lagrangian_lambda_max": (
+                        episode_lagrangian_summary["applied_lambda_max"]
+                    ),
+                    "lagrangian_predicted_risk_mean": (
+                        episode_lagrangian_summary["predicted_risk_mean"]
+                    ),
+                    "lagrangian_constraint_residual_mean": (
+                        episode_lagrangian_summary[
+                            "constraint_residual_mean"
+                        ]
+                    ),
+                    "lagrangian_fraction_steps_near_lambda_min": (
+                        episode_lagrangian_summary[
+                            "fraction_steps_near_lambda_min"
+                        ]
+                    ),
+                    "lagrangian_fraction_steps_near_lambda_max": (
+                        episode_lagrangian_summary[
+                            "fraction_steps_near_lambda_max"
+                        ]
+                    ),
+                }
             logger.log(
                 "episodes",
                 {
@@ -678,6 +1025,7 @@ def main() -> None:
                         if episode_result["task_scale"]
                         else None
                     ),
+                    **adaptive_episode_log,
                 },
             )
             print(
@@ -719,6 +1067,143 @@ def main() -> None:
             )
     elif active_planner_call_count != 0:
         raise RuntimeError("Inactive Safety-MPC produced aggregate planner metrics")
+
+    adaptive_lagrangian_summary: Optional[Dict[str, Any]] = None
+    if adaptive_controller is not None:
+        if not (
+            len(lagrangian_applied_lambdas)
+            == len(lagrangian_risks)
+            == len(lagrangian_residuals)
+            == len(lagrangian_safe_top_task_scores)
+            == len(lagrangian_safe_top_planner_scores)
+            == len(lagrangian_same_population_task_sacrifices)
+            == len(lagrangian_action_norms)
+            == total_transition_count
+        ):
+            raise RuntimeError(
+                "Aggregate adaptive trajectories do not cover all transitions"
+            )
+        assert evaluation_adaptive_lagrangian is not None
+        lambda_minimum = evaluation_adaptive_lagrangian["lambda_min"]
+        lambda_maximum = evaluation_adaptive_lagrangian["lambda_max"]
+        lambda_tolerance = max(
+            1.0e-9,
+            1.0e-6 * (lambda_maximum - lambda_minimum),
+        )
+        near_lambda_min_count = sum(
+            value <= lambda_minimum + lambda_tolerance
+            for value in lagrangian_applied_lambdas
+        )
+        near_lambda_max_count = sum(
+            value >= lambda_maximum - lambda_tolerance
+            for value in lagrangian_applied_lambdas
+        )
+        risk_budget = evaluation_adaptive_lagrangian["epsilon"]
+        risk_violation_count = sum(
+            risk > risk_budget for risk in lagrangian_risks
+        )
+        episode_final_lambdas = [
+            item["lambda_final"] for item in lagrangian_episode_summaries
+        ]
+        episode_applied_lambda_near_min_count = sum(
+            item["fraction_steps_near_lambda_min"] > 0.0
+            for item in lagrangian_episode_summaries
+        )
+        episode_applied_lambda_near_max_count = sum(
+            item["fraction_steps_near_lambda_max"] > 0.0
+            for item in lagrangian_episode_summaries
+        )
+        adaptive_lagrangian_summary = {
+            "config": copy.deepcopy(evaluation_adaptive_lagrangian),
+            "episode_reset_enabled": True,
+            "update_timing": (
+                "once after env.step from the selected weighted-mean plan's "
+                "predicted capped horizon-max Translation risk; updated lambda "
+                "is first used by the next environment decision"
+            ),
+            "episode_count": episodes,
+            "total_step_update_count": total_transition_count,
+            "applied_lambda": finite_statistics(
+                lagrangian_applied_lambdas,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "predicted_translation_risk": finite_statistics(
+                lagrangian_risks,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "constraint_residual": finite_statistics(
+                lagrangian_residuals,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "safe_top_candidate_task_score": finite_statistics(
+                lagrangian_safe_top_task_scores,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "safe_top_candidate_planner_score": finite_statistics(
+                lagrangian_safe_top_planner_scores,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "same_population_task_sacrifice": finite_statistics(
+                lagrangian_same_population_task_sacrifices,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "selected_action_l2_norm": finite_statistics(
+                lagrangian_action_norms,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "episode_final_lambda": finite_statistics(
+                episode_final_lambdas,
+                include_std=True,
+                include_min=True,
+                include_max=True,
+            ),
+            "risk_above_epsilon_count": risk_violation_count,
+            "risk_above_epsilon_fraction": (
+                risk_violation_count / total_transition_count
+            ),
+            "lambda_bound_tolerance": lambda_tolerance,
+            "steps_near_lambda_min_count": near_lambda_min_count,
+            "steps_near_lambda_max_count": near_lambda_max_count,
+            "fraction_steps_near_lambda_min": (
+                near_lambda_min_count / total_transition_count
+            ),
+            "fraction_steps_near_lambda_max": (
+                near_lambda_max_count / total_transition_count
+            ),
+            "episode_applied_lambda_near_min_count": (
+                episode_applied_lambda_near_min_count
+            ),
+            "episode_applied_lambda_near_max_count": (
+                episode_applied_lambda_near_max_count
+            ),
+            "lower_clip_count": int(
+                sum(
+                    item["lower_clip_count"]
+                    for item in lagrangian_episode_summaries
+                )
+            ),
+            "upper_clip_count": int(
+                sum(
+                    item["upper_clip_count"]
+                    for item in lagrangian_episode_summaries
+                )
+            ),
+            "episodes": lagrangian_episode_summaries,
+        }
 
     summary = {
         "checkpoint_step": int(checkpoint.get("total_env_steps", -1)),
@@ -766,6 +1251,8 @@ def main() -> None:
             include_std=True,
         ),
     }
+    if adaptive_lagrangian_summary is not None:
+        summary["adaptive_lagrangian"] = adaptive_lagrangian_summary
 
     checkpoint_metadata_after = {
         "top_level": checkpoint.get("safety_mpc_config"),
@@ -782,6 +1269,9 @@ def main() -> None:
     )
     scale_hash_after = state_sha256(agent.scale.state_dict())
     agent_config_hash_after = state_sha256(agent.config)
+    agent_safety_mpc_metadata_after = copy.deepcopy(
+        agent.state_dict()["safety_mpc_config"]
+    )
     parameter_gradient_count_after = sum(
         int(parameter.grad is not None)
         for parameter in agent.model.parameters()
@@ -814,6 +1304,10 @@ def main() -> None:
         "agent_checkpoint_config_unchanged": (
             agent_config_hash_after == agent_config_hash_before
         ),
+        "agent_safety_mpc_metadata_unchanged": (
+            agent_safety_mpc_metadata_after
+            == agent_safety_mpc_metadata_before
+        ),
         "checkpoint_safety_mpc_metadata_unchanged": (
             checkpoint_metadata_after == checkpoint_metadata_snapshot
         ),
@@ -826,11 +1320,22 @@ def main() -> None:
             parameter_gradient_count_before == 0
             and parameter_gradient_count_after == 0
         ),
-        "runtime_override_fields": [
-            "safety_mpc_enabled",
-            "safety_mpc_alpha",
-            "safety_mpc_active",
-        ],
+        "runtime_override_fields": (
+            [
+                "safety_mpc_enabled",
+                "safety_mpc_alpha",
+                "safety_mpc_active",
+            ]
+            if adaptive_controller is None
+            else [
+                "_safety_mpc_runtime_enabled",
+                "_safety_mpc_runtime_alpha",
+                "_safety_mpc_runtime_force_active",
+                "safety_mpc_active",
+            ]
+        ),
+        "adaptive_controller_serialized_to_checkpoint": False,
+        "adaptive_controller_uses_model_gradients": False,
         "curvature_used_in_planning": False,
         "intervention_mask_modified": False,
     }
@@ -842,6 +1347,7 @@ def main() -> None:
         "policy_optimizer_state_unchanged",
         "policy_scale_state_unchanged",
         "agent_checkpoint_config_unchanged",
+        "agent_safety_mpc_metadata_unchanged",
         "checkpoint_safety_mpc_metadata_unchanged",
         "update_count_unchanged",
         "parameter_gradients_absent",
@@ -855,6 +1361,52 @@ def main() -> None:
             f"{failed_isolation_checks}"
         )
 
+    adaptive_summary_log: Dict[str, Any] = {}
+    if adaptive_lagrangian_summary is not None:
+        adaptive_summary_log = {
+            "lagrangian_lambda_mean": adaptive_lagrangian_summary[
+                "applied_lambda"
+            ]["mean"],
+            "lagrangian_lambda_std": adaptive_lagrangian_summary[
+                "applied_lambda"
+            ]["std"],
+            "lagrangian_lambda_min": adaptive_lagrangian_summary[
+                "applied_lambda"
+            ]["min"],
+            "lagrangian_lambda_max": adaptive_lagrangian_summary[
+                "applied_lambda"
+            ]["max"],
+            "lagrangian_predicted_risk_mean": adaptive_lagrangian_summary[
+                "predicted_translation_risk"
+            ]["mean"],
+            "lagrangian_constraint_residual_mean": (
+                adaptive_lagrangian_summary["constraint_residual"]["mean"]
+            ),
+            "lagrangian_risk_above_epsilon_fraction": (
+                adaptive_lagrangian_summary["risk_above_epsilon_fraction"]
+            ),
+            "lagrangian_same_population_task_sacrifice_mean": (
+                adaptive_lagrangian_summary[
+                    "same_population_task_sacrifice"
+                ]["mean"]
+            ),
+            "lagrangian_fraction_steps_near_lambda_min": (
+                adaptive_lagrangian_summary[
+                    "fraction_steps_near_lambda_min"
+                ]
+            ),
+            "lagrangian_fraction_steps_near_lambda_max": (
+                adaptive_lagrangian_summary[
+                    "fraction_steps_near_lambda_max"
+                ]
+            ),
+            "lagrangian_lower_clip_count": adaptive_lagrangian_summary[
+                "lower_clip_count"
+            ],
+            "lagrangian_upper_clip_count": adaptive_lagrangian_summary[
+                "upper_clip_count"
+            ],
+        }
     logger.log(
         "summary",
         {
@@ -915,12 +1467,22 @@ def main() -> None:
                 if summary["task_scale"]
                 else None
             ),
+            **adaptive_summary_log,
         },
     )
 
+    adaptive_mode = adaptive_lagrangian_summary is not None
     report = {
-        "schema_version": EVALUATION_REPORT_SCHEMA_VERSION,
-        "evaluation": "same_checkpoint_translation_safety_mpc_ablation",
+        "schema_version": (
+            EVALUATION_REPORT_SCHEMA_VERSION
+            if adaptive_mode
+            else BASELINE_EVALUATION_REPORT_SCHEMA_VERSION
+        ),
+        "evaluation": (
+            "adaptive_lagrangian_translation_safety_mpc"
+            if adaptive_mode
+            else "same_checkpoint_translation_safety_mpc_ablation"
+        ),
         "checkpoint": {
             "path": str(checkpoint_path),
             "total_env_steps": int(checkpoint.get("total_env_steps", -1)),
@@ -949,6 +1511,22 @@ def main() -> None:
         "summary": summary,
         "isolation": isolation,
     }
+    if adaptive_mode:
+        report["semantics"].update(
+            {
+                "dual_feedback_source": (
+                    "selected predicted Translation risk, not blockage or success"
+                ),
+                "selected_risk_aggregation": "capped_horizon_max",
+                "lambda_resets_each_episode": True,
+                "lambda_updates_after_environment_step": True,
+                "lambda_update_affects_next_decision": True,
+                "planner_score": (
+                    "task_score - lambda_t * task_scale * trajectory_risk"
+                ),
+                "epsilon_is_candidate_constant_in_lagrangian_objective": True,
+            }
+        )
     if args.output_json is not None:
         output_json = args.output_json.expanduser().resolve()
         atomic_json_save(report, output_json)

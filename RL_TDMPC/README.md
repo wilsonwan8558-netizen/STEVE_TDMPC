@@ -480,6 +480,76 @@ python RL_TDMPC/evaluate.py \
 Evaluation uses the configuration embedded in the checkpoint unless
 `--config` is supplied.
 
+### Evaluation-only Safety-MPC modes
+
+The evaluator supports three action-selection modes without changing the
+checkpoint or any training setting:
+
+```bash
+# Safety-MPC disabled
+python RL_TDMPC/evaluate.py \
+  --checkpoint RL_TDMPC/checkpoints/step_20000.pt \
+  --eval-safety-mpc disabled
+
+# Validated fixed Translation-only penalty
+python RL_TDMPC/evaluate.py \
+  --checkpoint RL_TDMPC/checkpoints/step_20000.pt \
+  --eval-safety-mpc enabled \
+  --eval-safety-mpc-alpha 0.1
+
+# Per-step adaptive Lagrangian penalty
+python RL_TDMPC/evaluate.py \
+  --checkpoint RL_TDMPC/checkpoints/step_20000.pt \
+  --eval-safety-mpc lagrangian \
+  --eval-lagrangian-epsilon 0.005 \
+  --eval-lagrangian-eta 0.2 \
+  --eval-lagrangian-lambda-initial 0.1 \
+  --eval-lagrangian-lambda-min 0.0 \
+  --eval-lagrangian-lambda-max 0.2 \
+  --output-json /tmp/steve_lagrangian_evaluation.json
+```
+
+The fixed mode retains its existing score exactly. In Lagrangian mode, one
+multiplier is reset to `lambda_initial` at the start of every episode. At
+environment decision `t`, MPPI uses
+
+```text
+task_score - lambda_t * task_scale * trajectory_translation_risk
+```
+
+After that action has been executed by `env.step()`, the evaluator updates
+
+```text
+lambda_(t+1) = clip(
+    lambda_t + eta * (predicted_risk_t - epsilon),
+    lambda_min,
+    lambda_max,
+)
+```
+
+and first applies the result at decision `t+1`. The feedback is the selected
+weighted-mean plan's capped maximum predicted Translation risk over the MPPI
+horizon. It is not an immediate collision probability, real blockage,
+Curvature, reward, or success. Subtracting
+`lambda_t * task_scale * (risk - epsilon)` would add the same constant to
+every candidate at one MPPI iteration, so candidate ranking remains the
+numerically compatible fixed-controller form shown above while `epsilon`
+drives the dual update.
+
+The adaptive controller is evaluation-only, has no gradient or optimizer,
+does not persist between episodes, and is never serialized in the checkpoint.
+Its strict JSON report contains every step's applied lambda, predicted risk,
+constraint residual, update, planner-score proxy, action, insertion progress,
+and blockage state, plus per-episode and run-level saturation statistics.
+Curvature remains monitoring-only and the execution intervention mask is
+unchanged.
+
+Run its simulation-free regression checks with:
+
+```bash
+python RL_TDMPC/smoke_test_adaptive_lagrangian.py
+```
+
 ### Safety Head evaluation
 
 Evaluate the complete fixed auxiliary validation split without constructing a
