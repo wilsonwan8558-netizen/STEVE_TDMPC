@@ -14,7 +14,7 @@ from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 import numpy as np
 
 from envs.safety import CURVATURE_STRATUM_NAMES
-from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
+from safety_schema import TRANSLATION_BLOCK_REASON_NAMES
 
 from .common import (
     SAFETY_AUX_TRANSLATION_GROUP_NAMES,

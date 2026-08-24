@@ -5,13 +5,16 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence, Tuple
 
 import numpy as np
-from eve.intervention import translation_block_reason_name
 
-
-SAFETY_COST_NAMES: Tuple[str, ...] = (
-    "filtered_max_curvature_mm_inv",
-    "normalized_requested_applied_translation_error",
+from safety_schema import (
+    LEGACY_STEVE_SAFETY_COST_NAMES,
+    translation_block_reason_name,
 )
+
+
+# Public legacy alias retained for existing stEVE code and checkpoints.  The
+# backend-independent canonical definition lives in ``safety_schema``.
+SAFETY_COST_NAMES: Tuple[str, ...] = LEGACY_STEVE_SAFETY_COST_NAMES
 CURVATURE_STRATUM_NAMES: Tuple[str, ...] = (
     "low",
     "medium",

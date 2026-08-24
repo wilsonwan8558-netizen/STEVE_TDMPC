@@ -13,11 +13,17 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 import cv2
 import numpy as np
 import torch
-from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
 
-from envs.safety import SAFETY_COST_NAMES
-from envs.steve_env import make_steve_env
-from train import resolved_safety_mpc_config, validate_checkpoint_schema
+from envs import make_env
+from safety_schema import (
+    LEGACY_STEVE_SAFETY_COST_NAMES,
+    TRANSLATION_BLOCK_REASON_NAMES,
+)
+from train import (
+    resolved_safety_mpc_config,
+    validate_checkpoint_schema,
+    validate_collected_safety_cost,
+)
 from tdmpc2.agent import TDMPC2Agent
 from tdmpc2.adaptive_lagrangian import (
     DEFAULT_ADAPTIVE_LAGRANGIAN_CONFIG,
@@ -66,6 +72,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--device", type=str, default=None)
     parser.add_argument(
+        "--backend",
+        choices=("steve", "nvidia-guided"),
+        default=None,
+        help=(
+            "Evaluation backend consistency check; it must match the selected "
+            "checkpoint/config because observation and Safety schemas are fixed"
+        ),
+    )
+    parser.add_argument("--nvidia-workflow-root", type=Path, default=None)
+    parser.add_argument("--nvidia-ct-cache", type=Path, default=None)
+    parser.add_argument(
         "--eval-safety-mpc",
         choices=("checkpoint", "disabled", "enabled", "lagrangian"),
         default="checkpoint",
@@ -110,7 +127,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--render",
         action="store_true",
-        help="Display evaluation in a SofaPygame OpenGL window",
+        help="Enable the selected backend's evaluation rendering path",
     )
     parser.add_argument(
         "--video",
@@ -136,7 +153,7 @@ def build_agent_config(config: Mapping[str, Any]) -> Dict[str, Any]:
         **dict(config["model"]),
         **dict(config["training"]),
         **dict(config["planning"]),
-        **build_safety_agent_config(config, SAFETY_COST_NAMES),
+        **build_safety_agent_config(config),
         **build_safety_mpc_agent_config(config),
         **build_diagnostics_agent_config(config),
     }
@@ -378,6 +395,24 @@ def main() -> None:
         config = copy.deepcopy(checkpoint["config"])
     else:
         raise KeyError("Checkpoint has no saved config; pass --config explicitly")
+    configured_backend = config.get("backend", "steve")
+    if not isinstance(configured_backend, str):
+        raise TypeError("Configuration backend must be a string")
+    configured_backend = configured_backend.strip().lower()
+    if args.backend is not None and args.backend != configured_backend:
+        raise ValueError(
+            f"--backend {args.backend!r} conflicts with configuration backend "
+            f"{configured_backend!r}; evaluate with the matching checkpoint/config"
+        )
+    config["backend"] = configured_backend
+    if args.nvidia_workflow_root is not None:
+        config["environment"]["workflow_root"] = str(
+            args.nvidia_workflow_root.expanduser().resolve()
+        )
+    if args.nvidia_ct_cache is not None:
+        config["environment"]["ct_cache_path"] = str(
+            args.nvidia_ct_cache.expanduser().resolve()
+        )
     validate_checkpoint_schema(
         checkpoint,
         config=config,
@@ -457,19 +492,37 @@ def main() -> None:
     requested_device = args.device or config["training"]["device"]
     device = select_device(requested_device)
     set_seed(base_seed)
+    agent_config = build_agent_config(config)
+    safety_cost_names = tuple(agent_config["safety_cost_names"])
+    backend = config.get("backend", "steve")
+    if not isinstance(backend, str):
+        raise TypeError("Configuration backend must be a string")
+    backend = backend.strip().lower()
+    config["backend"] = backend
 
     record_video = args.video is not None
     render_enabled = args.render or record_video
     environment_config = dict(config["environment"])
     if render_enabled:
-        environment_config["render_mode"] = "human"
-    env = make_steve_env(environment_config)
+        environment_config["render_mode"] = (
+            "rgb_array" if backend == "nvidia-guided" else "human"
+        )
+    env = make_env(environment_config, backend=backend)
+    environment_safety_names = tuple(
+        getattr(env, "safety_cost_names", ())
+    )
+    if environment_safety_names != safety_cost_names:
+        env.close()
+        raise ValueError(
+            "Environment safety schema mismatch: expected "
+            f"{safety_cost_names}, received {environment_safety_names}"
+        )
     observation_dim = int(np.prod(env.observation_space.shape))
     action_dim = int(np.prod(env.action_space.shape))
     agent = TDMPC2Agent(
         observation_dim,
         action_dim,
-        build_agent_config(config),
+        agent_config,
         episode_length=int(config["environment"]["max_episode_steps"]),
         device=device,
     )
@@ -544,6 +597,11 @@ def main() -> None:
     }
     simulation_error_transition_count = 0
     simulation_error_episode_count = 0
+    hard_safety_violation_transition_count = 0
+    hard_safety_violation_episode_count = 0
+    legacy_blockage_metrics = (
+        safety_cost_names == LEGACY_STEVE_SAFETY_COST_NAMES
+    )
     video_writer: Optional[cv2.VideoWriter] = None
     video_path = args.video.expanduser().resolve() if record_video else None
     video_fps = float(
@@ -598,7 +656,19 @@ def main() -> None:
             # no-exploration eval trajectory reproducible across program runs.
             set_seed(episode_seed)
             env.action_space.seed(episode_seed)
-            observation, _ = env.reset(seed=episode_seed)
+            observation, reset_info = env.reset(seed=episode_seed)
+            reset_names = reset_info.get("safety_cost_names")
+            if reset_names is not None and tuple(reset_names) != safety_cost_names:
+                raise ValueError(
+                    "Reset safety schema mismatch: expected "
+                    f"{safety_cost_names}, received {tuple(reset_names)}"
+                )
+            validate_collected_safety_cost(
+                reset_info["safety_cost"],
+                safety_cost_names=safety_cost_names,
+                received_safety_cost_names=reset_names,
+                source="Evaluation reset info['safety_cost']",
+            )
             render_frame()
             terminated = truncated = False
             episode_reward = 0.0
@@ -606,6 +676,7 @@ def main() -> None:
             success = False
             simulation_error = False
             episode_simulation_error_transitions = 0
+            episode_hard_safety_violation_transitions = 0
             episode_blockage_count = 0
             episode_reason_counts = {
                 reason: 0 for reason in TRANSLATION_BLOCK_REASON_NAMES
@@ -682,37 +753,58 @@ def main() -> None:
                 episode_simulation_error_transitions += int(
                     simulation_error_step
                 )
+                episode_hard_safety_violation_transitions += int(
+                    bool(info.get("hard_safety_violation", False))
+                )
 
-                safety_metrics = info.get("safety_metrics")
-                if not isinstance(safety_metrics, Mapping):
-                    raise TypeError(
-                        "Environment info['safety_metrics'] must be a mapping"
-                    )
-                blocked_value = safety_metrics.get(
-                    "translation_action_blocked"
-                )
-                if type(blocked_value) not in (bool, np.bool_):
-                    raise TypeError(
-                        "translation_action_blocked must be a bool"
-                    )
-                translation_blocked = bool(blocked_value)
-                block_reason = safety_metrics.get(
-                    "translation_block_reason"
-                )
+                received_names = info.get("safety_cost_names")
                 if (
-                    not isinstance(block_reason, str)
-                    or block_reason not in episode_reason_counts
+                    received_names is not None
+                    and tuple(received_names) != safety_cost_names
                 ):
                     raise ValueError(
-                        f"Unknown translation block reason {block_reason!r}"
+                        "Step safety schema mismatch: expected "
+                        f"{safety_cost_names}, received {tuple(received_names)}"
                     )
-                if translation_blocked != (block_reason != "none"):
-                    raise RuntimeError(
-                        "Translation blockage flag/reason mismatch: "
-                        f"{translation_blocked}/{block_reason!r}"
+                validate_collected_safety_cost(
+                    info["safety_cost"],
+                    safety_cost_names=safety_cost_names,
+                    received_safety_cost_names=received_names,
+                    source="Evaluation environment info['safety_cost']",
+                )
+                translation_blocked = False
+                block_reason = "unavailable"
+                safety_metrics = info.get("safety_metrics")
+                if safety_cost_names == LEGACY_STEVE_SAFETY_COST_NAMES:
+                    if not isinstance(safety_metrics, Mapping):
+                        raise TypeError(
+                            "Legacy stEVE info['safety_metrics'] must be a mapping"
+                        )
+                    blocked_value = safety_metrics.get(
+                        "translation_action_blocked"
                     )
-                episode_blockage_count += int(translation_blocked)
-                episode_reason_counts[block_reason] += 1
+                    if type(blocked_value) not in (bool, np.bool_):
+                        raise TypeError(
+                            "translation_action_blocked must be a bool"
+                        )
+                    translation_blocked = bool(blocked_value)
+                    block_reason = safety_metrics.get(
+                        "translation_block_reason"
+                    )
+                    if (
+                        not isinstance(block_reason, str)
+                        or block_reason not in episode_reason_counts
+                    ):
+                        raise ValueError(
+                            f"Unknown translation block reason {block_reason!r}"
+                        )
+                    if translation_blocked != (block_reason != "none"):
+                        raise RuntimeError(
+                            "Translation blockage flag/reason mismatch: "
+                            f"{translation_blocked}/{block_reason!r}"
+                        )
+                    episode_blockage_count += int(translation_blocked)
+                    episode_reason_counts[block_reason] += 1
                 if adaptive_controller is not None:
                     assert lambda_used_for_action is not None
                     predicted_risk = planner_values[
@@ -728,15 +820,31 @@ def main() -> None:
                         raise RuntimeError(
                             "Planner penalty is not aligned with lambda_t and risk_t"
                         )
-                    inserted_length = float(
-                        safety_metrics["inserted_length_mm"]
-                    )
-                    requested_translation = float(
-                        safety_metrics["requested_translation_speed_mm_s"]
-                    )
-                    applied_translation = float(
-                        safety_metrics["applied_translation_speed_mm_s"]
-                    )
+                    if isinstance(safety_metrics, Mapping):
+                        inserted_length = float(
+                            safety_metrics.get(
+                                "inserted_length_mm",
+                                info.get("guide_s_m", 0.0),
+                            )
+                        )
+                        requested_translation = float(
+                            safety_metrics.get(
+                                "requested_translation_speed_mm_s",
+                                info.get("velocity_cmd_m_s", 0.0),
+                            )
+                        )
+                        applied_translation = float(
+                            safety_metrics.get(
+                                "applied_translation_speed_mm_s",
+                                info.get("velocity_cmd_m_s", 0.0),
+                            )
+                        )
+                    else:
+                        inserted_length = float(info.get("guide_s_m", 0.0))
+                        requested_translation = float(
+                            info.get("velocity_cmd_m_s", 0.0)
+                        )
+                        applied_translation = requested_translation
                     if not all(
                         np.isfinite(value)
                         for value in (
@@ -825,7 +933,10 @@ def main() -> None:
                 for reason, count in episode_reason_counts.items()
                 if reason != "none"
             )
-            if non_none_reason_count != episode_blockage_count:
+            if (
+                legacy_blockage_metrics
+                and non_none_reason_count != episode_blockage_count
+            ):
                 raise RuntimeError(
                     "Translation blockage count does not match reason totals"
                 )
@@ -901,6 +1012,12 @@ def main() -> None:
                 episode_simulation_error_transitions
             )
             simulation_error_episode_count += int(simulation_error)
+            hard_safety_violation_transition_count += (
+                episode_hard_safety_violation_transitions
+            )
+            hard_safety_violation_episode_count += int(
+                episode_hard_safety_violation_transitions > 0
+            )
             for reason, count in episode_reason_counts.items():
                 reason_totals[reason] += count
 
@@ -932,6 +1049,12 @@ def main() -> None:
                     episode_simulation_error_transitions
                 ),
                 "simulation_error": simulation_error,
+                "hard_safety_violation_transition_count": (
+                    episode_hard_safety_violation_transitions
+                ),
+                "hard_safety_violation_episode": (
+                    episode_hard_safety_violation_transitions > 0
+                ),
                 "planner_call_count": planner_call_count,
                 "selected_translation_risk": finite_statistics(
                     episode_selected_risks,
@@ -1046,11 +1169,18 @@ def main() -> None:
     non_none_reason_total = sum(
         count for reason, count in reason_totals.items() if reason != "none"
     )
-    if non_none_reason_total != total_translation_blockage_count:
+    if (
+        legacy_blockage_metrics
+        and non_none_reason_total != total_translation_blockage_count
+    ):
         raise RuntimeError(
             "Aggregate blockage count does not match aggregate reason totals"
         )
-    if reason_totals["none"] + non_none_reason_total != total_transition_count:
+    if (
+        legacy_blockage_metrics
+        and reason_totals["none"] + non_none_reason_total
+        != total_transition_count
+    ):
         raise RuntimeError(
             "Aggregate translation block reasons do not cover all transitions"
         )
@@ -1237,6 +1367,13 @@ def main() -> None:
             simulation_error_transition_count
         ),
         "simulation_error_episode_count": simulation_error_episode_count,
+        "hard_safety_violation_transition_count": (
+            hard_safety_violation_transition_count
+        ),
+        "hard_safety_violation_episode_count": (
+            hard_safety_violation_episode_count
+        ),
+        "translation_blockage_metrics_available": legacy_blockage_metrics,
         "planner_call_count": active_planner_call_count,
         "selected_translation_risk": finite_statistics(
             selected_risks,
@@ -1500,12 +1637,28 @@ def main() -> None:
             ),
             "deterministic": True,
             "environment_config": copy.deepcopy(config["environment"]),
+            "backend": backend,
+            "safety_cost_names": list(safety_cost_names),
+            "safety_primary_risk_channel": agent_config[
+                "safety_primary_risk_channel"
+            ],
         },
         "semantics": {
-            "translation_safety_only": True,
+            "primary_safety_channel_only": True,
+            "primary_safety_channel": agent_config[
+                "safety_primary_risk_channel"
+            ],
+            "non_primary_safety_channels_monitoring_only": True,
+            "translation_safety_only": (
+                safety_cost_names == LEGACY_STEVE_SAFETY_COST_NAMES
+            ),
             "curvature_monitoring_only": True,
             "selected_risk_is_weighted_mean_plan_risk": True,
-            "blockage_source": "info.safety_metrics",
+            "blockage_source": (
+                "info.safety_metrics"
+                if legacy_blockage_metrics
+                else None
+            ),
         },
         "episodes": episode_results,
         "summary": summary,

@@ -1,21 +1,23 @@
-# Explicit backend and ordered legacy safety schema. Older embedded configs that
-# omit these three fields resolve to the same values for checkpoint compatibility.
-backend: steve
+# NVIDIA XCATH centerline-guided training backend. The local defaults are only
+# path conveniences; the environment factory/CLI may override both paths.
+backend: nvidia-guided
 safety_cost_names:
-  - filtered_max_curvature_mm_inv
-  - normalized_requested_applied_translation_error
-safety_dim: 2
+  - contact_force
+  - pre_penetration
+  - containment_failure
+  - clearance
+  - curvature
+  - tracking
+safety_dim: 6
 
-# stEVE task construction (mirrors examples/function_check.py)
 environment:
-  max_episode_steps: 200
-  vessel_seed: 30
-  image_frequency: 7.5
-  target_threshold: 5.0
-  target_branches: [lcca, rcca, lsa, rsa, bct, co]
-  friction: 0.001
+  workflow_root: /home/bizon/i4h-workflows
+  ct_cache_path: /home/bizon/i4h_data/case01/cache
+  max_episode_steps: 1200
+  max_translation_velocity_m_s: 0.005
+  max_rotation_velocity_rad_s: 1.0
+  terminate_on_hard_violation: true
 
-# Minimal state-only TD-MPC2 world model
 model:
   latent_dim: 256
   enc_dim: 256
@@ -30,16 +32,28 @@ model:
   log_std_min: -10.0
   log_std_max: 2.0
 
+# NVIDIA already exposes normalized nonnegative channel costs. Every loss
+# coefficient and transform scale is explicit; no scalar weights are inferred.
 safety:
   loss_coef: 0.1
-  curvature_loss_coef: 1.0
-  translation_error_loss_coef: 1.0
-  curvature_scale_mm_inv: 0.1
-  translation_error_scale: 1.0
+  channel_loss_coefs:
+    contact_force: 1.0
+    pre_penetration: 1.0
+    containment_failure: 1.0
+    clearance: 1.0
+    curvature: 1.0
+    tracking: 1.0
+  channel_scales:
+    contact_force: 1.0
+    pre_penetration: 1.0
+    containment_failure: 1.0
+    clearance: 1.0
+    curvature: 1.0
+    tracking: 1.0
+  primary_risk_channel: tracking
 
-# Translation Safety represents controller action-feasibility risk only.
-# Curvature remains monitoring-only, and the intervention mask remains the
-# final execution-layer protection.
+# First-pass training uses the guided baseline and does not activate a planner
+# penalty. When evaluated later, tracking is the explicit primary risk channel.
 safety_mpc:
   enabled: false
   alpha: 0.2
@@ -47,8 +61,6 @@ safety_mpc:
   minimum_task_scale: 0.000001
   aggregation: max
 
-# Lightweight Safety Head diagnostics. Curvature boundaries only partition
-# logged statistics; they are numerical analysis bins, not clinical thresholds.
 diagnostics:
   validation_interval: 100
   gradient_interval: 100
@@ -56,9 +68,8 @@ diagnostics:
   curvature_medium_max_mm_inv: 0.1
   curvature_high_max_mm_inv: 0.25
 
-# Optional balanced offline supervision for the Safety Head. When enabled,
-# dataset_path must reference a strict Commit-4.6B dataset. Auxiliary latents
-# are detached; this data never enters the main EpisodeReplayBuffer.
+# The existing offline stEVE auxiliary dataset is schema-specific and remains
+# disabled for the NVIDIA backend.
 safety_aux:
   enabled: false
   dataset_path: null
@@ -72,7 +83,6 @@ safety_aux:
     vessel_tree_end: 1.0
     other: 1.0
   translation_zero_calibration_coef: 0.1
-  # Diagnostic calibration only; these values never affect MPC or actions.
   validation_translation_threshold_candidates:
     - 0.0
     - 0.000001
@@ -132,11 +142,11 @@ planning:
   temperature: 0.5
 
 logging:
-  directory: logs
+  directory: logs/nvidia_guided
   update_interval: 100
 
 checkpoint:
-  directory: checkpoints
+  directory: checkpoints/nvidia_guided
   interval: 10000
   save_replay: true
   save_final: true
@@ -144,4 +154,4 @@ checkpoint:
 evaluation:
   episodes: 10
   seed: 1000
-  log_directory: logs/evaluation
+  log_directory: logs/evaluation/nvidia_guided

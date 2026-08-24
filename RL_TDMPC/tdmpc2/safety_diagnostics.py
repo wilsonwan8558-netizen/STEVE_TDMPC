@@ -14,7 +14,7 @@ import torch
 import torch.nn.functional as F
 
 from envs.safety import CURVATURE_STRATUM_NAMES
-from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
+from safety_schema import TRANSLATION_BLOCK_REASON_NAMES
 
 from .common import (
     DEFAULT_SAFETY_AUX_VALIDATION_TRANSLATION_THRESHOLD_CANDIDATES,

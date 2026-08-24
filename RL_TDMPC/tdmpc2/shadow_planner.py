@@ -1,4 +1,4 @@
-"""Side-effect-free Translation-Safety shadow MPPI planning.
+"""Side-effect-free primary-Safety-risk shadow MPPI planning.
 
 This module deliberately sits outside :mod:`tdmpc2.agent`.  The production
 TD-MPC2 planner never imports it and therefore has no Safety-Head inference
@@ -6,20 +6,22 @@ overhead.  A shadow run reproduces the production planner from an immutable
 pre-call snapshot and an explicit schedule containing every exogenous PyTorch
 random draw used by latent MPPI.  It may score candidates with
 
-``task_value - safety_weight * translation_trajectory_risk``
+``task_value - safety_weight * primary_tracking_trajectory_risk``
 
 but it never writes ``agent.previous_mean`` and never selects the action sent
 to the environment.
 
-Only Safety channel 1, normalized requested/applied translation error, is
-allowed into the shadow score.  Channel 0 (curvature) is decoded for interface
-validation only and is never read by the scoring path.
+Only the configured primary tracking-risk channel is allowed into the shadow
+score.  All channels are decoded together to preserve the Safety-Head
+interface, but non-primary channels are never read by the scoring path.  The
+historical ``translation`` public function names are retained for compatibility.
 """
 
 from __future__ import annotations
 
 import hashlib
 import math
+import operator
 import time
 from dataclasses import dataclass, replace
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
@@ -27,10 +29,11 @@ from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 import numpy as np
 import torch
 
+from safety_schema import validate_safety_schema
+
 from .networks import two_hot_inv
 
 
-TRANSLATION_SAFETY_INDEX = 1
 SUPPORTED_AGGREGATIONS = ("max", "discounted_sum")
 
 
@@ -108,6 +111,130 @@ def _synchronize(device: torch.device) -> None:
         torch.cuda.synchronize(torch.device(device))
 
 
+def _strict_safety_index(value: Any, *, source: str) -> int:
+    if isinstance(value, bool):
+        raise TypeError(f"{source} must be an integer, not bool")
+    try:
+        parsed = operator.index(value)
+    except TypeError as exc:
+        raise TypeError(f"{source} must be an integer") from exc
+    return int(parsed)
+
+
+def _resolve_primary_safety_channel(agent: Any) -> Tuple[int, str, int]:
+    """Resolve one strictly validated primary channel without fixed indices."""
+
+    model = getattr(agent, "model", None)
+    if model is None:
+        raise TypeError("Shadow planner agent must expose model")
+    if not hasattr(model, "safety_cost_names") or not hasattr(
+        model, "safety_dim"
+    ):
+        raise ValueError(
+            "Shadow planner model must expose safety_cost_names and safety_dim"
+        )
+    names = validate_safety_schema(
+        model.safety_cost_names,
+        model.safety_dim,
+        source="model.safety_cost_names",
+    )
+    safety_dim = _strict_safety_index(
+        model.safety_dim,
+        source="model.safety_dim",
+    )
+    if not hasattr(agent, "safety_cost_names") or not hasattr(
+        agent, "safety_dim"
+    ):
+        raise ValueError(
+            "Shadow planner agent must expose safety_cost_names and safety_dim"
+        )
+    agent_names = validate_safety_schema(
+        agent.safety_cost_names,
+        agent.safety_dim,
+        source="agent.safety_cost_names",
+    )
+    agent_dim = _strict_safety_index(
+        agent.safety_dim,
+        source="agent.safety_dim",
+    )
+    if agent_names != names or agent_dim != safety_dim:
+        raise ValueError(
+            "Agent and model Safety schemas must exactly match: "
+            f"{agent_names!r}/{agent_dim} != {names!r}/{safety_dim}"
+        )
+
+    channel_values = []
+    index_values = []
+    for owner_name, owner in (("agent", agent), ("model", model)):
+        if hasattr(owner, "safety_primary_risk_channel"):
+            channel = getattr(owner, "safety_primary_risk_channel")
+            if not isinstance(channel, str):
+                raise TypeError(
+                    f"{owner_name}.safety_primary_risk_channel must be a string"
+                )
+            if not channel.strip():
+                raise ValueError(
+                    f"{owner_name}.safety_primary_risk_channel must be non-empty"
+                )
+            channel_values.append((owner_name, channel))
+        if hasattr(owner, "safety_primary_risk_index"):
+            index = _strict_safety_index(
+                getattr(owner, "safety_primary_risk_index"),
+                source=f"{owner_name}.safety_primary_risk_index",
+            )
+            if not 0 <= index < safety_dim:
+                raise ValueError(
+                    f"{owner_name}.safety_primary_risk_index {index} is outside "
+                    f"[0, {safety_dim})"
+                )
+            index_values.append((owner_name, index))
+
+    distinct_channels = {value for _, value in channel_values}
+    if len(distinct_channels) > 1:
+        raise ValueError(
+            "Agent and model disagree on safety_primary_risk_channel: "
+            f"{channel_values!r}"
+        )
+    distinct_indices = {value for _, value in index_values}
+    if len(distinct_indices) > 1:
+        raise ValueError(
+            "Agent and model disagree on safety_primary_risk_index: "
+            f"{index_values!r}"
+        )
+
+    if distinct_channels:
+        primary_name = next(iter(distinct_channels))
+        if primary_name not in names:
+            raise ValueError(
+                "safety_primary_risk_channel must name one configured Safety "
+                f"channel; got {primary_name!r} for {names!r}"
+            )
+        name_index = names.index(primary_name)
+    else:
+        primary_name = None
+        name_index = None
+
+    if distinct_indices:
+        primary_index = next(iter(distinct_indices))
+        indexed_name = names[primary_index]
+        if primary_name is not None and primary_index != name_index:
+            raise ValueError(
+                "safety_primary_risk_channel and safety_primary_risk_index "
+                f"disagree: {primary_name!r} is index {name_index}, not "
+                f"{primary_index}"
+            )
+        primary_name = indexed_name
+    elif primary_name is not None:
+        primary_index = int(name_index)
+    else:
+        raise ValueError(
+            "Shadow planning requires safety_primary_risk_channel or "
+            "safety_primary_risk_index"
+        )
+
+    return primary_index, primary_name, safety_dim
+
+
 def _validate_agent_for_shadow(agent: Any) -> None:
     if agent.model.training:
         raise RuntimeError(
@@ -121,15 +248,7 @@ def _validate_agent_for_shadow(agent: Any) -> None:
         raise RuntimeError(
             "Shadow planning requires every Dropout module to be in eval mode"
         )
-    if int(agent.model.safety_dim) != 2:
-        raise ValueError("Shadow planner requires the committed two-channel Safety Head")
-    names = tuple(agent.model.safety_cost_names)
-    expected = "normalized_requested_applied_translation_error"
-    if len(names) != 2 or names[TRANSLATION_SAFETY_INDEX] != expected:
-        raise ValueError(
-            "Safety channel 1 must be "
-            f"{expected!r}, got {names!r}"
-        )
+    _resolve_primary_safety_channel(agent)
     if int(agent.config["num_samples"]) <= 0:
         raise ValueError("num_samples must be positive")
     if int(agent.config["iterations"]) <= 0:
@@ -528,12 +647,18 @@ def estimate_translation_risk(
     aggregation_discount: float,
     planner_cap: float,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, float]:
-    """Decode and aggregate translation risk along each imagined trajectory."""
+    """Decode and aggregate the configured primary tracking-risk channel.
+
+    The historical public name is retained for downstream compatibility.
+    """
 
     aggregation, discount, cap = _validate_risk_options(
         aggregation,
         aggregation_discount,
         planner_cap,
+    )
+    primary_index, primary_name, safety_dim = _resolve_primary_safety_channel(
+        agent
     )
     batch = int(latent.shape[0])
     expected_actions = (
@@ -554,34 +679,37 @@ def estimate_translation_risk(
             rollout_latent,
             actions[step],
         )
-        expected = (batch, 2)
+        expected = (batch, safety_dim)
         if tuple(transformed.shape) != expected:
             raise RuntimeError(
                 f"Safety transformed output must be {expected}, got "
                 f"{tuple(transformed.shape)}"
             )
-        translation_transformed = transformed[:, TRANSLATION_SAFETY_INDEX]
-        if not bool(torch.isfinite(translation_transformed).all()):
+        primary_transformed = transformed[:, primary_index]
+        if not bool(torch.isfinite(primary_transformed).all()):
             raise FloatingPointError(
-                "Translation Safety transformed prediction contains NaN or infinity"
+                "Primary Safety transformed prediction contains NaN or infinity "
+                f"for channel {primary_name!r} (index {primary_index})"
             )
         decoded = agent.model.decode_safety_transformed(transformed)
         if tuple(decoded.shape) != expected:
             raise RuntimeError(
                 f"Safety decoded output must be {expected}, got {tuple(decoded.shape)}"
             )
-        translation_decoded = decoded[:, TRANSLATION_SAFETY_INDEX]
-        if not bool(torch.isfinite(translation_decoded).all()):
+        primary_decoded = decoded[:, primary_index]
+        if not bool(torch.isfinite(primary_decoded).all()):
             raise FloatingPointError(
-                "Translation Safety decoded prediction is non-finite"
+                "Primary Safety decoded prediction is non-finite for channel "
+                f"{primary_name!r} (index {primary_index})"
             )
-        if bool(torch.any(translation_decoded < 0)):
+        if bool(torch.any(primary_decoded < 0)):
             raise ValueError(
-                "Translation Safety decoded prediction must be nonnegative"
+                "Primary Safety decoded prediction must be nonnegative for "
+                f"channel {primary_name!r} (index {primary_index})"
             )
-        # Scoring reads only channel 1.  The curvature column is intentionally
-        # neither indexed nor reduced anywhere in this path.
-        values.append(translation_decoded)
+        # Scoring reads only the configured primary channel. Other columns are
+        # intentionally neither indexed nor reduced anywhere in this path.
+        values.append(primary_decoded)
         rollout_latent = agent.model.next(rollout_latent, actions[step])
     _synchronize(latent.device)
     elapsed = time.perf_counter() - started

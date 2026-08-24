@@ -297,19 +297,20 @@ def main() -> None:
         assert "unsupported legacy three-channel" in str(exc)
     else:
         raise AssertionError("Replay accepted the legacy three-channel schema")
-    try:
-        EpisodeReplayBuffer(
-            100,
-            14,
-            2,
-            3,
-            4,
-            safety_cost_names=tuple(reversed(safety_cost_names)),
-        )
-    except ValueError as exc:
-        assert "in this exact order" in str(exc)
-    else:
-        raise AssertionError("Replay accepted reordered two-channel names")
+    # Replay is now schema-generic at construction time. Ordered names become
+    # strict when replay/model/checkpoint states are linked; a standalone
+    # buffer must not globally reserve the legacy stEVE channel order.
+    reordered_replay = EpisodeReplayBuffer(
+        100,
+        14,
+        2,
+        3,
+        4,
+        safety_cost_names=tuple(reversed(safety_cost_names)),
+    )
+    assert reordered_replay.safety_cost_names == tuple(
+        reversed(safety_cost_names)
+    )
     replay = EpisodeReplayBuffer(
         100,
         14,
@@ -2193,7 +2194,17 @@ def main() -> None:
             checkpoint_config["diagnostics"][key] = safety_only_config[key]
         checkpoint_agent_config = build_agent_config(checkpoint_config)
         for key, value in safety_only_config.items():
+            if key in {
+                "safety_channel_loss_coefs",
+                "safety_channel_scales",
+                "safety_primary_risk_channel",
+            }:
+                continue
             assert checkpoint_agent_config[key] == value
+        assert checkpoint_agent_config["safety_channel_loss_coefs"] == (
+            safety_only_config["safety_curvature_loss_coef"],
+            safety_only_config["safety_translation_error_loss_coef"],
+        )
         save_checkpoint(
             path=checkpoint_path,
             config=checkpoint_config,

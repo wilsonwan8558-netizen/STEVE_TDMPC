@@ -20,7 +20,7 @@ from envs.safety import (
     SAFETY_COST_NAMES,
     validate_curvature_boundaries,
 )
-from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
+from safety_schema import TRANSLATION_BLOCK_REASON_NAMES
 
 from .replay_buffer import validate_safety_cost_names
 

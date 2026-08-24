@@ -8,37 +8,27 @@ from typing import Any, Deque, Dict, Mapping, Optional, Sequence, Tuple
 import numpy as np
 import torch
 
+from safety_schema import (
+    LEGACY_STEVE_SAFETY_COST_NAMES,
+    UNSUPPORTED_LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES,
+    validate_safety_dim as validate_ordered_safety_dim,
+    validate_safety_cost_names as validate_ordered_safety_cost_names,
+)
+
 
 SAFETY_COST_SCHEMA_VERSION = 2
-REPLAY_SAFETY_COST_NAMES: Tuple[str, str] = (
-    "filtered_max_curvature_mm_inv",
-    "normalized_requested_applied_translation_error",
-)
-LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES: Tuple[str, str, str] = (
-    "collision_association",
-    "max_curvature_mm_inv",
-    "normalized_command_motion_error",
+REPLAY_SAFETY_COST_NAMES: Tuple[str, ...] = LEGACY_STEVE_SAFETY_COST_NAMES
+LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES: Tuple[str, ...] = (
+    UNSUPPORTED_LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES
 )
 
 
 def validate_safety_cost_names(
     names: Sequence[str], *, source: str
-) -> Tuple[str, str]:
-    """Validate the exact ordered two-channel replay/checkpoint schema."""
+) -> Tuple[str, ...]:
+    """Validate one configurable ordered replay/checkpoint safety schema."""
 
-    received = tuple(names)
-    if received == LEGACY_THREE_CHANNEL_SAFETY_COST_NAMES:
-        raise ValueError(
-            f"{source} uses the unsupported legacy three-channel safety-cost "
-            f"schema {received}; expected the two-channel schema "
-            f"{REPLAY_SAFETY_COST_NAMES} in this exact order"
-        )
-    if received != REPLAY_SAFETY_COST_NAMES:
-        raise ValueError(
-            f"{source} safety-cost channels {received} do not match the required "
-            f"two-channel schema {REPLAY_SAFETY_COST_NAMES} in this exact order"
-        )
-    return REPLAY_SAFETY_COST_NAMES
+    return validate_ordered_safety_cost_names(names, source=source)
 
 
 class EpisodeReplayBuffer:
@@ -284,16 +274,30 @@ class EpisodeReplayBuffer:
                 "Replay checkpoint predates the required safety_cost schema; "
                 "legacy replay data cannot be resumed without migration"
             )
-        validate_safety_cost_names(
+        received_safety_names = validate_safety_cost_names(
             state["safety_cost_names"],
             source="Replay checkpoint",
         )
+        if received_safety_names != self.safety_cost_names:
+            raise ValueError(
+                "Replay checkpoint safety-cost schema mismatch: received "
+                f"{received_safety_names}, expected {self.safety_cost_names} "
+                "in this exact order"
+            )
         if "safety_cost_schema_version" not in state:
             raise ValueError(
                 "Replay checkpoint predates safety-cost schema version "
                 f"{SAFETY_COST_SCHEMA_VERSION}; legacy replay data cannot be resumed"
             )
-        received_schema_version = int(state["safety_cost_schema_version"])
+        raw_schema_version = state["safety_cost_schema_version"]
+        if isinstance(raw_schema_version, (bool, np.bool_)) or not isinstance(
+            raw_schema_version,
+            (int, np.integer),
+        ):
+            raise TypeError(
+                "Replay safety_cost_schema_version must be an integer"
+            )
+        received_schema_version = int(raw_schema_version)
         if received_schema_version != SAFETY_COST_SCHEMA_VERSION:
             raise ValueError(
                 "Replay safety-cost schema version "
@@ -304,7 +308,11 @@ class EpisodeReplayBuffer:
             raise ValueError(
                 "Replay checkpoint is missing required safety_cost_dim metadata"
             )
-        received_safety_dim = int(state["safety_cost_dim"])
+        received_safety_dim = validate_ordered_safety_dim(
+            state["safety_cost_dim"],
+            received_safety_names,
+            source="Replay checkpoint",
+        )
         if received_safety_dim != self.safety_cost_dim:
             raise ValueError(
                 f"Replay safety_cost_dim {received_safety_dim} does not match "

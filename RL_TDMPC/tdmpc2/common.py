@@ -14,7 +14,16 @@ from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Seque
 import numpy as np
 import torch
 import yaml
-from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
+
+from safety_schema import (
+    LEGACY_STEVE_PRIMARY_RISK_CHANNEL,
+    LEGACY_STEVE_SAFETY_COST_NAMES,
+    NVIDIA_GUIDED_PRIMARY_RISK_CHANNEL,
+    NVIDIA_GUIDED_SAFETY_COST_NAMES,
+    SafetyCostSchema,
+    TRANSLATION_BLOCK_REASON_NAMES,
+    validate_safety_cost_names,
+)
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
@@ -132,28 +141,80 @@ def load_config(path: os.PathLike) -> Dict[str, Any]:
 
 def build_safety_agent_config(
     config: Mapping[str, Any],
-    safety_cost_names: Sequence[str],
+    safety_cost_names: Optional[Sequence[str]] = None,
 ) -> Dict[str, Any]:
-    """Validate nested safety settings and return the agent's flat schema."""
+    """Validate a configurable ordered safety schema and flatten its settings.
 
-    names = tuple(str(name) for name in safety_cost_names)
-    if len(names) != 2:
-        raise ValueError(
-            "Safety configuration requires exactly two ordered cost channels; "
-            f"got {names}"
+    Older stEVE configs did not contain top-level ``safety_cost_names`` or
+    ``safety_dim`` and used four semantic loss/scale keys.  That exact legacy
+    form resolves to the committed two-channel schema and the same numerical
+    values.  New schemas must provide explicit name-keyed coefficients, scales,
+    and a primary planning-risk channel.
+    """
+
+    configured_names_present = "safety_cost_names" in config
+    configured_dim_present = "safety_dim" in config
+    if configured_names_present != configured_dim_present:
+        missing = "safety_dim" if configured_names_present else "safety_cost_names"
+        raise KeyError(
+            "Configuration must provide safety_cost_names and safety_dim "
+            f"together; missing {missing!r}"
         )
-    if len(set(names)) != len(names):
-        raise ValueError(f"Safety cost channel names must be unique; got {names}")
+
+    configured_names = (
+        validate_safety_cost_names(
+            config["safety_cost_names"],
+            source="Configuration",
+        )
+        if configured_names_present
+        else None
+    )
+    if safety_cost_names is None:
+        requested_names = (
+            configured_names
+            if configured_names is not None
+            else LEGACY_STEVE_SAFETY_COST_NAMES
+        )
+    else:
+        requested_names = validate_safety_cost_names(
+            safety_cost_names,
+            source="Requested environment",
+        )
+        if configured_names is not None and configured_names != requested_names:
+            raise ValueError(
+                "Configured and requested safety-cost schemas disagree: "
+                f"configured {configured_names}, requested {requested_names}"
+            )
+    configured_dim = (
+        config["safety_dim"]
+        if configured_dim_present
+        else len(requested_names)
+    )
+    schema = SafetyCostSchema.create(
+        requested_names,
+        configured_dim,
+        source="Configuration",
+    )
+    names = schema.safety_cost_names
 
     safety = config.get("safety")
     if not isinstance(safety, Mapping):
         raise TypeError("Configuration section 'safety' must be a mapping")
-    expected_keys = {
-        "loss_coef",
+    legacy_keys = {
         "curvature_loss_coef",
         "translation_error_loss_coef",
         "curvature_scale_mm_inv",
         "translation_error_scale",
+    }
+    generic_keys = {
+        "channel_loss_coefs",
+        "channel_scales",
+        "primary_risk_channel",
+    }
+    expected_keys = {
+        "loss_coef",
+        *legacy_keys,
+        *generic_keys,
     }
     unexpected_keys = sorted(set(safety) - expected_keys)
     if unexpected_keys:
@@ -162,10 +223,12 @@ def build_safety_agent_config(
             f"{unexpected_keys}"
         )
 
-    def validated_value(key: str, *, strictly_positive: bool) -> float:
-        if key not in safety:
-            raise KeyError(f"Configuration safety section is missing {key!r}")
-        value = safety[key]
+    def validated_value(
+        value: Any,
+        key: str,
+        *,
+        strictly_positive: bool,
+    ) -> float:
         if isinstance(value, bool):
             raise TypeError(f"safety.{key} must be a real number, not bool")
         try:
@@ -188,25 +251,181 @@ def build_safety_agent_config(
                 )
         return converted
 
-    return {
+    if "loss_coef" not in safety:
+        raise KeyError("Configuration safety section is missing 'loss_coef'")
+    global_loss_coef = validated_value(
+        safety["loss_coef"],
+        "loss_coef",
+        strictly_positive=False,
+    )
+
+    present_generic = generic_keys.intersection(safety)
+    present_legacy = legacy_keys.intersection(safety)
+    if present_generic and present_generic != generic_keys:
+        missing = sorted(generic_keys - present_generic)
+        raise KeyError(
+            "Configuration safety generic schema is incomplete; missing "
+            f"{missing}"
+        )
+    if present_legacy and present_legacy != legacy_keys:
+        missing = sorted(legacy_keys - present_legacy)
+        raise KeyError(
+            "Configuration safety legacy schema is incomplete; missing "
+            f"{missing}"
+        )
+
+    if not present_generic:
+        if not present_legacy:
+            raise KeyError(
+                "Configuration safety section must provide either the complete "
+                "legacy loss/scale fields or channel_loss_coefs, channel_scales, "
+                "and primary_risk_channel"
+            )
+        if names != LEGACY_STEVE_SAFETY_COST_NAMES:
+            raise ValueError(
+                "Legacy safety loss/scale fields are valid only for the legacy "
+                f"stEVE schema {LEGACY_STEVE_SAFETY_COST_NAMES}; got {names}"
+            )
+        channel_loss_by_name = {
+            names[0]: validated_value(
+                safety["curvature_loss_coef"],
+                "curvature_loss_coef",
+                strictly_positive=False,
+            ),
+            names[1]: validated_value(
+                safety["translation_error_loss_coef"],
+                "translation_error_loss_coef",
+                strictly_positive=False,
+            ),
+        }
+        channel_scale_by_name = {
+            names[0]: validated_value(
+                safety["curvature_scale_mm_inv"],
+                "curvature_scale_mm_inv",
+                strictly_positive=True,
+            ),
+            names[1]: validated_value(
+                safety["translation_error_scale"],
+                "translation_error_scale",
+                strictly_positive=True,
+            ),
+        }
+        primary_risk_channel = LEGACY_STEVE_PRIMARY_RISK_CHANNEL
+    else:
+        raw_loss_coefs = safety["channel_loss_coefs"]
+        raw_scales = safety["channel_scales"]
+        if not isinstance(raw_loss_coefs, Mapping):
+            raise TypeError("safety.channel_loss_coefs must be a mapping")
+        if not isinstance(raw_scales, Mapping):
+            raise TypeError("safety.channel_scales must be a mapping")
+
+        def exact_channel_keys(values: Mapping[str, Any], key: str) -> None:
+            received = tuple(values.keys())
+            if set(received) != set(names) or len(received) != len(names):
+                missing = tuple(name for name in names if name not in values)
+                unexpected = tuple(name for name in received if name not in names)
+                raise ValueError(
+                    f"safety.{key} channel names do not match the ordered schema; "
+                    f"expected {names}, received {received}, missing {missing}, "
+                    f"unexpected {unexpected}"
+                )
+
+        exact_channel_keys(raw_loss_coefs, "channel_loss_coefs")
+        exact_channel_keys(raw_scales, "channel_scales")
+        channel_loss_by_name = {
+            name: validated_value(
+                raw_loss_coefs[name],
+                f"channel_loss_coefs[{name!r}]",
+                strictly_positive=False,
+            )
+            for name in names
+        }
+        channel_scale_by_name = {
+            name: validated_value(
+                raw_scales[name],
+                f"channel_scales[{name!r}]",
+                strictly_positive=True,
+            )
+            for name in names
+        }
+        primary_risk_channel = safety["primary_risk_channel"]
+        if not isinstance(primary_risk_channel, str) or not primary_risk_channel.strip():
+            raise ValueError(
+                "safety.primary_risk_channel must be a nonempty string"
+            )
+        schema.index(
+            primary_risk_channel,
+            source="safety.primary_risk_channel",
+        )
+
+        # If a config carries both representations, reject disagreement rather
+        # than allowing two sources of truth.  This is primarily useful while a
+        # legacy stEVE YAML is made explicit during migration.
+        if present_legacy:
+            if names != LEGACY_STEVE_SAFETY_COST_NAMES:
+                raise ValueError(
+                    "Legacy safety fields may accompany generic fields only for "
+                    f"the legacy stEVE schema, got {names}"
+                )
+            legacy_values = {
+                "curvature_loss_coef": channel_loss_by_name[names[0]],
+                "translation_error_loss_coef": channel_loss_by_name[names[1]],
+                "curvature_scale_mm_inv": channel_scale_by_name[names[0]],
+                "translation_error_scale": channel_scale_by_name[names[1]],
+            }
+            for key, expected in legacy_values.items():
+                actual = validated_value(
+                    safety[key],
+                    key,
+                    strictly_positive=("scale" in key),
+                )
+                if actual != expected:
+                    raise ValueError(
+                        f"safety.{key}={actual} does not match its named-channel "
+                        f"value {expected}"
+                    )
+
+    channel_loss_coefs = tuple(channel_loss_by_name[name] for name in names)
+    channel_scales = tuple(channel_scale_by_name[name] for name in names)
+    result = {
         "safety_cost_names": names,
         "safety_dim": len(names),
-        "safety_loss_coef": validated_value(
-            "loss_coef", strictly_positive=False
-        ),
-        "safety_curvature_loss_coef": validated_value(
-            "curvature_loss_coef", strictly_positive=False
-        ),
-        "safety_translation_error_loss_coef": validated_value(
-            "translation_error_loss_coef", strictly_positive=False
-        ),
-        "safety_curvature_scale_mm_inv": validated_value(
-            "curvature_scale_mm_inv", strictly_positive=True
-        ),
-        "safety_translation_error_scale": validated_value(
-            "translation_error_scale", strictly_positive=True
-        ),
+        "safety_loss_coef": global_loss_coef,
+        "safety_channel_loss_coefs": channel_loss_coefs,
+        "safety_channel_scales": channel_scales,
+        "safety_primary_risk_channel": primary_risk_channel,
     }
+
+    # Preserve the current flat keys for the two committed schemas during the
+    # staged Agent/WorldModel migration.  Their values are aliases of the named
+    # configuration, never an independent positional source of truth.
+    if names == LEGACY_STEVE_SAFETY_COST_NAMES:
+        curvature_channel = names[0]
+        tracking_channel = LEGACY_STEVE_PRIMARY_RISK_CHANNEL
+    elif names == NVIDIA_GUIDED_SAFETY_COST_NAMES:
+        curvature_channel = "curvature"
+        tracking_channel = NVIDIA_GUIDED_PRIMARY_RISK_CHANNEL
+    else:
+        curvature_channel = None
+        tracking_channel = None
+    if curvature_channel is not None and tracking_channel is not None:
+        result.update(
+            {
+                "safety_curvature_loss_coef": channel_loss_by_name[
+                    curvature_channel
+                ],
+                "safety_translation_error_loss_coef": channel_loss_by_name[
+                    tracking_channel
+                ],
+                "safety_curvature_scale_mm_inv": channel_scale_by_name[
+                    curvature_channel
+                ],
+                "safety_translation_error_scale": channel_scale_by_name[
+                    tracking_channel
+                ],
+            }
+        )
+    return result
 
 
 def build_safety_mpc_agent_config(

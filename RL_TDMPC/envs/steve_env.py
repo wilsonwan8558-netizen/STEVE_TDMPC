@@ -16,7 +16,7 @@ from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 import gymnasium as gym
 import numpy as np
 
-from .safety import safety_cost_from_metrics, zero_safety_cost
+from .safety import SAFETY_COST_NAMES, safety_cost_from_metrics, zero_safety_cost
 
 
 # Allow ``python RL_TDMPC/...`` from a source checkout before ``pip install -e .``.
@@ -50,6 +50,7 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
     """
 
     metadata = {"render_modes": ["human"], "render_fps": 7.5}
+    safety_cost_names = SAFETY_COST_NAMES
 
     def __init__(
         self,
@@ -671,6 +672,7 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
         output_info["simulation_error"] = bool(self._simulation.simulation_error)
         output_info["safety_metrics"] = self._build_safety_metrics(initial=True)
         output_info["safety_cost"] = zero_safety_cost()
+        output_info["safety_cost_names"] = self.safety_cost_names
         output_info["requested_action"] = np.zeros(
             self.action_space.shape,
             dtype=np.float32,
@@ -709,6 +711,7 @@ class StEVEEnv(gym.Env[np.ndarray, np.ndarray]):
             safety_metrics,
             self._translation_speed_limit_mm_s,
         )
+        output_info["safety_cost_names"] = self.safety_cost_names
         return (
             self._flatten_observation(observation),
             reward,

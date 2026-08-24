@@ -15,20 +15,24 @@ import torch
 import torch.nn.functional as F
 
 from envs.safety import CURVATURE_STRATUM_NAMES
-from eve.intervention import TRANSLATION_BLOCK_REASON_NAMES
+from safety_schema import (
+    LEGACY_SAFETY_COST_NAMES,
+    TRANSLATION_BLOCK_REASON_NAMES,
+    validate_safety_cost_names,
+    validate_safety_schema,
+)
 
 from .networks import WorldModel, soft_cross_entropy, two_hot_inv
-from .replay_buffer import REPLAY_SAFETY_COST_NAMES
 from .safety_diagnostics import safety_batch_diagnostics
 
 
 SAFETY_MODEL_SCHEMA_VERSION = 1
+MULTIMETRIC_SAFETY_MODEL_SCHEMA_VERSION = 2
 _SAFETY_CONFIG_KEYS = (
     "safety_loss_coef",
-    "safety_curvature_loss_coef",
-    "safety_translation_error_loss_coef",
-    "safety_curvature_scale_mm_inv",
-    "safety_translation_error_scale",
+    "safety_channel_loss_coefs",
+    "safety_channel_scales",
+    "safety_primary_risk_channel",
 )
 _SAFETY_MPC_CONFIG_KEYS = (
     "safety_mpc_enabled",
@@ -57,6 +61,20 @@ _TRANSLATION_AUXILIARY_LOG_LABELS = {
     "vessel_tree_end": "tree_end",
     "other": "other",
 }
+
+
+def safety_model_schema_version(safety_cost_names) -> int:
+    """Return the model-layout version for one validated ordered schema."""
+
+    names = validate_safety_cost_names(
+        safety_cost_names,
+        source="Safety model schema",
+    )
+    return (
+        SAFETY_MODEL_SCHEMA_VERSION
+        if names == LEGACY_SAFETY_COST_NAMES
+        else MULTIMETRIC_SAFETY_MODEL_SCHEMA_VERSION
+    )
 
 
 class RunningScale(torch.nn.Module):
@@ -112,51 +130,104 @@ class TDMPC2Agent:
                 "Agent config is missing required Safety-Aware keys: "
                 f"{missing_safety_keys}"
             )
-        self.safety_cost_names = tuple(self.config["safety_cost_names"])
-        if self.safety_cost_names != REPLAY_SAFETY_COST_NAMES:
-            raise ValueError(
-                "Agent safety_cost_names "
-                f"{self.safety_cost_names} do not match required schema "
-                f"{REPLAY_SAFETY_COST_NAMES} in this exact order"
-            )
-        self.safety_dim = int(self.config["safety_dim"])
-        if self.safety_dim != len(REPLAY_SAFETY_COST_NAMES):
-            raise ValueError(
-                f"Agent safety_dim must be {len(REPLAY_SAFETY_COST_NAMES)}, "
-                f"got {self.safety_dim}"
-            )
+        self.safety_cost_names = validate_safety_schema(
+            self.config["safety_cost_names"],
+            self.config["safety_dim"],
+            source="Agent safety schema",
+        )
+        self.safety_dim = len(self.safety_cost_names)
+        self.legacy_safety_schema = (
+            self.safety_cost_names == LEGACY_SAFETY_COST_NAMES
+        )
+        self.safety_model_schema_version = safety_model_schema_version(
+            self.safety_cost_names
+        )
         self.safety_loss_coef = float(self.config["safety_loss_coef"])
-        self.safety_curvature_loss_coef = float(
-            self.config["safety_curvature_loss_coef"]
+        self.safety_channel_loss_coefs = tuple(
+            float(value)
+            for value in self.config["safety_channel_loss_coefs"]
         )
-        self.safety_translation_error_loss_coef = float(
-            self.config["safety_translation_error_loss_coef"]
+        self.safety_channel_scales = tuple(
+            float(value) for value in self.config["safety_channel_scales"]
         )
-        self.safety_curvature_scale_mm_inv = float(
-            self.config["safety_curvature_scale_mm_inv"]
-        )
-        self.safety_translation_error_scale = float(
-            self.config["safety_translation_error_scale"]
-        )
+        if self.legacy_safety_schema:
+            # Direct callers historically edited these flat keys after
+            # build_agent_config(). Keep that supported while YAML/checkpoint
+            # parsing still enforces a single consistent named source.
+            legacy_loss_keys = (
+                "safety_curvature_loss_coef",
+                "safety_translation_error_loss_coef",
+            )
+            legacy_scale_keys = (
+                "safety_curvature_scale_mm_inv",
+                "safety_translation_error_scale",
+            )
+            if all(key in self.config for key in legacy_loss_keys):
+                self.safety_channel_loss_coefs = tuple(
+                    float(self.config[key]) for key in legacy_loss_keys
+                )
+                self.config["safety_channel_loss_coefs"] = (
+                    self.safety_channel_loss_coefs
+                )
+            if all(key in self.config for key in legacy_scale_keys):
+                self.safety_channel_scales = tuple(
+                    float(self.config[key]) for key in legacy_scale_keys
+                )
+                self.config["safety_channel_scales"] = (
+                    self.safety_channel_scales
+                )
+        if len(self.safety_channel_loss_coefs) != self.safety_dim:
+            raise ValueError(
+                "safety_channel_loss_coefs must contain one value per "
+                f"channel; expected {self.safety_dim}, got "
+                f"{len(self.safety_channel_loss_coefs)}"
+            )
+        if len(self.safety_channel_scales) != self.safety_dim:
+            raise ValueError(
+                "safety_channel_scales must contain one value per channel; "
+                f"expected {self.safety_dim}, got "
+                f"{len(self.safety_channel_scales)}"
+            )
         coefficient_values = {
             "safety_loss_coef": self.safety_loss_coef,
-            "safety_curvature_loss_coef": self.safety_curvature_loss_coef,
-            "safety_translation_error_loss_coef": (
-                self.safety_translation_error_loss_coef
-            ),
+            **{
+                f"safety_channel_loss_coefs[{index}]": value
+                for index, value in enumerate(
+                    self.safety_channel_loss_coefs
+                )
+            },
         }
         for name, value in coefficient_values.items():
             if not np.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be finite and nonnegative")
         scale_values = {
-            "safety_curvature_scale_mm_inv": (
-                self.safety_curvature_scale_mm_inv
-            ),
-            "safety_translation_error_scale": self.safety_translation_error_scale,
+            f"safety_channel_scales[{index}]": value
+            for index, value in enumerate(self.safety_channel_scales)
         }
         for name, value in scale_values.items():
             if not np.isfinite(value) or value <= 0.0:
                 raise ValueError(f"{name} must be finite and strictly positive")
+        primary_channel = self.config["safety_primary_risk_channel"]
+        if not isinstance(primary_channel, str):
+            raise TypeError("safety_primary_risk_channel must be a string")
+        if primary_channel not in self.safety_cost_names:
+            raise ValueError(
+                "safety_primary_risk_channel must name a configured channel; "
+                f"got {primary_channel!r} for {self.safety_cost_names}"
+            )
+        self.safety_primary_risk_channel = primary_channel
+        self.safety_primary_risk_index = self.safety_cost_names.index(
+            primary_channel
+        )
+        if self.legacy_safety_schema:
+            self.safety_curvature_loss_coef = (
+                self.safety_channel_loss_coefs[0]
+            )
+            self.safety_translation_error_loss_coef = (
+                self.safety_channel_loss_coefs[1]
+            )
+            self.safety_curvature_scale_mm_inv = self.safety_channel_scales[0]
+            self.safety_translation_error_scale = self.safety_channel_scales[1]
 
         safety_mpc_enabled = self.config["safety_mpc_enabled"]
         if type(safety_mpc_enabled) is not bool:
@@ -832,28 +903,87 @@ class TDMPC2Agent:
         channel_losses = (
             element_loss.mean(dim=1) * weights.unsqueeze(-1)
         ).sum(dim=0) / self.horizon
-        curvature_loss = channel_losses[0]
-        translation_error_loss = channel_losses[1]
-        safety_loss = (
-            self.safety_curvature_loss_coef * curvature_loss
-            + self.safety_translation_error_loss_coef * translation_error_loss
+        coefficients = channel_losses.new_tensor(
+            self._ordered_safety_loss_coefs()
         )
+        safety_loss = torch.sum(coefficients * channel_losses)
 
         with torch.no_grad():
-            diagnostics = safety_batch_diagnostics(
+            diagnostics = self._safety_prediction_diagnostics(
+                prediction_transformed, safety_cost
+            )
+
+        result = {
+            "safety_loss": safety_loss,
+            **diagnostics,
+        }
+        for index, name in enumerate(self.safety_cost_names):
+            result[f"safety_channel_loss_{name}"] = channel_losses[index]
+        if self.legacy_safety_schema:
+            result.update(
+                {
+                    "safety_curvature_loss": channel_losses[0],
+                    "safety_translation_error_loss": channel_losses[1],
+                }
+            )
+        return result
+
+    def _ordered_safety_loss_coefs(self) -> Tuple[float, ...]:
+        """Return current coefficients in configured channel order."""
+
+        if self.legacy_safety_schema:
+            return (
+                float(self.safety_curvature_loss_coef),
+                float(self.safety_translation_error_loss_coef),
+            )
+        return self.safety_channel_loss_coefs
+
+    def _safety_prediction_diagnostics(
+        self,
+        prediction_transformed: torch.Tensor,
+        safety_cost: torch.Tensor,
+        *,
+        prefix: str = "",
+    ) -> Dict[str, torch.Tensor]:
+        """Return legacy-rich or schema-neutral per-channel diagnostics."""
+
+        if self.legacy_safety_schema:
+            return safety_batch_diagnostics(
                 prediction_transformed,
                 safety_cost,
                 self.model,
+                prefix=prefix,
                 curvature_boundaries=self.curvature_boundaries,
                 safety_cost_names=self.safety_cost_names,
             )
-
-        return {
-            "safety_loss": safety_loss,
-            "safety_curvature_loss": curvature_loss,
-            "safety_translation_error_loss": translation_error_loss,
-            **diagnostics,
-        }
+        normalized_prefix = (
+            prefix if not prefix or prefix.endswith("_") else f"{prefix}_"
+        )
+        target_transformed = self.model.transform_safety_targets(safety_cost)
+        prediction = self.model.decode_safety_transformed(
+            prediction_transformed
+        )
+        metrics: Dict[str, torch.Tensor] = {}
+        for index, channel_name in enumerate(self.safety_cost_names):
+            transformed_error = torch.abs(
+                prediction_transformed[..., index]
+                - target_transformed[..., index]
+            )
+            decoded_error = torch.abs(
+                prediction[..., index] - safety_cost[..., index]
+            )
+            base = f"{normalized_prefix}safety_channel_{channel_name}"
+            metrics.update(
+                {
+                    f"{base}_pred_mean": prediction[..., index].mean(),
+                    f"{base}_target_mean": safety_cost[..., index].mean(),
+                    f"{base}_pred_max": prediction[..., index].max(),
+                    f"{base}_target_max": safety_cost[..., index].max(),
+                    f"{base}_mae_transformed": transformed_error.mean(),
+                    f"{base}_mae": decoded_error.mean(),
+                }
+            )
+        return metrics
 
     @staticmethod
     def _auxiliary_nonnegative_coefficient(value: Any, name: str) -> float:
@@ -891,6 +1021,12 @@ class TDMPC2Agent:
         the main replay's ``(z_t, a_t, c_t)`` convention.
         """
 
+        if not self.legacy_safety_schema:
+            raise ValueError(
+                "Safety auxiliary supervision is only defined for the legacy "
+                f"stEVE schema {LEGACY_SAFETY_COST_NAMES}; received "
+                f"{self.safety_cost_names}"
+            )
         if not isinstance(auxiliary_batch, Mapping):
             raise TypeError("Auxiliary Safety batch must be a mapping")
         required_keys = {
@@ -1078,13 +1214,19 @@ class TDMPC2Agent:
         )
         unavailable = prediction_transformed.new_tensor(float("nan"))
         group_info: Dict[str, torch.Tensor] = {}
+        curvature_index = self.safety_cost_names.index(
+            "filtered_max_curvature_mm_inv"
+        )
+        translation_index = self.safety_cost_names.index(
+            "normalized_requested_applied_translation_error"
+        )
 
         curvature_group_losses = []
         for stratum_id, stratum_name in enumerate(canonical_stratum_names):
             mask = stratum_ids == stratum_id
             available = bool(torch.any(mask))
             loss = (
-                element_loss[mask, 0].mean()
+                element_loss[mask, curvature_index].mean()
                 if available
                 else unavailable.clone()
             )
@@ -1105,7 +1247,7 @@ class TDMPC2Agent:
             mask = reason_ids == reason_id
             available = bool(torch.any(mask))
             loss = (
-                element_loss[mask, 1].mean()
+                element_loss[mask, translation_index].mean()
                 if available
                 else unavailable.clone()
             )
@@ -1145,8 +1287,8 @@ class TDMPC2Agent:
             raise FloatingPointError(
                 "Auxiliary Safety decoded prediction contains NaN or infinity"
             )
-        translation_prediction = prediction_original[:, 1]
-        translation_target = safety_cost[:, 1]
+        translation_prediction = prediction_original[:, translation_index]
+        translation_target = safety_cost[:, translation_index]
         zero_target_mask = translation_target == 0.0
         positive_target_mask = translation_target > 0.0
         none_mask = reason_ids == canonical_reason_names.index("none")
@@ -1317,6 +1459,12 @@ class TDMPC2Agent:
         independently clips and adds only the auxiliary Safety gradients before
         the single optimizer step.
         """
+
+        if not self.legacy_safety_schema:
+            raise ValueError(
+                "Isolated auxiliary gradients are only defined for the legacy "
+                f"stEVE schema {LEGACY_SAFETY_COST_NAMES}"
+            )
 
         safety_groups = {
             "safety_trunk": tuple(self.model.safety_trunk.parameters()),
@@ -1595,29 +1743,35 @@ class TDMPC2Agent:
             channel_losses = (
                 element_loss.mean(dim=1) * weights.unsqueeze(-1)
             ).sum(dim=0) / self.horizon
-            curvature_loss = channel_losses[0]
-            translation_error_loss = channel_losses[1]
-            combined_loss = (
-                self.safety_curvature_loss_coef * curvature_loss
-                + self.safety_translation_error_loss_coef
-                * translation_error_loss
+            coefficients = channel_losses.new_tensor(
+                self._ordered_safety_loss_coefs()
             )
-            diagnostics = safety_batch_diagnostics(
+            combined_loss = torch.sum(coefficients * channel_losses)
+            diagnostics = self._safety_prediction_diagnostics(
                 prediction_transformed,
                 safety_cost,
-                self.model,
                 prefix=normalized_prefix,
-                curvature_boundaries=self.curvature_boundaries,
-                safety_cost_names=self.safety_cost_names,
             )
-            return {
+            result = {
                 f"{normalized_prefix}safety_loss": combined_loss,
-                f"{normalized_prefix}safety_curvature_loss": curvature_loss,
-                f"{normalized_prefix}safety_translation_error_loss": (
-                    translation_error_loss
-                ),
                 **diagnostics,
             }
+            for index, name in enumerate(self.safety_cost_names):
+                result[
+                    f"{normalized_prefix}safety_channel_loss_{name}"
+                ] = channel_losses[index]
+            if self.legacy_safety_schema:
+                result.update(
+                    {
+                        f"{normalized_prefix}safety_curvature_loss": (
+                            channel_losses[0]
+                        ),
+                        f"{normalized_prefix}safety_translation_error_loss": (
+                            channel_losses[1]
+                        ),
+                    }
+                )
+            return result
         finally:
             self.model.train(was_training)
 
@@ -1627,17 +1781,9 @@ class TDMPC2Agent:
     ) -> Dict[str, torch.Tensor]:
         """Return sparse pre-clipping Safety and total gradient norms."""
 
-        return {
+        diagnostics = {
             "safety_grad_norm_trunk": self._module_gradient_norm(
                 self.model.safety_trunk
-            ),
-            "safety_grad_norm_curvature_branch": self._module_gradient_norm(
-                self.model.safety_curvature_head
-            ),
-            "safety_grad_norm_translation_error_branch": (
-                self._module_gradient_norm(
-                    self.model.safety_translation_error_head
-                )
             ),
             # These total shared-module norms make the main Safety-only values
             # below interpretable when checking whether Safety dominates.
@@ -1649,6 +1795,27 @@ class TDMPC2Agent:
             ),
             **dict(safety_shared_gradients),
         }
+        for name, head in zip(
+            self.safety_cost_names,
+            self.model.safety_output_heads(),
+        ):
+            diagnostics[f"safety_grad_norm_channel_{name}"] = (
+                self._module_gradient_norm(head)
+            )
+        if self.legacy_safety_schema:
+            diagnostics.update(
+                {
+                    "safety_grad_norm_curvature_branch": diagnostics[
+                        "safety_grad_norm_channel_"
+                        "filtered_max_curvature_mm_inv"
+                    ],
+                    "safety_grad_norm_translation_error_branch": diagnostics[
+                        "safety_grad_norm_channel_"
+                        "normalized_requested_applied_translation_error"
+                    ],
+                }
+            )
+        return diagnostics
 
     def _module_gradient_norm(self, module: torch.nn.Module) -> torch.Tensor:
         squared_norm = torch.zeros((), device=self.device)
@@ -1699,9 +1866,27 @@ class TDMPC2Agent:
         unavailable = torch.full((), float("nan"), device=self.device)
         info: Dict[str, torch.Tensor] = {
             "safety_loss": zero,
-            "safety_curvature_loss": zero,
-            "safety_translation_error_loss": zero,
         }
+        for channel_name in self.safety_cost_names:
+            info[f"safety_channel_loss_{channel_name}"] = zero
+            base = f"safety_channel_{channel_name}"
+            for metric in (
+                "pred_mean",
+                "target_mean",
+                "pred_max",
+                "target_max",
+                "mae_transformed",
+                "mae",
+            ):
+                info[f"{base}_{metric}"] = unavailable
+        if not self.legacy_safety_schema:
+            return info
+        info.update(
+            {
+                "safety_curvature_loss": zero,
+                "safety_translation_error_loss": zero,
+            }
+        )
         for channel in ("curvature", "translation_error"):
             for metric in (
                 "pred_mean",
@@ -2014,17 +2199,28 @@ class TDMPC2Agent:
             "policy_scale": float(self.scale.value.detach().cpu()),
         }
 
-    def _safety_state_config(self) -> Dict[str, float]:
+    def _safety_state_config(self) -> Dict[str, Any]:
+        if self.legacy_safety_schema:
+            # Preserve the exact format-v3 payload accepted by existing stEVE
+            # checkpoints and optimizer states.
+            return {
+                "safety_loss_coef": self.safety_loss_coef,
+                "safety_curvature_loss_coef": self.safety_curvature_loss_coef,
+                "safety_translation_error_loss_coef": (
+                    self.safety_translation_error_loss_coef
+                ),
+                "safety_curvature_scale_mm_inv": (
+                    self.safety_curvature_scale_mm_inv
+                ),
+                "safety_translation_error_scale": (
+                    self.safety_translation_error_scale
+                ),
+            }
         return {
             "safety_loss_coef": self.safety_loss_coef,
-            "safety_curvature_loss_coef": self.safety_curvature_loss_coef,
-            "safety_translation_error_loss_coef": (
-                self.safety_translation_error_loss_coef
-            ),
-            "safety_curvature_scale_mm_inv": (
-                self.safety_curvature_scale_mm_inv
-            ),
-            "safety_translation_error_scale": self.safety_translation_error_scale,
+            "safety_channel_loss_coefs": self.safety_channel_loss_coefs,
+            "safety_channel_scales": self.safety_channel_scales,
+            "safety_primary_risk_channel": self.safety_primary_risk_channel,
         }
 
     def _safety_mpc_state_config(self) -> Dict[str, Any]:
@@ -2126,24 +2322,37 @@ class TDMPC2Agent:
                 "Agent checkpoint predates the required Safety Head/model "
                 f"schema; missing metadata {missing}"
             )
-        schema_version = int(state["safety_model_schema_version"])
-        if schema_version != SAFETY_MODEL_SCHEMA_VERSION:
-            raise ValueError(
-                f"Agent checkpoint Safety model schema version {schema_version} "
-                f"does not match required version {SAFETY_MODEL_SCHEMA_VERSION}"
-            )
-        received_names = tuple(state["safety_cost_names"])
+        received_names = validate_safety_schema(
+            state["safety_cost_names"],
+            state["safety_dim"],
+            source="Agent checkpoint safety schema",
+        )
         if received_names != self.safety_cost_names:
             raise ValueError(
-                "Agent checkpoint safety_cost_names "
-                f"{received_names} do not match current "
-                f"{self.safety_cost_names} in this exact order"
+                "Agent checkpoint safety-cost schema mismatch: expected "
+                f"{self.safety_cost_names}, received {received_names}"
             )
-        received_dim = int(state["safety_dim"])
+        received_dim = len(received_names)
         if received_dim != self.safety_dim:
             raise ValueError(
                 f"Agent checkpoint safety_dim {received_dim} does not match "
                 f"current {self.safety_dim}"
+            )
+        raw_schema_version = state["safety_model_schema_version"]
+        if isinstance(raw_schema_version, (bool, np.bool_)) or not isinstance(
+            raw_schema_version,
+            (int, np.integer),
+        ):
+            raise TypeError(
+                "Agent checkpoint safety_model_schema_version must be an integer"
+            )
+        schema_version = int(raw_schema_version)
+        if schema_version != self.safety_model_schema_version:
+            raise ValueError(
+                f"Agent checkpoint Safety model schema version {schema_version} "
+                "does not match required version "
+                f"{self.safety_model_schema_version} for channels "
+                f"{self.safety_cost_names}"
             )
         received_config = state["safety_config"]
         if not isinstance(received_config, Mapping):
@@ -2162,17 +2371,34 @@ class TDMPC2Agent:
                 f"{unexpected_config}"
             )
         for name, expected_value in expected_config.items():
-            received_value = float(received_config[name])
-            if received_value != expected_value:
+            received_value = received_config[name]
+            if isinstance(expected_value, tuple):
+                try:
+                    matches = tuple(float(value) for value in received_value) == (
+                        tuple(float(value) for value in expected_value)
+                    )
+                except (TypeError, ValueError, OverflowError):
+                    matches = False
+            elif isinstance(expected_value, str):
+                matches = (
+                    isinstance(received_value, str)
+                    and received_value == expected_value
+                )
+            else:
+                try:
+                    matches = float(received_value) == float(expected_value)
+                except (TypeError, ValueError, OverflowError):
+                    matches = False
+            if not matches:
                 raise ValueError(
-                    f"Agent checkpoint {name}={received_value} does not match "
-                    f"current value {expected_value}"
+                    f"Agent checkpoint {name}={received_value!r} does not "
+                    f"match current value {expected_value!r}"
                 )
         self._validate_safety_mpc_state(state)
 
     def state_dict(self) -> Dict[str, Any]:
         return {
-            "safety_model_schema_version": SAFETY_MODEL_SCHEMA_VERSION,
+            "safety_model_schema_version": self.safety_model_schema_version,
             "safety_cost_names": self.safety_cost_names,
             "safety_dim": self.safety_dim,
             "safety_config": self._safety_state_config(),

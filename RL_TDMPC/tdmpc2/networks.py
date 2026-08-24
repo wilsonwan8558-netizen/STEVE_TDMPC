@@ -17,6 +17,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from safety_schema import LEGACY_SAFETY_COST_NAMES, validate_safety_schema
+
 
 def weight_init(module: nn.Module) -> None:
     if isinstance(module, nn.Linear):
@@ -171,48 +173,44 @@ class WorldModel(nn.Module):
         self.num_bins = int(config["num_bins"])
         self.value_min = float(config["vmin"])
         self.value_max = float(config["vmax"])
-        self.safety_dim = int(config["safety_dim"])
-        if self.safety_dim != 2:
-            raise ValueError(
-                f"safety_dim must be exactly 2, got {self.safety_dim}"
-            )
+        self.safety_cost_names = validate_safety_schema(
+            config["safety_cost_names"],
+            config["safety_dim"],
+            source="WorldModel safety schema",
+        )
+        self.safety_dim = len(self.safety_cost_names)
+        self.legacy_safety_schema = (
+            self.safety_cost_names == LEGACY_SAFETY_COST_NAMES
+        )
         try:
-            self.safety_cost_names = tuple(config["safety_cost_names"])
+            configured_scales = tuple(config["safety_channel_scales"])
         except TypeError as exc:
-            raise TypeError("safety_cost_names must be an iterable") from exc
-        if len(self.safety_cost_names) != self.safety_dim:
+            raise TypeError(
+                "safety_channel_scales must be an iterable of real numbers"
+            ) from exc
+        if len(configured_scales) != self.safety_dim:
             raise ValueError(
-                "safety_cost_names must contain exactly "
-                f"{self.safety_dim} entries, got {len(self.safety_cost_names)}"
+                "safety_channel_scales must contain one value per channel: "
+                f"expected {self.safety_dim}, got {len(configured_scales)}"
             )
-
-        configured_curvature_scale = float(
-            config["safety_curvature_scale_mm_inv"]
-        )
-        configured_translation_error_scale = float(
-            config["safety_translation_error_scale"]
-        )
-        if (
-            not math.isfinite(configured_curvature_scale)
-            or configured_curvature_scale <= 0.0
-        ):
-            raise ValueError(
-                "safety_curvature_scale_mm_inv must be finite and positive"
-            )
-        if (
-            not math.isfinite(configured_translation_error_scale)
-            or configured_translation_error_scale <= 0.0
-        ):
-            raise ValueError(
-                "safety_translation_error_scale must be finite and positive"
-            )
-        encoded_scales = torch.tensor(
-            [
-                configured_curvature_scale,
-                configured_translation_error_scale,
-            ],
-            dtype=torch.float32,
-        )
+        parsed_scales = []
+        for index, value in enumerate(configured_scales):
+            if isinstance(value, bool):
+                raise TypeError(
+                    f"safety_channel_scales[{index}] must be a real number"
+                )
+            try:
+                converted = float(value)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise TypeError(
+                    f"safety_channel_scales[{index}] must be a real number"
+                ) from exc
+            if not math.isfinite(converted) or converted <= 0.0:
+                raise ValueError(
+                    f"safety_channel_scales[{index}] must be finite and positive"
+                )
+            parsed_scales.append(converted)
+        encoded_scales = torch.tensor(parsed_scales, dtype=torch.float32)
         if not torch.isfinite(encoded_scales).all() or torch.any(
             encoded_scales <= 0.0
         ):
@@ -220,11 +218,24 @@ class WorldModel(nn.Module):
                 "Safety transform scales must remain finite and positive when "
                 "represented as float32 replay data"
             )
-        curvature_scale, translation_error_scale = (
+        self.safety_channel_scales = tuple(
             float(value) for value in encoded_scales
         )
-        self.safety_curvature_scale_mm_inv = curvature_scale
-        self.safety_translation_error_scale = translation_error_scale
+        primary_channel = config["safety_primary_risk_channel"]
+        if not isinstance(primary_channel, str):
+            raise TypeError("safety_primary_risk_channel must be a string")
+        if primary_channel not in self.safety_cost_names:
+            raise ValueError(
+                "safety_primary_risk_channel must name one configured channel; "
+                f"got {primary_channel!r} for {self.safety_cost_names}"
+            )
+        self.safety_primary_risk_channel = primary_channel
+        self.safety_primary_risk_index = self.safety_cost_names.index(
+            primary_channel
+        )
+        if self.legacy_safety_schema:
+            self.safety_curvature_scale_mm_inv = self.safety_channel_scales[0]
+            self.safety_translation_error_scale = self.safety_channel_scales[1]
 
         simnorm_dim = int(config["simnorm_dim"])
         enc_dim = int(config["enc_dim"])
@@ -297,11 +308,20 @@ class WorldModel(nn.Module):
             mlp_dim,
             output_activation=nn.Mish(),
         )
-        self.safety_curvature_head = nn.Linear(mlp_dim, 1)
-        self.safety_translation_error_head = nn.Linear(mlp_dim, 1)
-        self.safety_trunk.apply(weight_init)
-        self.safety_curvature_head.apply(weight_init)
-        self.safety_translation_error_head.apply(weight_init)
+        if self.legacy_safety_schema:
+            # Preserve both module names and initialization order so existing
+            # format-v3 two-channel checkpoints remain strictly loadable.
+            self.safety_curvature_head = nn.Linear(mlp_dim, 1)
+            self.safety_translation_error_head = nn.Linear(mlp_dim, 1)
+            self.safety_trunk.apply(weight_init)
+            self.safety_curvature_head.apply(weight_init)
+            self.safety_translation_error_head.apply(weight_init)
+        else:
+            self.safety_channel_heads = nn.ModuleList(
+                nn.Linear(mlp_dim, 1) for _ in range(self.safety_dim)
+            )
+            self.safety_trunk.apply(weight_init)
+            self.safety_channel_heads.apply(weight_init)
 
     def train(self, mode: bool = True):
         """Keep target critics in evaluation mode, as in the official code."""
@@ -320,13 +340,22 @@ class WorldModel(nn.Module):
         return self.reward_head(torch.cat([latent, action], dim=-1))
 
     def safety_head_parameters(self) -> List[nn.Parameter]:
-        """Return all trainable parameters owned by the two-channel safety head."""
+        """Return all trainable parameters owned by the safety prediction head."""
 
-        return [
-            *self.safety_trunk.parameters(),
-            *self.safety_curvature_head.parameters(),
-            *self.safety_translation_error_head.parameters(),
-        ]
+        parameters = list(self.safety_trunk.parameters())
+        for head in self.safety_output_heads():
+            parameters.extend(head.parameters())
+        return parameters
+
+    def safety_output_heads(self) -> Tuple[nn.Module, ...]:
+        """Return scalar output branches in configured channel order."""
+
+        if self.legacy_safety_schema:
+            return (
+                self.safety_curvature_head,
+                self.safety_translation_error_head,
+            )
+        return tuple(self.safety_channel_heads)
 
     def safety_transformed(
         self, latent: torch.Tensor, action: torch.Tensor
@@ -334,9 +363,10 @@ class WorldModel(nn.Module):
         """Predict raw immediate safety costs in log-transformed space."""
 
         features = self.safety_trunk(torch.cat([latent, action], dim=-1))
-        curvature = self.safety_curvature_head(features)
-        translation_error = self.safety_translation_error_head(features)
-        return torch.cat([curvature, translation_error], dim=-1)
+        return torch.cat(
+            [head(features) for head in self.safety_output_heads()],
+            dim=-1,
+        )
 
     def translation_safety_transformed(
         self, latent: torch.Tensor, action: torch.Tensor
@@ -348,8 +378,15 @@ class WorldModel(nn.Module):
         while Curvature stays monitoring-only and cannot affect active MPPI.
         """
 
+        return self.primary_safety_transformed(latent, action)
+
+    def primary_safety_transformed(
+        self, latent: torch.Tensor, action: torch.Tensor
+    ) -> torch.Tensor:
+        """Predict the configured primary planning-risk channel only."""
+
         features = self.safety_trunk(torch.cat([latent, action], dim=-1))
-        return self.safety_translation_error_head(features)
+        return self.safety_output_heads()[self.safety_primary_risk_index](features)
 
     def transform_safety_targets(self, safety_cost: torch.Tensor) -> torch.Tensor:
         """Map nonnegative physical safety targets into transformed space."""
@@ -371,14 +408,8 @@ class WorldModel(nn.Module):
         self._validate_safety_tensor(transformed, "transformed safety")
         finfo = torch.finfo(transformed.dtype)
         upper_values = [
-            self._safe_expm1_upper(
-                transformed.dtype,
-                self.safety_curvature_scale_mm_inv,
-            ),
-            self._safe_expm1_upper(
-                transformed.dtype,
-                self.safety_translation_error_scale,
-            ),
+            self._safe_expm1_upper(transformed.dtype, scale)
+            for scale in self.safety_channel_scales
         ]
         upper = transformed.new_tensor(upper_values)
         nonnegative = torch.clamp(transformed, min=0.0)
@@ -397,7 +428,14 @@ class WorldModel(nn.Module):
     def decode_translation_safety_transformed(
         self, transformed: torch.Tensor
     ) -> torch.Tensor:
-        """Decode the one-channel Translation Safety prediction."""
+        """Decode the configured one-channel primary Safety prediction."""
+
+        return self.decode_primary_safety_transformed(transformed)
+
+    def decode_primary_safety_transformed(
+        self, transformed: torch.Tensor
+    ) -> torch.Tensor:
+        """Decode the configured one-channel primary Safety prediction."""
 
         if not transformed.is_floating_point():
             raise TypeError(
@@ -409,12 +447,12 @@ class WorldModel(nn.Module):
                 f"got shape {tuple(transformed.shape)}"
             )
         finfo = torch.finfo(transformed.dtype)
-        upper = self._safe_expm1_upper(
-            transformed.dtype,
-            self.safety_translation_error_scale,
-        )
+        scale_value = self.safety_channel_scales[
+            self.safety_primary_risk_index
+        ]
+        upper = self._safe_expm1_upper(transformed.dtype, scale_value)
         guarded = torch.clamp(transformed, min=0.0, max=upper)
-        scale = transformed.new_tensor(self.safety_translation_error_scale)
+        scale = transformed.new_tensor(scale_value)
         decoded = scale * torch.expm1(guarded)
         return torch.nan_to_num(
             decoded,
