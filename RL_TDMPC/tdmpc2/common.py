@@ -1073,9 +1073,22 @@ def restore_rng_state(state: Optional[Mapping[str, Any]]) -> None:
         return
     random.setstate(state["python"])
     np.random.set_state(state["numpy"])
-    torch.set_rng_state(state["torch"])
+    torch.set_rng_state(
+        state["torch"]
+        .detach()
+        .to(device="cpu", dtype=torch.uint8)
+        .contiguous()
+    )
     if "cuda" in state and torch.cuda.is_available():
-        torch.cuda.set_rng_state_all(state["cuda"])
+        torch.cuda.set_rng_state_all(
+            [
+                rng_state
+                .detach()
+                .to(device="cpu", dtype=torch.uint8)
+                .contiguous()
+                for rng_state in state["cuda"]
+            ]
+        )
 
 
 def atomic_torch_save(payload: Mapping[str, Any], destination: os.PathLike) -> Path:
