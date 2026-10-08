@@ -1,0 +1,26 @@
+{
+  "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+  "checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "checkpoint_step": 280000,
+  "confirmation_minus_selection_mean_length_steps": 4.969999999999999,
+  "confirmation_minus_selection_mean_reward": -0.030324465212838714,
+  "confirmation_minus_selection_success_rate_pp": -2.0000000000000018,
+  "episodes": 200,
+  "mean_episode_length": 77.5,
+  "mean_episode_reward": 3.4300794214612553,
+  "mean_failure_episode_length": 200.0,
+  "mean_success_episode_length": 57.55813953488372,
+  "median_episode_length": 58.0,
+  "median_episode_reward": 3.527922281730093,
+  "seeds": [
+    90000,
+    90199
+  ],
+  "selected_checkpoint_manifest_sha256": "de590aa75c6c13a1b3cfb3527449348f28e4fbf2b8560184030e8d686e441417",
+  "selection_set_mean_length": 72.53,
+  "selection_set_mean_reward": 3.460403886674094,
+  "selection_set_success_rate": 0.88,
+  "status": "COMPLETE",
+  "success_count": 172,
+  "success_rate": 0.86
+}

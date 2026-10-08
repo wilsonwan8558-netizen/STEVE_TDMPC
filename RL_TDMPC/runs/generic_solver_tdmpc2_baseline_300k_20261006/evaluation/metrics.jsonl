@@ -1,0 +1,2 @@
+{"category": "episodes", "checkpoint_step": 200, "episode": 1, "episode_length": 200, "episode_reward": 1.0750456963237751, "seed": 1000, "simulation_error": false, "success": false}
+{"category": "summary", "checkpoint_step": 200, "episodes": 1, "mean_episode_length": 200.0, "mean_episode_reward": 1.0750456963237751, "std_episode_reward": 0.0, "success_rate": 0.0}

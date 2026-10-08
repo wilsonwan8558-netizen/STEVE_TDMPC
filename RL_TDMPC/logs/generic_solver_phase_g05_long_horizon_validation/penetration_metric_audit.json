@@ -1,0 +1,23 @@
+{
+  "status": "GEOMETRIC_SIGN_VALIDATED",
+  "collision_pipeline": "DefaultPipeline -> BruteForceBroadPhase -> BVHNarrowPhase -> LocalMinDistance -> DefaultContactManager/FrictionContactConstraint -> GenericConstraintSolver",
+  "source_audit": {
+    "LocalMinDistance": "/home/bizon/SOFA_TDMPC/src/Sofa/Component/Collision/Detection/Intersection/src/sofa/component/collision/detection/intersection/LocalMinDistance.cpp:260-273",
+    "FrictionContact": "/home/bizon/SOFA_TDMPC/src/Sofa/Component/Collision/Response/Contact/src/sofa/component/collision/response/contact/FrictionContact.inl:163-193",
+    "UnilateralInteractionConstraint": "/home/bizon/SOFA_TDMPC/src/Sofa/Component/Constraint/Lagrangian/Model/src/sofa/component/constraint/lagrangian/model/UnilateralInteractionConstraint.inl:205-245,265-283"
+  },
+  "contact_value_interpretation": "This LocalMinDistance implementation sets DetectionOutput.value to Euclidean closest-point distance minus contactDistance and collision-model proximities. Negative is contact-envelope intrusion, not necessarily guidewire centerline crossing the physical vessel surface; it is not the penetration metric.",
+  "constraint_violation_interpretation": "The unilateral normal gap/violation is evaluated relative to the response contactDistance in the constraint solver, including free-velocity terms. It is not an exposed physical signed wall-crossing depth in this Python scene.",
+  "python_exposure": "The BVHNarrowPhase Python object exposed no contact/output methods in the runtime probe. The contact-response data do not expose a direct physical wall-crossing depth to this diagnostic.",
+  "metric": "signed_exterior_mm = -vtkImplicitPolyDataDistance(vessel_surface, mapped_guidewire_centerline_sample). Positive denotes the guidewire centerline lies outside the closed vessel lumen; negative denotes interior clearance. Penetration depth is max(0, signed_exterior_mm).",
+  "sign_validation": "The 636-vertex, 1268-triangle vessel mesh is manifold with zero open edges. Twelve centerline samples were topologically inside and had positive raw VTK implicit distance (2.79..9.68 mm); a far-away point was topologically outside and had negative raw distance (-879.32 mm). Thus this mesh has inward-facing winding relative to VTK's raw sign; negation was empirically checked, not assumed.",
+  "units": "millimeters, matching the SOFA vessel and guidewire coordinates",
+  "geometric_entities": "The fixed SOFA vessel collision triangle mesh and the mapped guidewire collision polyline (76 vertices, 75 consecutive edges). Sample all vertices and the midpoint of each nondegenerate edge at each RL-control endpoint.",
+  "finite_radius_caveat": "The JShaped mechanical beam radius is 0.35 mm at the tip and 0.445 mm on the straight portion, but its SOFA collision geometry is PointCollisionModel/LineCollisionModel with zero proximity. FrictionContact maps those contacts with no sphere radius; the 0.3 mm LocalMinDistance contact distance is not the full mechanical wire radius. Therefore zero centerline wall crossing does not prove zero physical wire-surface overlap. max(0, signed_exterior_max_mm + 0.35 mm) is only a sampled tip-radius spherical-offset proxy, NOT a lower bound on actual cross-section overlap. max(0, signed_exterior_max_mm + 0.445 mm) upper-bounds possible signed exterior excursion for points within 0.445 mm of each sampled centerline point; it is not a measured overlap or a bound along unsampled continuous segments. Exact beam-surface intersection would require local cross-section orientation and continuous geometry.",
+  "distal_definition": "Samples within 20 mm polyline arc length of the mapped guidewire tip; global includes the entire mapped collision polyline.",
+  "contact_definition": "currentNumConstraintGroups from GenericConstraintSolver after the final SOFA substep of each RL control action. Contact-envelope activity and geometric wall crossing are reported separately.",
+  "counting_epsilon_mm": 1e-6,
+  "counting_epsilon_role": "Ignore floating-point surface noise in binary penetration counts; not a safety threshold. Raw signed distance and positive depth remain in the outputs.",
+  "sampling_timing": "Control endpoints every 22 SOFA steps, 0.132 s simulated time. Transient excursions between samples may be missed unless a separate substep probe is performed.",
+  "limits": "This is a sampled centerline-vs-surface wall-crossing diagnostic, not an exact finite-radius wire–tissue volume intersection or continuous triangle–segment collision metric. A midpoint/vertex discretization can miss short crossings between samples. The complementary radius offsets are global spherical-envelope diagnostics, not a precise distal/local contact surface metric."
+}

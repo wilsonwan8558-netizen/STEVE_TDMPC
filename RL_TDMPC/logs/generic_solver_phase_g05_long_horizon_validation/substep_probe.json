@@ -1,0 +1,6 @@
+{
+  "sofa_substeps_observed_for_one_RL_action": 22,
+  "expected_from_simulation_step": 22,
+  "sofa_dt_s": 0.006,
+  "pass": true
+}

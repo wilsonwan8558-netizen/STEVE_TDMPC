@@ -1,0 +1,16 @@
+{
+  "status": "VERIFIED_FROM_ARCHIVED_PER_EPISODE_REPORT",
+  "source": "/home/bizon/Desktop/stEVE_data/experiments/final_original_vs_safety_videos_20260816/paired_dataset/original/report.json",
+  "source_sha256": "237da9dd8f09f2ec1a58fa60f125ce6e76bf935ca8451c93ee083bf357912f29",
+  "archived_evaluator_command": "/home/bizon/Desktop/stEVE_data/experiments/final_original_vs_safety_videos_20260816/exact_commands.sh:34-38",
+  "seeds": [90000, 90199],
+  "episodes": 200,
+  "success_count": 167,
+  "success_rate": 0.835,
+  "mean_episode_length": 82.705,
+  "median_episode_length": 62.0,
+  "mean_episode_reward": 3.3946877874925736,
+  "median_episode_reward": 3.617665238732889,
+  "archived_summary_matches_recomputed_per_episode_metrics": true,
+  "interpretation_limit": "Historical LCP and new Generic have different contact dynamics; descriptive navigation comparison only, not a controlled algorithm ablation. This archived confirmation-set reference is not used to choose among Generic checkpoints."
+}

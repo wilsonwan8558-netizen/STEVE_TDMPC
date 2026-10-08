@@ -1,0 +1,19 @@
+{
+  "phase": "G0",
+  "status": "PHASE_G0_COMPLETE_CONDITIONAL_GO",
+  "branch": "experiment/generic-solver-baseline",
+  "branch_parent": "TDMPC2",
+  "base_commit": "59ea0ca569cdf2cc48095bd1dccc205fb6900ff7",
+  "generic_adapter_sha256": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67",
+  "python_environment": "steve_tdmpc",
+  "python_executable": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "sofa_install": "/home/bizon/SOFA_TDMPC/install",
+  "sofa_source_commit": "728003f7a7c16ceada5663f4787904742c726bab",
+  "diagnostic_seeds": [90000, 90008],
+  "open_loop_actions_sampled": 110,
+  "controlled_load_hold_steps_per_trial": 20,
+  "classification": "CONDITIONAL GO",
+  "condition": "The targeted numerical and internal force-scaling checks pass, but signed vessel penetration and broad-seed/long-horizon stability have not been quantified; no clinical force claim is made.",
+  "training_performed": false,
+  "force_heads_or_shields_added": false
+}

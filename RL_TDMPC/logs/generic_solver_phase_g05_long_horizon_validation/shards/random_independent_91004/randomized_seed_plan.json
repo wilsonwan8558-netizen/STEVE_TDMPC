@@ -1,0 +1,13 @@
+{
+  "environment_seeds": [
+    91004
+  ],
+  "full_planned_seed_range": [
+    91000,
+    91049
+  ],
+  "action_rng_seed_rule": "environment_seed + 730000",
+  "action_program": "Every 20 steps sample insertion target uniformly in [40,145] mm; each step translation drives toward target clipped to [-0.3,0.3], rotation sampled uniformly in [-0.5,0.5].",
+  "nominal_episode_steps": 200,
+  "solver_or_policy_training": false
+}

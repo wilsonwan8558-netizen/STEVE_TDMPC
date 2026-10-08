@@ -1,0 +1,23 @@
+{
+  "status": "G0_CONFIGURATION_REPRODUCED",
+  "source_file": "eve/intervention/simulation/sofabeamadapter.py",
+  "source_sha256": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67",
+  "solver": "GenericConstraintSolver",
+  "name": "Generic",
+  "resolutionMethod": "ProjectedGaussSeidel",
+  "tolerance": 0.0001,
+  "maxIterations": 2000,
+  "computeConstraintForces": true,
+  "contact_manager": "DefaultContactManager",
+  "contact_response": "FrictionContactConstraint",
+  "responseParams": "mu=0.001",
+  "friction_coefficient": 0.001,
+  "sofa_dt_s": 0.006,
+  "control_frequency_hz": 7.5,
+  "sofa_substeps_per_control_step": 22,
+  "force_reconstruction": "J_contact^T lambda / 0.006 s on mapped guidewire collision DOFs",
+  "g0_reference_reconstructed_0_1N_load_N": 0.10265011370558422,
+  "g05_reconstructed_0_1N_load_N": 0.10265011370558422,
+  "runtime_probe": "penetration_probe.json",
+  "force_sanity_artifact": "force_sanity.json"
+}

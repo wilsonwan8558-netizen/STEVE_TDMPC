@@ -1,0 +1,43 @@
+{
+  "action_dim": 2,
+  "adapter_sha256": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67",
+  "checkpoint": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/smoke/smoke_checkpoint.pt",
+  "checkpoint_round_trip": true,
+  "config": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/config.yaml",
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "cuda_visible_device_index": 0,
+  "finite_losses": true,
+  "losses": {
+    "consistency_loss": 0.015317159704864025,
+    "model_grad_norm": 10.594740867614746,
+    "policy_entropy": -4.820059299468994,
+    "policy_grad_norm": 0.011599444784224033,
+    "policy_loss": 0.00043257680954411626,
+    "policy_scale": 1.0,
+    "reward_loss": 2.6921534538269043,
+    "termination_loss": 0.6882582902908325,
+    "total_loss": 1.5330321788787842,
+    "value_loss": 2.6921539306640625
+  },
+  "note": "One diagnostic update was forced before the configured 5000 seed steps; the final 300k run starts fresh at step 0 with the unchanged schedule.",
+  "observation_dim": 14,
+  "optimizer_updates": 1,
+  "planned_action_finite": true,
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "real_environment_steps": 200,
+  "replay_sequences": 198,
+  "replay_size": 200,
+  "safety_objective_active": false,
+  "scene": {
+    "computeConstraintForces": true,
+    "dt_s": 0.006,
+    "maxIterations": 2000,
+    "resolutionMethod": "ProjectedGaussSeidel",
+    "response": "FrictionContactConstraint",
+    "responseParams": "mu=0.001",
+    "tolerance": 0.0001
+  },
+  "status": "SMOKE_TRAINING_PASS",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

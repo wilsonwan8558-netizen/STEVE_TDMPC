@@ -1,0 +1,117 @@
+{
+  "contact_heavy_substep_max_iterations": 47,
+  "contact_heavy_substep_max_scaled_error_ratio": 0.9997421296864609,
+  "maxIterations": 2000,
+  "pooled_randomized_endpoint_iterations": {
+    "max": 207.0,
+    "median": 6.0,
+    "q95": 37.0,
+    "q99": 56.0
+  },
+  "pooled_scripted_endpoint_iterations": {
+    "max": 54.0,
+    "median": 3.0,
+    "q95": 35.0,
+    "q99": 41.0
+  },
+  "randomized_cap_hit_seeds": 0,
+  "randomized_max_iterations": 207.0,
+  "randomized_max_scaled_error_ratio": 0.9999756739078972,
+  "randomized_nonfinite_or_simulation_error_seeds": 0,
+  "randomized_scaled_error_exceedance_seeds": 0,
+  "scaleTolerance": true,
+  "scripted": {
+    "alternating_rotation": {
+      "solver_error_max": 0.0005925077662250076,
+      "solver_error_median": 1.7513744343445794e-06,
+      "solver_error_q95": 0.0005662178309909553,
+      "solver_error_q99": 0.0005777961278348716,
+      "solver_iteration_cap_steps": 0,
+      "solver_iterations_max": 35.0,
+      "solver_iterations_median": 3.0,
+      "solver_iterations_q95": 32.0,
+      "solver_iterations_q99": 35.0,
+      "solver_scaled_error_exceedance_steps": 0,
+      "solver_scaled_error_ratio_max": 0.987512943708346
+    },
+    "alternating_translation": {
+      "solver_error_max": 0.002056105016344356,
+      "solver_error_median": 0.0005614580260378354,
+      "solver_error_q95": 0.0017645749165909812,
+      "solver_error_q99": 0.0020561004147927023,
+      "solver_iteration_cap_steps": 0,
+      "solver_iterations_max": 42.0,
+      "solver_iterations_median": 10.0,
+      "solver_iterations_q95": 40.0,
+      "solver_iterations_q99": 42.0,
+      "solver_scaled_error_exceedance_steps": 0,
+      "solver_scaled_error_ratio_max": 0.9992154860733582
+    },
+    "contact_heavy": {
+      "solver_error_max": 0.003502031444173183,
+      "solver_error_median": 0.0006929372696210551,
+      "solver_error_q95": 0.0020979544226828106,
+      "solver_error_q99": 0.003098257134091376,
+      "solver_iteration_cap_steps": 0,
+      "solver_iterations_max": 44.0,
+      "solver_iterations_median": 5.0,
+      "solver_iterations_q95": 31.0,
+      "solver_iterations_q99": 42.70999999999998,
+      "solver_scaled_error_exceedance_steps": 0,
+      "solver_scaled_error_ratio_max": 0.9987370638395425
+    },
+    "sustained_moderate_rotation": {
+      "solver_error_max": 0.001950836372197923,
+      "solver_error_median": 2.613786086022091e-06,
+      "solver_error_q95": 0.0005814131842630219,
+      "solver_error_q99": 0.0007623959006349041,
+      "solver_iteration_cap_steps": 0,
+      "solver_iterations_max": 38.0,
+      "solver_iterations_median": 3.0,
+      "solver_iterations_q95": 32.0,
+      "solver_iterations_q99": 37.0,
+      "solver_scaled_error_exceedance_steps": 0,
+      "solver_scaled_error_ratio_max": 0.9984407504869086
+    },
+    "sustained_moderate_translation": {
+      "solver_error_max": 0.0033022980521525795,
+      "solver_error_median": 0.000527780246610069,
+      "solver_error_q95": 0.0020331249570116955,
+      "solver_error_q99": 0.0027101227886557793,
+      "solver_iteration_cap_steps": 0,
+      "solver_iterations_max": 42.0,
+      "solver_iterations_median": 4.0,
+      "solver_iterations_q95": 34.04999999999998,
+      "solver_iterations_q99": 40.0,
+      "solver_scaled_error_exceedance_steps": 0,
+      "solver_scaled_error_ratio_max": 0.9983301156319762
+    },
+    "translation_plus_rotation": {
+      "solver_error_max": 0.002607826078476137,
+      "solver_error_median": 0.0005756821518349527,
+      "solver_error_q95": 0.0016812775765100345,
+      "solver_error_q99": 0.0020527662479456216,
+      "solver_iteration_cap_steps": 0,
+      "solver_iterations_max": 54.0,
+      "solver_iterations_median": 4.0,
+      "solver_iterations_q95": 16.0,
+      "solver_iterations_q99": 52.0,
+      "solver_scaled_error_exceedance_steps": 0,
+      "solver_scaled_error_ratio_max": 0.9999401155031054
+    },
+    "zero": {
+      "solver_error_max": 0.0,
+      "solver_error_median": 0.0,
+      "solver_error_q95": 0.0,
+      "solver_error_q99": 0.0,
+      "solver_iteration_cap_steps": 0,
+      "solver_iterations_max": 0.0,
+      "solver_iterations_median": 0.0,
+      "solver_iterations_q95": 0.0,
+      "solver_iterations_q99": 0.0,
+      "solver_scaled_error_exceedance_steps": 0,
+      "solver_scaled_error_ratio_max": 0.0
+    }
+  },
+  "tolerance": 0.0001
+}

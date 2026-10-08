@@ -1,0 +1,146 @@
+{
+  "geometry_screen": "finite DOFs, maximum absolute coordinate, adjacent parent DOF spacing, tip jump, and simulation_error flag",
+  "penetration_limit": "Exact guidewire-vessel signed surface penetration not measured by this screen",
+  "sample_timing": "solver fields sampled after the final SOFA substep of each RL action; within-control-interval peaks not observed",
+  "scenarios": {
+    "combined": {
+      "generic_all_finite": true,
+      "generic_contact_sampled_steps": 9,
+      "generic_max_abs_parent_position_mm": 41.745901313434786,
+      "generic_max_adjacent_parent_dof_spacing_mm": 10.784916010835053,
+      "generic_max_current_error": 9.087155437994084e-05,
+      "generic_max_current_iterations": 38,
+      "generic_max_error_divided_by_scaled_tolerance": 0.3029051812664694,
+      "generic_max_multiplier": 0.00800389078066412,
+      "generic_max_tip_displacement_mm": 3.6431059507157113,
+      "generic_simulation_error_any": false,
+      "pathology_flags": {
+        "abs_parent_coordinate_gt_1000_mm": false,
+        "adjacent_parent_dof_spacing_gt_30_mm": false,
+        "iterations_reached_2000": false,
+        "nonfinite": false,
+        "simulation_error": false,
+        "tip_jump_gt_25_mm_per_RL_action": false
+      },
+      "steps": 14,
+      "terminated": false,
+      "truncated": false
+    },
+    "contact_heavy": {
+      "generic_all_finite": true,
+      "generic_contact_sampled_steps": 20,
+      "generic_max_abs_parent_position_mm": 164.0089752464886,
+      "generic_max_adjacent_parent_dof_spacing_mm": 10.876771156815218,
+      "generic_max_current_error": 0.002223029116140803,
+      "generic_max_current_iterations": 32,
+      "generic_max_error_divided_by_scaled_tolerance": 0.9691490612473855,
+      "generic_max_multiplier": 0.00445515811520577,
+      "generic_max_tip_displacement_mm": 9.280018989319403,
+      "generic_simulation_error_any": false,
+      "pathology_flags": {
+        "abs_parent_coordinate_gt_1000_mm": false,
+        "adjacent_parent_dof_spacing_gt_30_mm": false,
+        "iterations_reached_2000": false,
+        "nonfinite": false,
+        "simulation_error": false,
+        "tip_jump_gt_25_mm_per_RL_action": false
+      },
+      "steps": 28,
+      "terminated": false,
+      "truncated": false
+    },
+    "insert_then_rotate": {
+      "generic_all_finite": true,
+      "generic_contact_sampled_steps": 20,
+      "generic_max_abs_parent_position_mm": 88.33409492423787,
+      "generic_max_adjacent_parent_dof_spacing_mm": 10.870049122892624,
+      "generic_max_current_error": 0.002894630660481224,
+      "generic_max_current_iterations": 35,
+      "generic_max_error_divided_by_scaled_tolerance": 0.9978555193856863,
+      "generic_max_multiplier": 0.0020630748383457316,
+      "generic_max_tip_displacement_mm": 6.732901671498782,
+      "generic_simulation_error_any": false,
+      "pathology_flags": {
+        "abs_parent_coordinate_gt_1000_mm": false,
+        "adjacent_parent_dof_spacing_gt_30_mm": false,
+        "iterations_reached_2000": false,
+        "nonfinite": false,
+        "simulation_error": false,
+        "tip_jump_gt_25_mm_per_RL_action": false
+      },
+      "steps": 28,
+      "terminated": false,
+      "truncated": false
+    },
+    "rotation": {
+      "generic_all_finite": true,
+      "generic_contact_sampled_steps": 0,
+      "generic_max_abs_parent_position_mm": 1.9988997,
+      "generic_max_adjacent_parent_dof_spacing_mm": 0.0,
+      "generic_max_current_error": 0.0,
+      "generic_max_current_iterations": 0,
+      "generic_max_error_divided_by_scaled_tolerance": 0.0,
+      "generic_max_multiplier": 0.0,
+      "generic_max_tip_displacement_mm": 0.0,
+      "generic_simulation_error_any": false,
+      "pathology_flags": {
+        "abs_parent_coordinate_gt_1000_mm": false,
+        "adjacent_parent_dof_spacing_gt_30_mm": false,
+        "iterations_reached_2000": false,
+        "nonfinite": false,
+        "simulation_error": false,
+        "tip_jump_gt_25_mm_per_RL_action": false
+      },
+      "steps": 14,
+      "terminated": false,
+      "truncated": false
+    },
+    "translation": {
+      "generic_all_finite": true,
+      "generic_contact_sampled_steps": 3,
+      "generic_max_abs_parent_position_mm": 39.673744312137536,
+      "generic_max_adjacent_parent_dof_spacing_mm": 10.786232026011671,
+      "generic_max_current_error": 4.375133351214422e-05,
+      "generic_max_current_iterations": 3,
+      "generic_max_error_divided_by_scaled_tolerance": 0.14583777837381406,
+      "generic_max_multiplier": 0.005020385693934252,
+      "generic_max_tip_displacement_mm": 3.280059387026532,
+      "generic_simulation_error_any": false,
+      "pathology_flags": {
+        "abs_parent_coordinate_gt_1000_mm": false,
+        "adjacent_parent_dof_spacing_gt_30_mm": false,
+        "iterations_reached_2000": false,
+        "nonfinite": false,
+        "simulation_error": false,
+        "tip_jump_gt_25_mm_per_RL_action": false
+      },
+      "steps": 14,
+      "terminated": false,
+      "truncated": false
+    },
+    "zero": {
+      "generic_all_finite": true,
+      "generic_contact_sampled_steps": 0,
+      "generic_max_abs_parent_position_mm": 1.9988997,
+      "generic_max_adjacent_parent_dof_spacing_mm": 0.0,
+      "generic_max_current_error": 0.0,
+      "generic_max_current_iterations": 0,
+      "generic_max_error_divided_by_scaled_tolerance": 0.0,
+      "generic_max_multiplier": 0.0,
+      "generic_max_tip_displacement_mm": 0.0,
+      "generic_simulation_error_any": false,
+      "pathology_flags": {
+        "abs_parent_coordinate_gt_1000_mm": false,
+        "adjacent_parent_dof_spacing_gt_30_mm": false,
+        "iterations_reached_2000": false,
+        "nonfinite": false,
+        "simulation_error": false,
+        "tip_jump_gt_25_mm_per_RL_action": false
+      },
+      "steps": 12,
+      "terminated": false,
+      "truncated": false
+    }
+  },
+  "status": "COMPLETE_OPEN_LOOP_SCREEN"
+}

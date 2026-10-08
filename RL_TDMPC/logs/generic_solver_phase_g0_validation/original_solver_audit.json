@@ -1,0 +1,39 @@
+{
+  "status": "RECORDED_BEFORE_GENERIC_SOURCE_EDIT",
+  "base_branch": "TDMPC2",
+  "base_commit": "59ea0ca569cdf2cc48095bd1dccc205fb6900ff7",
+  "original_adapter_sha256": "5f9d0f70e8003038f1704c02f992d162b02d2e2688be17108139dffc47f4fd00",
+  "original_environment_sha256": "ee340640bcc546b17a5effd6caf01f0d80a435c1f1e984a8a211d98395b24cfe",
+  "environment": {
+    "source": "RL_TDMPC/envs/steve_env.py:48-95",
+    "friction_argument": 0.001,
+    "solver_adapter": "eve.intervention.simulation.SofaBeamAdapter",
+    "dt_simulation_seconds": 0.006,
+    "control_frequency_hz": 7.5
+  },
+  "pipeline": {
+    "source": "eve/intervention/simulation/sofabeamadapter.py:189-226",
+    "animation_loop": "FreeMotionAnimationLoop",
+    "collision_pipeline": "DefaultPipeline(draw=0, depth=6, verbose=1)",
+    "broad_phase": "BruteForceBroadPhase",
+    "narrow_phase": "BVHNarrowPhase",
+    "intersection": "LocalMinDistance(contactDistance=0.3, alarmDistance=0.5, angleCone=0.02)",
+    "contact_manager": "DefaultContactManager(response=FrictionContactConstraint), no responseParams",
+    "solver": "LCPConstraintSolver",
+    "solver_name": "LCP",
+    "solver_mu": 0.001,
+    "tolerance": 0.0001,
+    "maxIt": 2000,
+    "build_lcp": false,
+    "computeConstraintForces": "not set on baseline solver",
+    "contact_friction_note": "The baseline passes mu to LCPConstraintSolver, not to FrictionContactConstraint responseParams. Do not assume Generic inherits this mu."
+  },
+  "constraint_path": {
+    "device": "AdaptiveBeamForceFieldAndMass + WireBeamInterpolation + InterventionalRadiologyController",
+    "correction": "LinearSolverConstraintCorrection(wire_optimization=true, printLog=false) at InstrumentCombined; eve/intervention/simulation/sofabeamadapter.py:365-367",
+    "fixed_constraint": "FixedConstraint(indices=0)",
+    "collision_mapping": "MultiAdaptiveBeamMapping to CollisionDOFs, LineCollisionModel and PointCollisionModel; adapter.py:381-395",
+    "vessel_collision": "static MeshTopology + TriangleCollisionModel + LineCollisionModel; adapter.py:228-243"
+  },
+  "force_exposure": "No baseline Generic constraintForces field; LCP solver does not enable computeConstraintForces. No contact-force metric is exported by this TDMPC2 adapter."
+}

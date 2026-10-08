@@ -1,0 +1,125 @@
+{
+  "contact_heavy_substep_audit": {
+    "all_substeps_max_distal_force_N": 1.9403077230985208,
+    "endpoint_max_distal_force_N": 1.487819548188823,
+    "substeps_force_without_contact": 0
+  },
+  "high_force_run_definition": "consecutive control endpoints above each trajectory's own Q95 force; descriptive, not a safety threshold",
+  "pooled_randomized_endpoint_force_N": {
+    "max": 2.3927519650630553,
+    "median": 0.3030419758872642,
+    "q95": 0.8660131704266155,
+    "q99": 1.6773311953653018
+  },
+  "pooled_scripted_endpoint_force_N": {
+    "max": 1.5410932133500315,
+    "median": 0.2216026552726233,
+    "q95": 0.7947357752176424,
+    "q99": 1.210343413477712
+  },
+  "randomized": {
+    "maximum_force_N": 2.3927519650630553,
+    "seeds_with_force_without_contact": 0
+  },
+  "scripted": {
+    "alternating_rotation": {
+      "extreme_force_steps_at_or_above_q99": 4,
+      "extreme_force_steps_with_contact_change": 1,
+      "extreme_force_steps_with_global_penetration": 0,
+      "first_quarter_force_median_N": 0.3254716920781054,
+      "force_max_N": 1.3587601352890812,
+      "force_median_N": 0.32750405461944,
+      "force_q95_N": 0.7965744348630224,
+      "force_q99_N": 0.7998096845988619,
+      "force_without_contact_steps": 0,
+      "last_quarter_force_median_N": 0.3438039611823662,
+      "longest_high_force_run_steps": 3,
+      "longest_nonzero_force_run_s": 41.448
+    },
+    "alternating_translation": {
+      "extreme_force_steps_at_or_above_q99": 4,
+      "extreme_force_steps_with_contact_change": 1,
+      "extreme_force_steps_with_global_penetration": 0,
+      "first_quarter_force_median_N": 0.38632885846172565,
+      "force_max_N": 1.3587601352890812,
+      "force_median_N": 0.3665383985906032,
+      "force_q95_N": 0.4344150684142387,
+      "force_q99_N": 0.7419647642308309,
+      "force_without_contact_steps": 0,
+      "last_quarter_force_median_N": 0.3620015385153918,
+      "longest_high_force_run_steps": 10,
+      "longest_nonzero_force_run_s": 41.448
+    },
+    "contact_heavy": {
+      "extreme_force_steps_at_or_above_q99": 4,
+      "extreme_force_steps_with_contact_change": 2,
+      "extreme_force_steps_with_global_penetration": 0,
+      "first_quarter_force_median_N": 0.18351962812460992,
+      "force_max_N": 1.487819548188823,
+      "force_median_N": 0.1304061415895295,
+      "force_q95_N": 0.7586788832838,
+      "force_q99_N": 0.9261201573156433,
+      "force_without_contact_steps": 0,
+      "last_quarter_force_median_N": 0.07681474246397828,
+      "longest_high_force_run_steps": 4,
+      "longest_nonzero_force_run_s": 5.016
+    },
+    "sustained_moderate_rotation": {
+      "extreme_force_steps_at_or_above_q99": 4,
+      "extreme_force_steps_with_contact_change": 2,
+      "extreme_force_steps_with_global_penetration": 0,
+      "first_quarter_force_median_N": 0.36392034324436373,
+      "force_max_N": 1.3587601352890812,
+      "force_median_N": 0.43547197232273627,
+      "force_q95_N": 0.7953157918708209,
+      "force_q99_N": 0.8607470840269548,
+      "force_without_contact_steps": 0,
+      "last_quarter_force_median_N": 0.46716668441080833,
+      "longest_high_force_run_steps": 3,
+      "longest_nonzero_force_run_s": 41.448
+    },
+    "sustained_moderate_translation": {
+      "extreme_force_steps_at_or_above_q99": 2,
+      "extreme_force_steps_with_contact_change": 1,
+      "extreme_force_steps_with_global_penetration": 0,
+      "first_quarter_force_median_N": 0.5848343193185813,
+      "force_max_N": 1.5410932133500315,
+      "force_median_N": 0.2836180485510995,
+      "force_q95_N": 1.0321467203167836,
+      "force_q99_N": 1.4692156893416515,
+      "force_without_contact_steps": 0,
+      "last_quarter_force_median_N": 0.0,
+      "longest_high_force_run_steps": 10,
+      "longest_nonzero_force_run_s": 19.536
+    },
+    "translation_plus_rotation": {
+      "extreme_force_steps_at_or_above_q99": 3,
+      "extreme_force_steps_with_contact_change": 3,
+      "extreme_force_steps_with_global_penetration": 0,
+      "first_quarter_force_median_N": 0.7734373621050243,
+      "force_max_N": 1.323498185773956,
+      "force_median_N": 0.23234200777875874,
+      "force_q95_N": 1.1544972040389951,
+      "force_q99_N": 1.2854096183699215,
+      "force_without_contact_steps": 0,
+      "last_quarter_force_median_N": 0.048787072757774115,
+      "longest_high_force_run_steps": 13,
+      "longest_nonzero_force_run_s": 20.196
+    },
+    "zero": {
+      "extreme_force_steps_at_or_above_q99": 0,
+      "extreme_force_steps_with_contact_change": 0,
+      "extreme_force_steps_with_global_penetration": 0,
+      "first_quarter_force_median_N": 0.0,
+      "force_max_N": 0.0,
+      "force_median_N": 0.0,
+      "force_q95_N": 0.0,
+      "force_q99_N": 0.0,
+      "force_without_contact_steps": 0,
+      "last_quarter_force_median_N": 0.0,
+      "longest_high_force_run_steps": 0,
+      "longest_nonzero_force_run_s": 0.0
+    }
+  },
+  "units": "nominal N after J_contact^T lambda / 0.006 s"
+}

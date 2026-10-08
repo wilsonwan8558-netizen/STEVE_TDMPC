@@ -1,0 +1,32 @@
+{
+  "all_finite": true,
+  "all_substeps_max_centerline_crossing_mm": 0.0,
+  "all_substeps_max_distal_force_N": 1.9403077230985208,
+  "control_steps": 344,
+  "endpoint_max_centerline_crossing_mm": 0.0,
+  "endpoint_max_distal_force_N": 1.487819548188823,
+  "family": "contact_heavy",
+  "max_scaled_solver_error_ratio": 0.9997421296864609,
+  "max_solver_iterations": 47,
+  "passive_monitor_behaviorally_equivalent_at_endpoints": true,
+  "passive_monitor_endpoint_max_abs_differences": {
+    "contact_groups": 0.0,
+    "distal_force_N": 0.0,
+    "distal_penetration_max_mm": 0.0,
+    "global_contact_reaction_N": 0.0,
+    "global_penetration_max_mm": 0.0,
+    "global_signed_exterior_max_mm": 0.0,
+    "inserted_length_mm": 0.0,
+    "solver_iterations": 0.0,
+    "tip_x_mm": 0.0,
+    "tip_y_mm": 0.0,
+    "tip_z_mm": 0.0
+  },
+  "seed": 90008,
+  "simulated_time_s": 45.408,
+  "sofa_dt_s": 0.006,
+  "sofa_substeps": 7568,
+  "status": "COMPLETE",
+  "substeps_force_without_contact": 0,
+  "substeps_with_centerline_crossing": 0
+}

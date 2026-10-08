@@ -1,0 +1,44 @@
+{
+  "status": "RUNTIME_SCENE_INSTANTIATED_AND_FIELDS_VERIFIED",
+  "installed_sofa_root": "/home/bizon/SOFA_TDMPC/install",
+  "installed_sofa_source_commit": "728003f7a7c16ceada5663f4787904742c726bab",
+  "source": "eve/intervention/simulation/sofabeamadapter.py:189-231",
+  "animation_loop": "FreeMotionAnimationLoop",
+  "collision_pipeline": "DefaultPipeline(draw=0, depth=6, verbose=1), BruteForceBroadPhase, BVHNarrowPhase, LocalMinDistance(contactDistance=0.3, alarmDistance=0.5, angleCone=0.02)",
+  "contact_manager": "DefaultContactManager",
+  "contact_response": "FrictionContactConstraint",
+  "responseParams": "mu=0.001",
+  "friction_coefficient": 0.001,
+  "solver": "GenericConstraintSolver",
+  "solver_name": "Generic",
+  "resolutionMethod": "ProjectedGaussSeidel",
+  "tolerance": 0.0001,
+  "maxIterations": 2000,
+  "computeConstraintForces": true,
+  "installed_default_scaleTolerance": true,
+  "installed_default_allVerified": false,
+  "installed_default_sor": 1.0,
+  "sofa_dt_s": 0.006,
+  "required_plugins_added": [
+    "Sofa.Component.Collision.Response.Contact",
+    "Sofa.Component.Constraint.Lagrangian.Solver"
+  ],
+  "unchanged_correction": "LinearSolverConstraintCorrection(wire_optimization=true, printLog=false)",
+  "runtime_probe": "scene_probe_contact.json",
+  "runtime_field_validation": {
+    "resolutionMethod": "ProjectedGaussSeidel",
+    "maxIterations": 2000,
+    "tolerance": 0.0001,
+    "computeConstraintForces": true,
+    "contact_response": "FrictionContactConstraint",
+    "responseParams": "mu=0.001",
+    "constraintForces_example_dimension": 21,
+    "currentNumConstraints_example": 21,
+    "currentNumConstraintGroups_example": 7
+  },
+  "api_evidence": [
+    "/home/bizon/SOFA_TDMPC/src/Sofa/Component/Constraint/Lagrangian/Solver/src/sofa/component/constraint/lagrangian/solver/GenericConstraintSolver.cpp:72-99,499-507",
+    "/home/bizon/SOFA_TDMPC/src/Sofa/Component/Collision/Response/Contact/src/sofa/component/collision/response/contact/DefaultContactManager.cpp:290-309",
+    "/home/bizon/SOFA_TDMPC/src/Sofa/Component/Collision/Response/Contact/src/sofa/component/collision/response/contact/FrictionContact.inl:49,207-226"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "status": "FROZEN_G0_G05_GENERIC",
+  "source_branch": "experiment/generic-solver-baseline",
+  "source_commit": "59ea0ca569cdf2cc48095bd1dccc205fb6900ff7",
+  "production_adapter": "eve/intervention/simulation/sofabeamadapter.py",
+  "production_adapter_sha256": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67",
+  "solver": {
+    "class": "GenericConstraintSolver",
+    "resolutionMethod": "ProjectedGaussSeidel",
+    "tolerance": 0.0001,
+    "maxIterations": 2000,
+    "computeConstraintForces": true,
+    "scaleTolerance": true
+  },
+  "contact": {
+    "manager": "DefaultContactManager",
+    "response": "FrictionContactConstraint",
+    "responseParams": "mu=0.001"
+  },
+  "sofa_dt_s": 0.006,
+  "control_frequency_hz": 7.5,
+  "sofa_substeps_per_control": 22,
+  "environment": {
+    "max_episode_steps": 200,
+    "vessel_seed": 30,
+    "image_frequency": 7.5,
+    "target_threshold": 5.0,
+    "target_branches": ["lcca", "rcca", "lsa", "rsa", "bct", "co"],
+    "friction": 0.001,
+    "observation_dim": 14,
+    "action_dim": 2
+  },
+  "force_available_for_diagnostic_only": true,
+  "force_enters_observation_reward_planner_termination_or_action": false,
+  "validated_source": "RL_TDMPC/logs/generic_solver_phase_g05_long_horizon_validation/frozen_solver_config.json"
+}

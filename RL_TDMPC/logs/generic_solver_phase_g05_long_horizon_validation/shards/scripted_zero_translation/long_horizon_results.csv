@@ -1,0 +1,3 @@
+family,seed,steps,simulated_time_s,first_nominal_done_step,completed_program,all_finite,simulation_error_any,solver_iteration_cap_hits,solver_scaled_error_exceedances,max_distal_force_N,q95_distal_force_N,max_distal_penetration_mm,q95_distal_penetration_mm,max_global_penetration_mm,q95_global_penetration_mm,max_solver_iterations,max_solver_scaled_error_ratio,max_parent_quaternion_norm_error,max_tip_mapping_mismatch_mm
+zero,90000,400,52.800000000000004,200,True,True,False,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0,0.0,1.1102230246251565e-16,4.976874868032381e-16
+sustained_moderate_translation,90000,200,26.400000000000002,200,True,True,False,0,0,1.5410932133500315,1.0321467203167836,0.0,0.0,0.0,0.0,42,0.9983301156319762,1.2656542480726785e-14,3.631234890330614e-12

@@ -194,10 +194,12 @@ class SofaBeamAdapter(Simulation):
             Sofa.Component.AnimationLoop\
             Sofa.Component.Collision.Detection.Algorithm\
             Sofa.Component.Collision.Detection.Intersection\
+            Sofa.Component.Collision.Response.Contact\
             Sofa.Component.LinearSolver.Direct\
             Sofa.Component.IO.Mesh\
             Sofa.Component.ODESolver.Backward\
             Sofa.Component.Constraint.Lagrangian.Correction\
+            Sofa.Component.Constraint.Lagrangian.Solver\
             Sofa.Component.Topology.Mapping",
         )
 
@@ -214,15 +216,17 @@ class SofaBeamAdapter(Simulation):
             name="localmindistance",
         )
         self.root.addObject(
-            "DefaultContactManager", response="FrictionContactConstraint"
+            "DefaultContactManager",
+            response="FrictionContactConstraint",
+            responseParams=f"mu={friction}",
         )
         self.root.addObject(
-            "LCPConstraintSolver",
-            mu=friction,
+            "GenericConstraintSolver",
+            resolutionMethod="ProjectedGaussSeidel",
             tolerance=1e-4,
-            maxIt=2000,
-            name="LCP",
-            build_lcp=False,
+            maxIterations=2000,
+            computeConstraintForces=True,
+            name="Generic",
         )
 
     def _add_vessel_tree(self, mesh_path):

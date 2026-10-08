@@ -1,0 +1,90 @@
+{
+  "action_shape": [
+    2
+  ],
+  "collision_dof_shape": [
+    76,
+    3
+  ],
+  "collision_first_position": [
+    -0.0656690701070346,
+    -0.003738129039328908,
+    1.9988996997437891
+  ],
+  "collision_last_position": [
+    7.023928161180542,
+    2.3196009187537925,
+    41.39631222768111
+  ],
+  "collision_position_range": [
+    [
+      -0.5747170341783701,
+      -0.16281814226908864,
+      1.9988996997437891
+    ],
+    [
+      7.023928161180542,
+      2.3196009187537925,
+      41.39631222768111
+    ]
+  ],
+  "contact_manager": {
+    "response": "FrictionContactConstraint",
+    "responseParams": "mu=0.001"
+  },
+  "initial_info": {
+    "episode_step": "8",
+    "is_success": "False",
+    "raw_action": "[50.  0.]",
+    "simulation_error": "False"
+  },
+  "insertion_steps": 8,
+  "observation_finite": true,
+  "observation_shape": [
+    14
+  ],
+  "parent_dof_shape": [
+    63,
+    7
+  ],
+  "parent_first_position": [
+    -0.06566907,
+    -0.003738129,
+    1.9988997
+  ],
+  "parent_last_position": [
+    7.02392816118054,
+    2.3196009187537996,
+    41.39631222768111
+  ],
+  "parent_position_range": [
+    [
+      -0.5747170341783828,
+      -0.16281814226909025,
+      1.9988996997437896
+    ],
+    [
+      7.02392816118054,
+      2.3196009187537996,
+      41.39631222768111
+    ]
+  ],
+  "root_dt": 0.006,
+  "seed": 90000,
+  "solver": {
+    "computeConstraintForces": "1",
+    "constraintForces": [],
+    "currentError": "0.0",
+    "currentIterations": "0",
+    "currentNumConstraintGroups": "0",
+    "currentNumConstraints": "0",
+    "maxIterations": "2000",
+    "resolutionMethod": "ProjectedGaussSeidel",
+    "tolerance": "0.0001"
+  },
+  "tip_position": [
+    7.02392816118054,
+    2.3196009187537996,
+    41.39631222768111
+  ]
+}

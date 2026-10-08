@@ -1,0 +1,63 @@
+{
+  "action_shape": [
+    2
+  ],
+  "collision_dof_shape": [
+    76,
+    3
+  ],
+  "collision_first_position": [
+    -0.06566907000000022,
+    -0.0037381290000000345,
+    1.9988996999999995
+  ],
+  "collision_last_position": [
+    -0.06566907000000022,
+    -0.0037381290000000345,
+    1.9988996999999995
+  ],
+  "contact_manager": {
+    "response": "FrictionContactConstraint",
+    "responseParams": "mu=0.001"
+  },
+  "initial_info": {
+    "is_success": "False",
+    "simulation_error": "False"
+  },
+  "observation_finite": true,
+  "observation_shape": [
+    14
+  ],
+  "parent_dof_shape": [
+    63,
+    7
+  ],
+  "parent_first_position": [
+    -0.06566907,
+    -0.003738129,
+    1.9988997
+  ],
+  "parent_last_position": [
+    -0.06566907,
+    -0.003738129,
+    1.9988997
+  ],
+  "root_dt": 0.006,
+  "seed": 90000,
+  "solver": {
+    "computeConstraintForces": "1",
+    "constraintForces": [],
+    "currentError": "0.0",
+    "currentIterations": "0",
+    "currentNumConstraintGroups": "0",
+    "currentNumConstraints": "0",
+    "maxIterations": "2000",
+    "resolutionMethod": "ProjectedGaussSeidel",
+    "tolerance": "0.0001"
+  },
+  "tip_position": [
+    -0.06566907,
+    -0.003738129,
+    1.9988997
+  ]
+}

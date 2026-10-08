@@ -1,0 +1,23 @@
+{
+  "phase": "G0.5",
+  "status": "COMPLETE_CONDITIONAL_GO",
+  "decision": "CONDITIONAL GO",
+  "branch": "experiment/generic-solver-baseline",
+  "base_commit": "59ea0ca569cdf2cc48095bd1dccc205fb6900ff7",
+  "python_environment": "steve_tdmpc",
+  "sofa_install": "/home/bizon/SOFA_TDMPC/install",
+  "sofa_source_commit": "728003f7a7c16ceada5663f4787904742c726bab",
+  "production_adapter_sha256_frozen": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67",
+  "g0_reference_force_sanity_0_1N": 0.10265011370558422,
+  "g05_reproduced_force_sanity_0_1N": 0.10265011370558422,
+  "scripted_trajectories": 7,
+  "scripted_control_steps": 2204,
+  "randomized_seeds": "91000-91049 inclusive",
+  "randomized_control_steps": 10000,
+  "randomized_scene_lifecycle": "One fresh SOFA scene per independent seed; no policy used",
+  "excluded_diagnostic_shard": "shards/random_91000 (interrupted reused-scene pilot, three seeds; not merged)",
+  "contact_heavy_substep_audit": "7568 SOFA substeps; passive monitor endpoint-equivalent to the scripted reference",
+  "penetration_measurement_limit": "Centerline versus vessel surface sampled at control endpoints, plus one contact-heavy substep audit; physical finite-radius beam overlap was not measured",
+  "training_performed": false,
+  "physics_or_task_settings_changed": false
+}

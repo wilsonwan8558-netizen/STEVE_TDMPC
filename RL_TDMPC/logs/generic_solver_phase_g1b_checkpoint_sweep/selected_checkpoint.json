@@ -1,0 +1,42 @@
+{
+  "status": "FROZEN_BEFORE_CONFIRMATION",
+  "baseline_name": "Generic TD-MPC2 Baseline",
+  "selection_frozen_at_utc": "2026-10-08T02:47:23Z",
+  "step": 280000,
+  "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+  "sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "model_state_sha256": "d659a53bb5734f3354669bc5f8b8a3e2789a96a57d9096ac6ba4671b9dad934d",
+  "checkpoint_format_version": 1,
+  "training_seed": 1,
+  "selection_seeds": [91000, 91099],
+  "selection_episode_count": 100,
+  "confirmation_seeds": [90000, 90199],
+  "confirmation_seeds_unseen_at_selection": true,
+  "selection_metrics": {
+    "success_count": 88,
+    "success_rate": 0.88,
+    "mean_episode_length": 72.53,
+    "median_episode_length": 56.0,
+    "mean_episode_reward": 3.460403886674094,
+    "median_episode_reward": 3.5700872470382077
+  },
+  "solver_configuration": {
+    "solver": "GenericConstraintSolver",
+    "resolution_method": "ProjectedGaussSeidel",
+    "tolerance": 0.0001,
+    "max_iterations": 2000,
+    "compute_constraint_forces": true,
+    "contact_response": "FrictionContactConstraint",
+    "friction_mu": 0.001,
+    "sofa_dt_s": 0.006
+  },
+  "selection_rationale": "Selection uses only the complete 91000-91099 navigation results. The high-performing region comprises 220k (86/100), 240k (85/100), and 280k (88/100); the paired 220k-to-240k success difference is -1 percentage point with a 95% bootstrap interval of [-11, 8], consistent with a local plateau. The 260k checkpoint dips to 75/100, but 280k recovers to 88/100 with a paired +13-point difference versus 260k (95% interval [3, 23]). The 300k checkpoint gives no further gain: success falls to 82/100 and mean length increases by 13.11 steps versus 280k (95% interval [0.6585, 25.863]). Across all six checkpoints, 280k has the highest success count, lowest mean episode length, and highest mean reward; its choice is not based on training step or a single-metric maximum. The nonmonotonic 260k dip and 300k decline are explicit stability caveats pending untouched 200-seed confirmation.",
+  "selection_hierarchy": [
+    "success rate on 100 paired selection seeds",
+    "mean episode length within the high-performing maturity region",
+    "mean episode reward"
+  ],
+  "force_or_safety_metric_used": false,
+  "confirmation_result_used_to_select": false,
+  "original_checkpoint_file_modified": false
+}

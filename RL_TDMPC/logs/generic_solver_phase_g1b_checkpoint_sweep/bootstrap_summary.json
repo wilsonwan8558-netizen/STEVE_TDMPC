@@ -1,0 +1,151 @@
+{
+  "comparisons": [
+    {
+      "earlier_step": 200000,
+      "later_step": 220000,
+      "mean_length_difference_steps": {
+        "ci95": [
+          -20.71125,
+          -1.385500000000004
+        ],
+        "observed": -10.11,
+        "replicates_later_shorter_fraction": 0.984
+      },
+      "mean_reward_difference": {
+        "ci95": [
+          -0.04649704339149913,
+          0.18700168928470026
+        ],
+        "observed": 0.057521202981458054,
+        "replicates_later_higher_fraction": 0.849
+      },
+      "success_rate_difference_pp": {
+        "ci95": [
+          -2.0,
+          12.0
+        ],
+        "observed": 4.0,
+        "replicates_later_higher_fraction": 0.836
+      }
+    },
+    {
+      "earlier_step": 220000,
+      "later_step": 240000,
+      "mean_length_difference_steps": {
+        "ci95": [
+          -10.09225,
+          18.535749999999997
+        ],
+        "observed": 3.81,
+        "replicates_later_shorter_fraction": 0.29
+      },
+      "mean_reward_difference": {
+        "ci95": [
+          -0.16170598918245932,
+          0.13733582332345348
+        ],
+        "observed": -0.004343316705941764,
+        "replicates_later_higher_fraction": 0.468
+      },
+      "success_rate_difference_pp": {
+        "ci95": [
+          -11.0,
+          8.0
+        ],
+        "observed": -1.0,
+        "replicates_later_higher_fraction": 0.375
+      }
+    },
+    {
+      "earlier_step": 240000,
+      "later_step": 260000,
+      "mean_length_difference_steps": {
+        "ci95": [
+          -0.9904999999999999,
+          27.67375
+        ],
+        "observed": 13.06,
+        "replicates_later_shorter_fraction": 0.039
+      },
+      "mean_reward_difference": {
+        "ci95": [
+          -0.43927633822294887,
+          -0.06665623165111383
+        ],
+        "observed": -0.2517100174466735,
+        "replicates_later_higher_fraction": 0.0
+      },
+      "success_rate_difference_pp": {
+        "ci95": [
+          -20.0,
+          0.0
+        ],
+        "observed": -10.0,
+        "replicates_later_higher_fraction": 0.019
+      }
+    },
+    {
+      "earlier_step": 260000,
+      "later_step": 280000,
+      "mean_length_difference_steps": {
+        "ci95": [
+          -33.4405,
+          -3.9670000000000027
+        ],
+        "observed": -19.33,
+        "replicates_later_shorter_fraction": 0.994
+      },
+      "mean_reward_difference": {
+        "ci95": [
+          0.0856327154131876,
+          0.4823765896118002
+        ],
+        "observed": 0.2855794390777471,
+        "replicates_later_higher_fraction": 0.997
+      },
+      "success_rate_difference_pp": {
+        "ci95": [
+          3.0,
+          23.0
+        ],
+        "observed": 13.0,
+        "replicates_later_higher_fraction": 0.992
+      }
+    },
+    {
+      "earlier_step": 280000,
+      "later_step": 300000,
+      "mean_length_difference_steps": {
+        "ci95": [
+          0.6585000000000001,
+          25.862999999999996
+        ],
+        "observed": 13.11,
+        "replicates_later_shorter_fraction": 0.018
+      },
+      "mean_reward_difference": {
+        "ci95": [
+          -0.1867683767620606,
+          0.06500552564003467
+        ],
+        "observed": -0.06329990717905919,
+        "replicates_later_higher_fraction": 0.18
+      },
+      "success_rate_difference_pp": {
+        "ci95": [
+          -14.000000000000002,
+          3.0
+        ],
+        "observed": -6.0,
+        "replicates_later_higher_fraction": 0.072
+      }
+    }
+  ],
+  "method": "Paired episode-level nonparametric bootstrap, same 100-seed index resample for each metric/comparison; percentile 95% intervals.",
+  "replicates": 1000,
+  "seed": 20261007,
+  "selection_seeds": [
+    91000,
+    91099
+  ]
+}

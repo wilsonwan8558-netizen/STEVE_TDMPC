@@ -1,0 +1,120 @@
+{
+  "contact_heavy_substep_audit": {
+    "all_substeps_max_centerline_crossing_mm": 0.0,
+    "passive_monitor_behaviorally_equivalent_at_endpoints": true,
+    "sofa_substeps": 7568,
+    "substeps_with_centerline_crossing": 0
+  },
+  "finite_radius_offset_definition": "At each endpoint, clamp(max sampled signed exterior centerline distance plus 0.35 or 0.445 mm, 0). The 0.35 mm term is only a tip-radius spherical-offset proxy, NOT a lower bound on true beam-surface overlap. The 0.445 mm term upper-bounds possible signed exterior excursion for points within 0.445 mm of each sampled centerline point, but is not a measured overlap or a bound along unsampled continuous segments. Actual beam cross-section orientation and full collision geometry are not resolved.",
+  "metric": "positive = mapped centerline outside closed vessel surface; mm",
+  "randomized": {
+    "maximum_distal_mm": 0.0,
+    "maximum_global_max_radius_offset_bound_mm": 0.15005167255478924,
+    "maximum_global_mm": 0.0,
+    "maximum_global_tip_radius_offset_proxy_mm": 0.05505167255478921,
+    "seeds": 50,
+    "seeds_with_distal_penetration": 0,
+    "seeds_with_global_penetration": 0
+  },
+  "sampling": "all collision vertices plus active edge midpoints at RL-control endpoints",
+  "scripted": {
+    "alternating_rotation": {
+      "distal_longest_penetrating_run_s": 0.0,
+      "distal_penetrating_steps": 0,
+      "distal_penetration_max_mm": 0.0,
+      "distal_penetration_q95_stepmax_mm": 0.0,
+      "global_longest_penetrating_run_s": 0.0,
+      "global_max_penetrating_samples_simultaneous": 0,
+      "global_max_radius_offset_bound_max_mm": 0.14500030966486638,
+      "global_max_radius_offset_bound_q95_mm": 0.14500011005831634,
+      "global_penetrating_steps": 0,
+      "global_penetration_max_mm": 0.0,
+      "global_penetration_q95_stepmax_mm": 0.0,
+      "global_tip_radius_offset_proxy_max_mm": 0.05000030966486635
+    },
+    "alternating_translation": {
+      "distal_longest_penetrating_run_s": 0.0,
+      "distal_penetrating_steps": 0,
+      "distal_penetration_max_mm": 0.0,
+      "distal_penetration_q95_stepmax_mm": 0.0,
+      "global_longest_penetrating_run_s": 0.0,
+      "global_max_penetrating_samples_simultaneous": 0,
+      "global_max_radius_offset_bound_max_mm": 0.1452798823177172,
+      "global_max_radius_offset_bound_q95_mm": 0.1450592789133676,
+      "global_penetrating_steps": 0,
+      "global_penetration_max_mm": 0.0,
+      "global_penetration_q95_stepmax_mm": 0.0,
+      "global_tip_radius_offset_proxy_max_mm": 0.050279882317717184
+    },
+    "contact_heavy": {
+      "distal_longest_penetrating_run_s": 0.0,
+      "distal_penetrating_steps": 0,
+      "distal_penetration_max_mm": 0.0,
+      "distal_penetration_q95_stepmax_mm": 0.0,
+      "global_longest_penetrating_run_s": 0.0,
+      "global_max_penetrating_samples_simultaneous": 0,
+      "global_max_radius_offset_bound_max_mm": 0.15289099906063208,
+      "global_max_radius_offset_bound_q95_mm": 0.14503770617215136,
+      "global_penetrating_steps": 0,
+      "global_penetration_max_mm": 0.0,
+      "global_penetration_q95_stepmax_mm": 0.0,
+      "global_tip_radius_offset_proxy_max_mm": 0.057890999060632053
+    },
+    "sustained_moderate_rotation": {
+      "distal_longest_penetrating_run_s": 0.0,
+      "distal_penetrating_steps": 0,
+      "distal_penetration_max_mm": 0.0,
+      "distal_penetration_q95_stepmax_mm": 0.0,
+      "global_longest_penetrating_run_s": 0.0,
+      "global_max_penetrating_samples_simultaneous": 0,
+      "global_max_radius_offset_bound_max_mm": 0.1459011271230709,
+      "global_max_radius_offset_bound_q95_mm": 0.14500008502304484,
+      "global_penetrating_steps": 0,
+      "global_penetration_max_mm": 0.0,
+      "global_penetration_q95_stepmax_mm": 0.0,
+      "global_tip_radius_offset_proxy_max_mm": 0.05090112712307088
+    },
+    "sustained_moderate_translation": {
+      "distal_longest_penetrating_run_s": 0.0,
+      "distal_penetrating_steps": 0,
+      "distal_penetration_max_mm": 0.0,
+      "distal_penetration_q95_stepmax_mm": 0.0,
+      "global_longest_penetrating_run_s": 0.0,
+      "global_max_penetrating_samples_simultaneous": 0,
+      "global_max_radius_offset_bound_max_mm": 0.14537510709424634,
+      "global_max_radius_offset_bound_q95_mm": 0.14507605316899808,
+      "global_penetrating_steps": 0,
+      "global_penetration_max_mm": 0.0,
+      "global_penetration_q95_stepmax_mm": 0.0,
+      "global_tip_radius_offset_proxy_max_mm": 0.05037510709424631
+    },
+    "translation_plus_rotation": {
+      "distal_longest_penetrating_run_s": 0.0,
+      "distal_penetrating_steps": 0,
+      "distal_penetration_max_mm": 0.0,
+      "distal_penetration_q95_stepmax_mm": 0.0,
+      "global_longest_penetrating_run_s": 0.0,
+      "global_max_penetrating_samples_simultaneous": 0,
+      "global_max_radius_offset_bound_max_mm": 0.146600113768747,
+      "global_max_radius_offset_bound_q95_mm": 0.1450113251902915,
+      "global_penetrating_steps": 0,
+      "global_penetration_max_mm": 0.0,
+      "global_penetration_q95_stepmax_mm": 0.0,
+      "global_tip_radius_offset_proxy_max_mm": 0.05160011376874696
+    },
+    "zero": {
+      "distal_longest_penetrating_run_s": 0.0,
+      "distal_penetrating_steps": 0,
+      "distal_penetration_max_mm": 0.0,
+      "distal_penetration_q95_stepmax_mm": 0.0,
+      "global_longest_penetrating_run_s": 0.0,
+      "global_max_penetrating_samples_simultaneous": 0,
+      "global_max_radius_offset_bound_max_mm": 0.0,
+      "global_max_radius_offset_bound_q95_mm": 0.0,
+      "global_penetrating_steps": 0,
+      "global_penetration_max_mm": 0.0,
+      "global_penetration_q95_stepmax_mm": 0.0,
+      "global_tip_radius_offset_proxy_max_mm": 0.0
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "branch": "experiment/generic-solver-baseline",
+  "checkpoint_records": [
+    {
+      "agent_update_count": 200000,
+      "episode_index": 2121,
+      "format_version": 1,
+      "model_state_sha256": "7b6935c874f9eb230e4c452801e9b32fc17e90c3dc3bf2fee6ee133a9d91f940",
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_200000.pt",
+      "sha256": "1016725fff00cfa3da3a2bebdd06d4f9837c0e8c7a9130601397d0477647bf01",
+      "step": 200000,
+      "training_seed": 1
+    },
+    {
+      "agent_update_count": 220000,
+      "episode_index": 2413,
+      "format_version": 1,
+      "model_state_sha256": "9e39a9234016b1c487e51ec7762203339b81c542b690a86b4746fbb159034be0",
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_220000.pt",
+      "sha256": "85b616415fe9e82f16eb4fb15d0df5b23a4b35aba16e1cb8fa58b8fcab2abe27",
+      "step": 220000,
+      "training_seed": 1
+    },
+    {
+      "agent_update_count": 240000,
+      "episode_index": 2677,
+      "format_version": 1,
+      "model_state_sha256": "be53fe2813ab674263e8241fadd882c39b4c2f6bf90b199fd0ecca66c9c53196",
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_240000.pt",
+      "sha256": "76bf07586f99d1fb935da0a82829f235054da3d4fc1c476f85f8793c3c0a8b29",
+      "step": 240000,
+      "training_seed": 1
+    },
+    {
+      "agent_update_count": 260000,
+      "episode_index": 2952,
+      "format_version": 1,
+      "model_state_sha256": "95f7f32441a36e0d7d09acf9d789502bbb3b53c787eede89dcee75cbb87b459c",
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_260000.pt",
+      "sha256": "3057c12acce930275ff1e6070d2591a6580b344e0afb18d4857ad23904e82cd0",
+      "step": 260000,
+      "training_seed": 1
+    },
+    {
+      "agent_update_count": 280000,
+      "episode_index": 3240,
+      "format_version": 1,
+      "model_state_sha256": "d659a53bb5734f3354669bc5f8b8a3e2789a96a57d9096ac6ba4671b9dad934d",
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+      "sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+      "step": 280000,
+      "training_seed": 1
+    },
+    {
+      "agent_update_count": 300000,
+      "episode_index": 3508,
+      "format_version": 1,
+      "model_state_sha256": "0984ae55b182bd31b2f879a55abd3b8a818ba6da31500674832869262ef90ef8",
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_300000.pt",
+      "sha256": "f21a7a36bf4ffec8c2fd6152c40af5d14f36b9b84c7957eba2ba0a94f01fd2dc",
+      "step": 300000,
+      "training_seed": 1
+    }
+  ],
+  "git_commit": "59ea0ca569cdf2cc48095bd1dccc205fb6900ff7",
+  "status": "ALL_SIX_CHECKPOINTS_VERIFIED",
+  "training_config_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/config.yaml",
+  "training_config_sha256": "a05ce4d52bb62d457d71fe8ab9e0d89402d01746e6b7e05c0de4ed35e0e85039"
+}

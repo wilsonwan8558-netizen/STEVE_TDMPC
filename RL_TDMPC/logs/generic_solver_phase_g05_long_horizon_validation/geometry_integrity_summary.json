@@ -1,0 +1,99 @@
+{
+  "nonfinite_cases": 0,
+  "randomized_max_parent_tip_to_collision_tip_mm": 7.97689890617726e-12,
+  "randomized_max_quaternion_norm_error": 1.9761969838327786e-14,
+  "scripted": {
+    "alternating_rotation": {
+      "final_active_collision_length_mm": 52.80339894365241,
+      "final_inserted_length_mm": 52.79999999999964,
+      "initial_active_collision_length_mm": 0.7304702117991115,
+      "initial_inserted_length_mm": 2.6400000000000015,
+      "max_collision_edge_mm": 9.883450267543035,
+      "max_collision_turn_deg": 177.2667844395278,
+      "max_parent_quaternion_norm_error": 1.6653345369377348e-14,
+      "max_parent_tip_to_collision_tip_mm": 2.6947492797474307e-12,
+      "min_nonzero_collision_edge_mm": 0.00978773519891935,
+      "tip_cumulative_travel_mm": 273.3632184788052,
+      "tip_net_displacement_mm": 49.462422410783596
+    },
+    "alternating_translation": {
+      "final_active_collision_length_mm": 54.79916343207777,
+      "final_inserted_length_mm": 52.80007553100995,
+      "initial_active_collision_length_mm": 0.7304702117991115,
+      "initial_inserted_length_mm": 2.6400000000000015,
+      "max_collision_edge_mm": 11.878582105456774,
+      "max_collision_turn_deg": 177.2667844395278,
+      "max_parent_quaternion_norm_error": 1.4654943925052066e-14,
+      "max_parent_tip_to_collision_tip_mm": 1.545615221179746e-12,
+      "min_nonzero_collision_edge_mm": 0.00978773519891935,
+      "tip_cumulative_travel_mm": 423.1559292853748,
+      "tip_net_displacement_mm": 51.33230479116614
+    },
+    "contact_heavy": {
+      "final_active_collision_length_mm": 132.01171658669256,
+      "final_inserted_length_mm": 132.00004028318568,
+      "initial_active_collision_length_mm": 1.9173300939642388,
+      "initial_inserted_length_mm": 6.599999999999998,
+      "max_collision_edge_mm": 11.875537049166388,
+      "max_collision_turn_deg": 178.78420924624828,
+      "max_parent_quaternion_norm_error": 2.2648549702353193e-14,
+      "max_parent_tip_to_collision_tip_mm": 4.902490725625774e-12,
+      "min_nonzero_collision_edge_mm": 0.005126748465557821,
+      "tip_cumulative_travel_mm": 615.1337533305741,
+      "tip_net_displacement_mm": 125.39052836812066
+    },
+    "sustained_moderate_rotation": {
+      "final_active_collision_length_mm": 52.805230845799,
+      "final_inserted_length_mm": 52.79999999999964,
+      "initial_active_collision_length_mm": 0.7304702117991115,
+      "initial_inserted_length_mm": 2.6400000000000015,
+      "max_collision_edge_mm": 9.883447873552257,
+      "max_collision_turn_deg": 177.2667844395278,
+      "max_parent_quaternion_norm_error": 2.375877272697835e-14,
+      "max_parent_tip_to_collision_tip_mm": 8.899038067574587e-13,
+      "min_nonzero_collision_edge_mm": 0.00978773519891935,
+      "tip_cumulative_travel_mm": 231.50461718731995,
+      "tip_net_displacement_mm": 50.05355837641642
+    },
+    "sustained_moderate_translation": {
+      "final_active_collision_length_mm": 157.20190660660407,
+      "final_inserted_length_mm": 158.40000000000526,
+      "initial_active_collision_length_mm": 0.21835539491805792,
+      "initial_inserted_length_mm": 0.7920000000000005,
+      "max_collision_edge_mm": 9.882288545226324,
+      "max_collision_turn_deg": 178.6598008098113,
+      "max_parent_quaternion_norm_error": 1.2656542480726785e-14,
+      "max_parent_tip_to_collision_tip_mm": 3.631234890330614e-12,
+      "min_nonzero_collision_edge_mm": 0.004166647937383428,
+      "tip_cumulative_travel_mm": 159.033425528799,
+      "tip_net_displacement_mm": 152.28076564627756
+    },
+    "translation_plus_rotation": {
+      "final_active_collision_length_mm": 142.56247408416056,
+      "final_inserted_length_mm": 142.56000000000466,
+      "initial_active_collision_length_mm": 0.21835535277239226,
+      "initial_inserted_length_mm": 0.7920000000000005,
+      "max_collision_edge_mm": 9.882619476305958,
+      "max_collision_turn_deg": 178.65987450595756,
+      "max_parent_quaternion_norm_error": 2.19824158875781e-14,
+      "max_parent_tip_to_collision_tip_mm": 2.4220864892062327e-12,
+      "min_nonzero_collision_edge_mm": 0.0041666479407914524,
+      "tip_cumulative_travel_mm": 249.87174688512178,
+      "tip_net_displacement_mm": 138.29785675810095
+    },
+    "zero": {
+      "final_active_collision_length_mm": 0.0,
+      "final_inserted_length_mm": 1.1920928955078125e-07,
+      "initial_active_collision_length_mm": 0.0,
+      "initial_inserted_length_mm": 1.1920928955078125e-07,
+      "max_collision_edge_mm": 0.0,
+      "max_collision_turn_deg": 0.0,
+      "max_parent_quaternion_norm_error": 1.1102230246251565e-16,
+      "max_parent_tip_to_collision_tip_mm": 4.976874868032381e-16,
+      "min_nonzero_collision_edge_mm": 0.0,
+      "tip_cumulative_travel_mm": 0.0,
+      "tip_net_displacement_mm": 0.0
+    }
+  },
+  "self_intersection": "Not directly measured; sampled curvature/segment length and finite/mapping checks do not prove absence of self-intersection."
+}

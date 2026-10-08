@@ -1,0 +1,31 @@
+{
+  "status": "PASS_TRACKED_SOURCE_SCOPE_RUNTIME_SPACES_AND_GYM_SMOKE",
+  "base_commit": "59ea0ca569cdf2cc48095bd1dccc205fb6900ff7",
+  "changed_tracked_source_files": [
+    "eve/intervention/simulation/sofabeamadapter.py"
+  ],
+  "changed_source_scope": "RequiredPlugin additions, contact-manager responseParams, and LCPConstraintSolver-to-GenericConstraintSolver replacement only",
+  "unchanged_environment_adapter": {
+    "path": "RL_TDMPC/envs/steve_env.py",
+    "sha256_base_and_current": "ee340640bcc546b17a5effd6caf01f0d80a435c1f1e984a8a211d98395b24cfe",
+    "observation_shape": [14],
+    "observation_order": ["position", "target", "rotation"],
+    "action_shape": [2],
+    "action_range": [-1.0, 1.0],
+    "reward_logic_unchanged": true,
+    "termination_and_truncation_unchanged": true,
+    "target_sampling_unchanged": true,
+    "control_frequency_hz": 7.5,
+    "friction_argument": 0.001
+  },
+  "unchanged_vessel_geometry_source_sha256": "fea4cb4e2abc80071bd82990ec8990bcd4c5a7085b3d6efcb03407a06c5f2f1c",
+  "unchanged_jshaped_device_source_sha256": "1efc19ec1e1e1abe1124e06dfce64da4d7b24c9c68d178c34635d89a80016c1a",
+  "unchanged_tracking_source_sha256": "37e0600a6930219c3b47f95f441fefe76ad5507554956dd1aff77f816ce918d3",
+  "unchanged_simulation_dt_s": 0.006,
+  "unchanged_material_and_wire_rest_shape_parameters": true,
+  "unchanged_tdmpc2_architecture_and_training_code": true,
+  "new_training_performed": false,
+  "runtime_space_probe": "scene_probe.json",
+  "gym_smoke_test": "RL_TDMPC/smoke_test_env.py passed under steve_tdmpc: reset/step, finite 14-dimensional observations, normalized 2-dimensional actions, complete 200-step zero-action episode, deterministic seeded reset, and Gymnasium check_env.",
+  "caveat": "The diagnostic ConstantForceField is added only by calibrate_wire.py to a separate in-memory scene; it is not part of the production adapter."
+}
