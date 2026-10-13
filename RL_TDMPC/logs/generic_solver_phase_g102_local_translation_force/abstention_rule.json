@@ -1,0 +1,8 @@
+{
+  "abstain": "no candidate satisfying both force and uncertainty rules on frozen 101-point grid plus exact local probes",
+  "no_arbitrary_posttest_threshold_tuning": true,
+  "no_forced_withdrawal_fallback": true,
+  "predicted_safe_candidate": "reconstructed conservative R2<=F_lim AND inter-replica corrected Q95(delta_R2) range<=validation-only Q95 range threshold",
+  "status": "RULE_FROZEN_BEFORE_MODEL_TRAINING",
+  "uncertainty_threshold": "validation 95th percentile (higher interpolation) of inter-replica corrected Q95(delta_R2) range; computed once and frozen before development-test"
+}

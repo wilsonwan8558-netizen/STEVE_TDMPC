@@ -1,0 +1,48 @@
+{
+  "P_min_unchanged": true,
+  "confirmation_predictions_unchanged": true,
+  "development_test_only": true,
+  "families": {
+    "distal_velocity_xyz": [
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29
+    ],
+    "insertion_length": [
+      35
+    ],
+    "rotation_sin_cos": [
+      36,
+      37
+    ],
+    "tip_xyz": [
+      0,
+      1,
+      2
+    ]
+  },
+  "limitation": "Mean masking breaks feature correlations and can be out-of-distribution; it is not a controlled retrained leave-family-out model, causal feature importance, or a deployability result",
+  "method": "Replace one K family at a time by its train-behavior input mean in the frozen model; candidate actions, other features and true labels unchanged",
+  "models": [
+    "PKD",
+    "ZP_noC"
+  ],
+  "status": "EXPLORATORY_POSTFREEZE_DEVELOPMENT_ONLY_NO_RETRAINING_OR_SELECTION",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ]
+}

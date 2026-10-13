@@ -1,0 +1,9 @@
+{
+  "nominal_above_G2_Q99_states": 1,
+  "nominal_true_safe_states": 104,
+  "nominal_true_unsafe_states": 16,
+  "nominal_unsafe_no_true_safe_alternative": 12,
+  "repairable_unsafe_nominal_states": 4,
+  "states": 120,
+  "true_candidate_set_infeasible_states": 12
+}

@@ -1,0 +1,91 @@
+{
+  "candidate_family_size": 138,
+  "candidates_attempted": 138,
+  "decision_index": 48,
+  "episode_seed": 101024,
+  "event_decision_index": 49,
+  "finite_search_exhausted": true,
+  "horizon_intervals": 2,
+  "lookback_steps": 1,
+  "minimum_observed_force_N": 5.205174550161271,
+  "plan_fork_labels": [
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        6.013781118555265
+      ],
+      "horizon": 1,
+      "max_force_N": 6.013781118555265,
+      "plan_actions": [
+        [
+          -0.2413521260023117,
+          0.9891767501831055
+        ]
+      ],
+      "status": "PASS",
+      "steps": 1,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        6.013781118555265,
+        7.562620319653788
+      ],
+      "horizon": 2,
+      "max_force_N": 7.562620319653788,
+      "plan_actions": [
+        [
+          -0.2413521260023117,
+          0.9891767501831055
+        ],
+        [
+          0.8815516233444214,
+          0.9906347393989563
+        ]
+      ],
+      "status": "PASS",
+      "steps": 2,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        6.013781118555265,
+        7.562620319653788,
+        0.0
+      ],
+      "horizon": 3,
+      "max_force_N": 7.562620319653788,
+      "plan_actions": [
+        [
+          -0.2413521260023117,
+          0.9891767501831055
+        ],
+        [
+          0.8815516233444214,
+          0.9906347393989563
+        ],
+        [
+          0.8790422081947327,
+          0.9630258679389954
+        ]
+      ],
+      "status": "PASS",
+      "steps": 3,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    }
+  ],
+  "safe_trajectory_found": false,
+  "state_id": 99,
+  "witness": null
+}

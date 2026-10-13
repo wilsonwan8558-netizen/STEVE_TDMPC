@@ -1,0 +1,43 @@
+{
+  "P": [
+    {
+      "max_weight_abs_difference": 0.0,
+      "seed": 260206,
+      "selected_epoch": 60,
+      "validation_MSE_N2": 0.4447413682937622
+    },
+    {
+      "max_weight_abs_difference": 0.0,
+      "seed": 260207,
+      "selected_epoch": 57,
+      "validation_MSE_N2": 0.45966431498527527
+    },
+    {
+      "max_weight_abs_difference": 0.0,
+      "seed": 260208,
+      "selected_epoch": 58,
+      "validation_MSE_N2": 0.4705016016960144
+    }
+  ],
+  "Z": [
+    {
+      "max_weight_abs_difference": 0.0,
+      "seed": 260206,
+      "selected_epoch": 27,
+      "validation_MSE_N2": 0.9198960661888123
+    },
+    {
+      "max_weight_abs_difference": 0.0,
+      "seed": 260207,
+      "selected_epoch": 5,
+      "validation_MSE_N2": 1.1519800424575806
+    },
+    {
+      "max_weight_abs_difference": 0.0,
+      "seed": 260208,
+      "selected_epoch": 7,
+      "validation_MSE_N2": 1.1484485864639282
+    }
+  ],
+  "status": "PASS_EXACT_G4_Z0_P0_REPRODUCTION"
+}

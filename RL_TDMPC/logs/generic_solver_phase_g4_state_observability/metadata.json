@@ -1,0 +1,26 @@
+{
+  "branch": "feature/generic-contact-force-safety",
+  "checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "confirmation_seed_range": [
+    93000,
+    93029
+  ],
+  "g3_source": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g3_force_predictor",
+  "generic_reference_nominal_N": {
+    "count": 15500,
+    "max": 19.037898393448092,
+    "mean": 0.8412149939435828,
+    "median": 0.33377070345702653,
+    "q50": 0.33377070345702653,
+    "q75": 1.0855235286650953,
+    "q90": 2.1265156799878246,
+    "q95": 3.685331040756903,
+    "q97.5": 5.926250464744108,
+    "q99": 7.466568793559142
+  },
+  "phase": "G4",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "status": "REPRESENTATIONS_PREDECLARED_PHYSICAL_ALIGNMENT_PENDING",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

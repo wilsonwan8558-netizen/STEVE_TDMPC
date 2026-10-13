@@ -1,0 +1,454 @@
+{
+  "method": "exact float32 same-action nearest states with TRAIN-behavior normalization; both within new confirmation and against frozen development candidate references",
+  "reference_Q95_N": 3.685331040756903,
+  "representations": {
+    "H": {
+      "confirmation_to_frozen_development_reference": {
+        "Q90_absolute_force_difference_N": 1.142042806717709,
+        "Q95_absolute_force_difference_N": 1.8952031049510836,
+        "Q95_cross_boundary_fraction": 0.0425531914893617,
+        "coverage": 0.01865079365079365,
+        "fraction_difference_gt_1_N": 0.1276595744680851,
+        "matched_query_count": 47,
+        "median_absolute_force_difference_N": 0.037609345460938526,
+        "median_neighbor_distance": 0.6725899165606728,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.14119846908796693,
+            "median_absolute_force_difference_N": 0.002739110058223998,
+            "n": 5
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.08333333333333333,
+            "maximum_normalized_state_distance": 0.32660124490303677,
+            "median_absolute_force_difference_N": 0.0431998108774962,
+            "n": 12
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.041666666666666664,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.125,
+            "maximum_normalized_state_distance": 0.6725899165606728,
+            "median_absolute_force_difference_N": 0.04868234804146,
+            "n": 24
+          }
+        ],
+        "unique_matched_exact_action_count": 4,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            -1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      },
+      "within_untouched_confirmation": {
+        "Q90_absolute_force_difference_N": 2.9518893068075043,
+        "Q95_absolute_force_difference_N": 6.5059294556036855,
+        "Q95_cross_boundary_fraction": 0.13043478260869565,
+        "coverage": 0.018253968253968255,
+        "fraction_difference_gt_1_N": 0.32608695652173914,
+        "matched_query_count": 46,
+        "median_absolute_force_difference_N": 0.11099816444777613,
+        "median_neighbor_distance": 2.267538794825951,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.3333333333333333,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.3333333333333333,
+            "maximum_normalized_state_distance": 1.1012317877174411,
+            "median_absolute_force_difference_N": 0.04647904795113744,
+            "n": 6
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.15384615384615385,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.15384615384615385,
+            "maximum_normalized_state_distance": 1.5990821778262438,
+            "median_absolute_force_difference_N": 0.05434621194493759,
+            "n": 13
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.08695652173913043,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.13043478260869565,
+            "maximum_normalized_state_distance": 2.267538794825951,
+            "median_absolute_force_difference_N": 0.04647904795113744,
+            "n": 23
+          }
+        ],
+        "unique_matched_exact_action_count": 3,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      }
+    },
+    "O": {
+      "confirmation_to_frozen_development_reference": {
+        "Q90_absolute_force_difference_N": 1.2822688983225896,
+        "Q95_absolute_force_difference_N": 1.9585353778834786,
+        "Q95_cross_boundary_fraction": 0.0425531914893617,
+        "coverage": 0.01865079365079365,
+        "fraction_difference_gt_1_N": 0.14893617021276595,
+        "matched_query_count": 47,
+        "median_absolute_force_difference_N": 0.037609345460938526,
+        "median_neighbor_distance": 0.2787289421462986,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.06807653275846189,
+            "median_absolute_force_difference_N": 0.0,
+            "n": 5
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.16183932619041094,
+            "median_absolute_force_difference_N": 0.0012540247342964633,
+            "n": 12
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.041666666666666664,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.125,
+            "maximum_normalized_state_distance": 0.2787289421462986,
+            "median_absolute_force_difference_N": 0.03212680829697472,
+            "n": 24
+          }
+        ],
+        "unique_matched_exact_action_count": 4,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            -1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      },
+      "within_untouched_confirmation": {
+        "Q90_absolute_force_difference_N": 4.285362530670048,
+        "Q95_absolute_force_difference_N": 8.310668258604684,
+        "Q95_cross_boundary_fraction": 0.15217391304347827,
+        "coverage": 0.018253968253968255,
+        "fraction_difference_gt_1_N": 0.34782608695652173,
+        "matched_query_count": 46,
+        "median_absolute_force_difference_N": 0.13279545056265826,
+        "median_neighbor_distance": 1.2577378006004194,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.3333333333333333,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.3333333333333333,
+            "maximum_normalized_state_distance": 0.4902224980632719,
+            "median_absolute_force_difference_N": 0.0,
+            "n": 6
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.16666666666666666,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.3333333333333333,
+            "maximum_normalized_state_distance": 0.7912138779988832,
+            "median_absolute_force_difference_N": 0.13220981617687536,
+            "n": 12
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.13043478260869565,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.21739130434782608,
+            "maximum_normalized_state_distance": 1.2577378006004194,
+            "median_absolute_force_difference_N": 0.0575417321767666,
+            "n": 23
+          }
+        ],
+        "unique_matched_exact_action_count": 3,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      }
+    },
+    "P": {
+      "confirmation_to_frozen_development_reference": {
+        "Q90_absolute_force_difference_N": 1.2190183473809064,
+        "Q95_absolute_force_difference_N": 2.009048347115657,
+        "Q95_cross_boundary_fraction": 0.0425531914893617,
+        "coverage": 0.01865079365079365,
+        "fraction_difference_gt_1_N": 0.14893617021276595,
+        "matched_query_count": 47,
+        "median_absolute_force_difference_N": 0.03314822227986469,
+        "median_neighbor_distance": 0.7763391070945866,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.1361809996756362,
+            "median_absolute_force_difference_N": 0.0012875792733001157,
+            "n": 5
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.35089071479087236,
+            "median_absolute_force_difference_N": 0.00022820508680250484,
+            "n": 12
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.7763391070945866,
+            "median_absolute_force_difference_N": 0.0,
+            "n": 24
+          }
+        ],
+        "unique_matched_exact_action_count": 4,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            -1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      },
+      "within_untouched_confirmation": {
+        "Q90_absolute_force_difference_N": 4.321944792320341,
+        "Q95_absolute_force_difference_N": 8.808969107751674,
+        "Q95_cross_boundary_fraction": 0.15217391304347827,
+        "coverage": 0.018253968253968255,
+        "fraction_difference_gt_1_N": 0.3695652173913043,
+        "matched_query_count": 46,
+        "median_absolute_force_difference_N": 0.1375155082933999,
+        "median_neighbor_distance": 2.7565729179398915,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.773383120384991,
+            "median_absolute_force_difference_N": 0.0,
+            "n": 5
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.15384615384615385,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.15384615384615385,
+            "maximum_normalized_state_distance": 1.3994703797546273,
+            "median_absolute_force_difference_N": 0.0,
+            "n": 13
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.08695652173913043,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.08695652173913043,
+            "maximum_normalized_state_distance": 2.7565729179398915,
+            "median_absolute_force_difference_N": 0.0,
+            "n": 23
+          }
+        ],
+        "unique_matched_exact_action_count": 3,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      }
+    },
+    "Z": {
+      "confirmation_to_frozen_development_reference": {
+        "Q90_absolute_force_difference_N": 1.6958096558523654,
+        "Q95_absolute_force_difference_N": 2.1768793118589542,
+        "Q95_cross_boundary_fraction": 0.0851063829787234,
+        "coverage": 0.01865079365079365,
+        "fraction_difference_gt_1_N": 0.1702127659574468,
+        "matched_query_count": 47,
+        "median_absolute_force_difference_N": 0.037609345460938526,
+        "median_neighbor_distance": 2.5421279449394247,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 0.7372208448147785,
+            "median_absolute_force_difference_N": 0.0025080494685929267,
+            "n": 5
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.0,
+            "maximum_normalized_state_distance": 1.5625533462690255,
+            "median_absolute_force_difference_N": 0.0026235797634084623,
+            "n": 12
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.0,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.041666666666666664,
+            "maximum_normalized_state_distance": 2.5421279449394247,
+            "median_absolute_force_difference_N": 0.0026235797634084623,
+            "n": 24
+          }
+        ],
+        "unique_matched_exact_action_count": 4,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            -1.0,
+            1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      },
+      "within_untouched_confirmation": {
+        "Q90_absolute_force_difference_N": 2.4837447378154414,
+        "Q95_absolute_force_difference_N": 4.95209914260132,
+        "Q95_cross_boundary_fraction": 0.10869565217391304,
+        "coverage": 0.018253968253968255,
+        "fraction_difference_gt_1_N": 0.30434782608695654,
+        "matched_query_count": 46,
+        "median_absolute_force_difference_N": 0.13515547942802908,
+        "median_neighbor_distance": 7.970635711609351,
+        "query_count": 2520,
+        "small_distance_bins": [
+          {
+            "Q95_cross_boundary_fraction": 0.4,
+            "bin": "nearest_10pct",
+            "fraction_difference_gt_1_N": 0.4,
+            "maximum_normalized_state_distance": 3.609253541038986,
+            "median_absolute_force_difference_N": 0.08920087833289402,
+            "n": 5
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.16666666666666666,
+            "bin": "nearest_25pct",
+            "fraction_difference_gt_1_N": 0.16666666666666666,
+            "maximum_normalized_state_distance": 5.340959300575287,
+            "median_absolute_force_difference_N": 0.0575417321767666,
+            "n": 12
+          },
+          {
+            "Q95_cross_boundary_fraction": 0.08695652173913043,
+            "bin": "nearest_50pct",
+            "fraction_difference_gt_1_N": 0.17391304347826086,
+            "maximum_normalized_state_distance": 7.970635711609351,
+            "median_absolute_force_difference_N": 0.0575417321767666,
+            "n": 23
+          }
+        ],
+        "unique_matched_exact_action_count": 3,
+        "unique_matched_exact_actions": [
+          [
+            -1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            -1.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "warning": "Exact float32 candidate actions are continuous and mostly unique; conclusions are conditional on matched-query coverage"
+      }
+    }
+  }
+}

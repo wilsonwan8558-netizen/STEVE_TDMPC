@@ -1,0 +1,118 @@
+{
+  "calibration_by_replica": {
+    "260206": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.8916666666666667,
+      "fraction_states_with_zero_accepted": 0.10833333333333334,
+      "mean_accepted_actions_per_state": 18.516666666666666,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 107,
+      "states_with_zero_accepted": 13
+    },
+    "260207": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 4.9,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.9083333333333333,
+      "fraction_states_with_zero_accepted": 0.09166666666666666,
+      "mean_accepted_actions_per_state": 18.566666666666666,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 109,
+      "states_with_zero_accepted": 11
+    },
+    "260208": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 1.8000000000000007,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.9,
+      "fraction_states_with_zero_accepted": 0.1,
+      "mean_accepted_actions_per_state": 18.533333333333335,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 108,
+      "states_with_zero_accepted": 12
+    }
+  },
+  "calibration_worst_replica_fraction_states_with_accepted_action": 0.8916666666666667,
+  "confirmation_by_replica": {
+    "260206": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.8666666666666667,
+      "fraction_states_with_zero_accepted": 0.13333333333333333,
+      "mean_accepted_actions_per_state": 17.908333333333335,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 104,
+      "states_with_zero_accepted": 16
+    },
+    "260207": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.8666666666666667,
+      "fraction_states_with_zero_accepted": 0.13333333333333333,
+      "mean_accepted_actions_per_state": 18.1,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 104,
+      "states_with_zero_accepted": 16
+    },
+    "260208": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.875,
+      "fraction_states_with_zero_accepted": 0.125,
+      "mean_accepted_actions_per_state": 18.116666666666667,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 105,
+      "states_with_zero_accepted": 15
+    }
+  },
+  "confirmation_maximum_zero_accepted_state_fraction": 0.13333333333333333,
+  "confirmation_worst_replica_fraction_states_with_accepted_action": 0.8666666666666667,
+  "shared_calibrated_cutoff_N": 2.976577758789062
+}

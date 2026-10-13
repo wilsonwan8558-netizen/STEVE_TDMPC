@@ -1,0 +1,63 @@
+{
+  "complete_nonoverlapping_partition": true,
+  "groups": {
+    "C": {
+      "dimension": 5,
+      "indices": [
+        30,
+        31,
+        32,
+        33,
+        34
+      ],
+      "name": "current_solver_contact_state"
+    },
+    "D": {
+      "dimension": 12,
+      "indices": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "name": "distal_deformation_shape"
+    },
+    "K": {
+      "dimension": 21,
+      "indices": [
+        0,
+        1,
+        2,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        35,
+        36,
+        37
+      ],
+      "name": "kinematics_pose_and_device_state"
+    }
+  },
+  "omitted_wall_relation_group": "G4 P had no wall proximity or vessel-relative geometry; G5 cannot attribute it without adding information",
+  "status": "FROZEN_BEFORE_MODEL_PERFORMANCE"
+}

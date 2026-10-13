@@ -1,0 +1,18 @@
+{
+  "status": "FROZEN_BEFORE_TRAINING_AND_BEFORE_DEVELOPMENT_TEST_LABELS_OPENED",
+  "architecture": "258-64-ReLU-64-ReLU-1 scalar regression",
+  "input": "frozen single-observation 256-D Generic TD-MPC2 latent plus 2-D normalized action",
+  "target": "force_next_max_N in raw nominal simulation N",
+  "loss": "mean squared error",
+  "optimizer": "Adam, learning rate 0.001",
+  "batch_size": 512,
+  "max_epochs": 60,
+  "matched_training_budget": "60 maximum validation rounds; each model draws exactly the TRAIN behavior sample count per round, in batches of 512, giving identical maximum optimizer-step and sample-exposure budgets; M1 draws a fresh without-replacement subset from behavior-plus-counterfactual training pool each round",
+  "model_seed": 260206,
+  "normalization": "fit once on TRAIN behavior inputs only, shared exactly by M0 and M1; no target normalization",
+  "epoch_selection": "minimum VALIDATION behavior MSE, patience 8, minimum improvement 0.0001, same for M0 and M1",
+  "primary_model_selection": "highest VALIDATION median within-state Spearman across the fixed 120 validation states; lower validation candidate RMSE breaks ties",
+  "pairwise_ranking_tie_tolerance_nominal_N": 0.000001,
+  "development_test_use": "diagnosis only; never model or hyperparameter selection",
+  "confirmation_use": "single untouched post-freeze evaluation; no retraining or recalibration"
+}

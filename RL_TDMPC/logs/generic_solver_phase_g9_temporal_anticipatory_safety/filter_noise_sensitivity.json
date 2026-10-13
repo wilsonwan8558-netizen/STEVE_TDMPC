@@ -1,0 +1,40 @@
+{
+  "noise_model": "independent Gaussian noise on ten normalized tracking-position measurements at every decision; fixed seed 260901+episode_seed",
+  "per_episode_reset": true,
+  "results": [
+    {
+      "contact_magnitude_RMSE_N": 0.5895658731460571,
+      "distal_velocity_RMSE_mm_per_s": 7.068632125854492,
+      "max_initial_velocity_norm_after_reset": 0.0,
+      "mean_innovation_norm": 0.05192674071147035,
+      "nonfinite_feature_count": 0,
+      "sigma": 0,
+      "tip_position_RMSE_mm": 2.1788811683654785
+    },
+    {
+      "contact_magnitude_RMSE_N": 0.6086264848709106,
+      "distal_velocity_RMSE_mm_per_s": 7.392548084259033,
+      "max_initial_velocity_norm_after_reset": 0.0,
+      "mean_innovation_norm": 0.05974228980247589,
+      "nonfinite_feature_count": 0,
+      "sigma": 0.005,
+      "tip_position_RMSE_mm": 2.226306915283203
+    },
+    {
+      "contact_magnitude_RMSE_N": 0.6589116454124451,
+      "distal_velocity_RMSE_mm_per_s": 8.274370193481445,
+      "max_initial_velocity_norm_after_reset": 0.0,
+      "mean_innovation_norm": 0.0760406939736439,
+      "nonfinite_feature_count": 0,
+      "sigma": 0.01,
+      "tip_position_RMSE_mm": 2.360764265060425
+    }
+  ],
+  "rows": 2136,
+  "sigma_normalized_tracking": [
+    0,
+    0.005,
+    0.01
+  ],
+  "source": "validation episodes only"
+}

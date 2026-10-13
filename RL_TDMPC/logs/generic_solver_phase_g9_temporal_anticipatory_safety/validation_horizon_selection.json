@@ -1,0 +1,453 @@
+{
+  "action_sequence_caveat": "validation warning uses successive realized behavior actions; these are known in hindsight and cannot be used as a prospective deployable warning at the earlier time",
+  "event_count": 67,
+  "event_keys": [
+    {
+      "decision_index": 39,
+      "seed": 90000
+    },
+    {
+      "decision_index": 44,
+      "seed": 90000
+    },
+    {
+      "decision_index": 34,
+      "seed": 90002
+    },
+    {
+      "decision_index": 47,
+      "seed": 90002
+    },
+    {
+      "decision_index": 56,
+      "seed": 90002
+    },
+    {
+      "decision_index": 36,
+      "seed": 90013
+    },
+    {
+      "decision_index": 42,
+      "seed": 90013
+    },
+    {
+      "decision_index": 48,
+      "seed": 90013
+    },
+    {
+      "decision_index": 33,
+      "seed": 90019
+    },
+    {
+      "decision_index": 40,
+      "seed": 90019
+    },
+    {
+      "decision_index": 33,
+      "seed": 90025
+    },
+    {
+      "decision_index": 36,
+      "seed": 90025
+    },
+    {
+      "decision_index": 40,
+      "seed": 90025
+    },
+    {
+      "decision_index": 40,
+      "seed": 90044
+    },
+    {
+      "decision_index": 46,
+      "seed": 90044
+    },
+    {
+      "decision_index": 48,
+      "seed": 90045
+    },
+    {
+      "decision_index": 32,
+      "seed": 90060
+    },
+    {
+      "decision_index": 42,
+      "seed": 90060
+    },
+    {
+      "decision_index": 47,
+      "seed": 90060
+    },
+    {
+      "decision_index": 54,
+      "seed": 90060
+    },
+    {
+      "decision_index": 32,
+      "seed": 90078
+    },
+    {
+      "decision_index": 39,
+      "seed": 90078
+    },
+    {
+      "decision_index": 45,
+      "seed": 90078
+    },
+    {
+      "decision_index": 52,
+      "seed": 90078
+    },
+    {
+      "decision_index": 61,
+      "seed": 90078
+    },
+    {
+      "decision_index": 49,
+      "seed": 90107
+    },
+    {
+      "decision_index": 55,
+      "seed": 90107
+    },
+    {
+      "decision_index": 30,
+      "seed": 90118
+    },
+    {
+      "decision_index": 32,
+      "seed": 90118
+    },
+    {
+      "decision_index": 45,
+      "seed": 90118
+    },
+    {
+      "decision_index": 47,
+      "seed": 90118
+    },
+    {
+      "decision_index": 64,
+      "seed": 90118
+    },
+    {
+      "decision_index": 66,
+      "seed": 90118
+    },
+    {
+      "decision_index": 100,
+      "seed": 90118
+    },
+    {
+      "decision_index": 39,
+      "seed": 90121
+    },
+    {
+      "decision_index": 45,
+      "seed": 90121
+    },
+    {
+      "decision_index": 56,
+      "seed": 90126
+    },
+    {
+      "decision_index": 72,
+      "seed": 90126
+    },
+    {
+      "decision_index": 89,
+      "seed": 90126
+    },
+    {
+      "decision_index": 119,
+      "seed": 90126
+    },
+    {
+      "decision_index": 139,
+      "seed": 90126
+    },
+    {
+      "decision_index": 154,
+      "seed": 90126
+    },
+    {
+      "decision_index": 170,
+      "seed": 90126
+    },
+    {
+      "decision_index": 39,
+      "seed": 90137
+    },
+    {
+      "decision_index": 45,
+      "seed": 90137
+    },
+    {
+      "decision_index": 40,
+      "seed": 90143
+    },
+    {
+      "decision_index": 47,
+      "seed": 90143
+    },
+    {
+      "decision_index": 47,
+      "seed": 90150
+    },
+    {
+      "decision_index": 61,
+      "seed": 90150
+    },
+    {
+      "decision_index": 63,
+      "seed": 90159
+    },
+    {
+      "decision_index": 71,
+      "seed": 90159
+    },
+    {
+      "decision_index": 86,
+      "seed": 90159
+    },
+    {
+      "decision_index": 106,
+      "seed": 90159
+    },
+    {
+      "decision_index": 34,
+      "seed": 90164
+    },
+    {
+      "decision_index": 38,
+      "seed": 90164
+    },
+    {
+      "decision_index": 41,
+      "seed": 90164
+    },
+    {
+      "decision_index": 40,
+      "seed": 90165
+    },
+    {
+      "decision_index": 43,
+      "seed": 90165
+    },
+    {
+      "decision_index": 42,
+      "seed": 90168
+    },
+    {
+      "decision_index": 48,
+      "seed": 90168
+    },
+    {
+      "decision_index": 40,
+      "seed": 90171
+    },
+    {
+      "decision_index": 42,
+      "seed": 90171
+    },
+    {
+      "decision_index": 33,
+      "seed": 90181
+    },
+    {
+      "decision_index": 37,
+      "seed": 90181
+    },
+    {
+      "decision_index": 41,
+      "seed": 90181
+    },
+    {
+      "decision_index": 42,
+      "seed": 90199
+    },
+    {
+      "decision_index": 76,
+      "seed": 90199
+    }
+  ],
+  "focus_horizon_by_estimator": {
+    "E0": 2,
+    "E1": 2,
+    "E2": 2
+  },
+  "high_force_onset_definition": "first behavior decision with true next-interval max force above F_lim after a below-limit interval, among common H5-complete rows",
+  "rows": [
+    {
+      "early_warning_event_count": 0,
+      "early_warning_event_recall": 0.0,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E0",
+      "horizon": 1,
+      "max_warning_lead_steps": null,
+      "median_warning_lead_steps_when_warned": null,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.05309734513274336,
+      "validation_false_warning_rate": 0.07563025210084033,
+      "validation_pinball_N": 0.09403010653152144,
+      "validation_raw_Q95_coverage": 0.9283707865168539
+    },
+    {
+      "early_warning_event_count": 59,
+      "early_warning_event_recall": 0.8805970149253731,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E0",
+      "horizon": 2,
+      "max_warning_lead_steps": 1,
+      "median_warning_lead_steps_when_warned": 1.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.07692307692307693,
+      "validation_false_warning_rate": 0.10849539406345957,
+      "validation_pinball_N": 0.11382000562159933,
+      "validation_raw_Q95_coverage": 0.9344569288389513
+    },
+    {
+      "early_warning_event_count": 65,
+      "early_warning_event_recall": 0.9701492537313433,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E0",
+      "horizon": 3,
+      "max_warning_lead_steps": 2,
+      "median_warning_lead_steps_when_warned": 2.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.05737704918032787,
+      "validation_false_warning_rate": 0.13107822410147993,
+      "validation_pinball_N": 0.12867757373088906,
+      "validation_raw_Q95_coverage": 0.9428838951310862
+    },
+    {
+      "early_warning_event_count": 67,
+      "early_warning_event_recall": 1.0,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E0",
+      "horizon": 5,
+      "max_warning_lead_steps": 4,
+      "median_warning_lead_steps_when_warned": 4.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.013774104683195593,
+      "validation_false_warning_rate": 0.23688663282571912,
+      "validation_pinball_N": 0.1534490815842442,
+      "validation_raw_Q95_coverage": 0.9101123595505618
+    },
+    {
+      "early_warning_event_count": 0,
+      "early_warning_event_recall": 0.0,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E1",
+      "horizon": 1,
+      "max_warning_lead_steps": null,
+      "median_warning_lead_steps_when_warned": null,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.05309734513274336,
+      "validation_false_warning_rate": 0.06327236777063766,
+      "validation_pinball_N": 0.0925436584696187,
+      "validation_raw_Q95_coverage": 0.9260299625468165
+    },
+    {
+      "early_warning_event_count": 62,
+      "early_warning_event_recall": 0.9253731343283582,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E1",
+      "horizon": 2,
+      "max_warning_lead_steps": 1,
+      "median_warning_lead_steps_when_warned": 1.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.04395604395604396,
+      "validation_false_warning_rate": 0.09365404298874104,
+      "validation_pinball_N": 0.10873857937066847,
+      "validation_raw_Q95_coverage": 0.9110486891385767
+    },
+    {
+      "early_warning_event_count": 66,
+      "early_warning_event_recall": 0.9850746268656716,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E1",
+      "horizon": 3,
+      "max_warning_lead_steps": 2,
+      "median_warning_lead_steps_when_warned": 2.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.02459016393442623,
+      "validation_false_warning_rate": 0.13742071881606766,
+      "validation_pinball_N": 0.13400789162788732,
+      "validation_raw_Q95_coverage": 0.927434456928839
+    },
+    {
+      "early_warning_event_count": 67,
+      "early_warning_event_recall": 1.0,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E1",
+      "horizon": 5,
+      "max_warning_lead_steps": 4,
+      "median_warning_lead_steps_when_warned": 4.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.011019283746556474,
+      "validation_false_warning_rate": 0.23857868020304568,
+      "validation_pinball_N": 0.16050891411340906,
+      "validation_raw_Q95_coverage": 0.9414794007490637
+    },
+    {
+      "early_warning_event_count": 0,
+      "early_warning_event_recall": 0.0,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E2",
+      "horizon": 1,
+      "max_warning_lead_steps": null,
+      "median_warning_lead_steps_when_warned": null,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.05309734513274336,
+      "validation_false_warning_rate": 0.07612456747404844,
+      "validation_pinball_N": 0.0898949174008936,
+      "validation_raw_Q95_coverage": 0.9424157303370787
+    },
+    {
+      "early_warning_event_count": 61,
+      "early_warning_event_recall": 0.9104477611940298,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E2",
+      "horizon": 2,
+      "max_warning_lead_steps": 1,
+      "median_warning_lead_steps_when_warned": 1.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.06043956043956044,
+      "validation_false_warning_rate": 0.09672466734902764,
+      "validation_pinball_N": 0.11327531548514247,
+      "validation_raw_Q95_coverage": 0.9250936329588015
+    },
+    {
+      "early_warning_event_count": 66,
+      "early_warning_event_recall": 0.9850746268656716,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E2",
+      "horizon": 3,
+      "max_warning_lead_steps": 2,
+      "median_warning_lead_steps_when_warned": 2.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.045081967213114756,
+      "validation_false_warning_rate": 0.11046511627906977,
+      "validation_pinball_N": 0.1263459987760932,
+      "validation_raw_Q95_coverage": 0.9026217228464419
+    },
+    {
+      "early_warning_event_count": 67,
+      "early_warning_event_recall": 1.0,
+      "eligible_high_force_onsets": 67,
+      "estimator": "E2",
+      "horizon": 5,
+      "max_warning_lead_steps": 4,
+      "median_warning_lead_steps_when_warned": 4.0,
+      "validation_corrected_Q95_coverage": 0.950374531835206,
+      "validation_false_safe_rate": 0.011019283746556474,
+      "validation_false_warning_rate": 0.18781725888324874,
+      "validation_pinball_N": 0.15051917462491687,
+      "validation_raw_Q95_coverage": 0.9400749063670412
+    }
+  ],
+  "selection_rule": "per estimator, shortest H in {2,3} with >=0.10 absolute increase in onset recall over H1 and <=0.20 false-warning rate; H5 excluded because no native plan",
+  "status": "VALIDATION_ONLY_SELECTION_BEFORE_DEVELOPMENT_TEST_AND_CONFIRMATION",
+  "warning_definition": "earlier decision within 5 steps; true R_H and calibrated predicted Q95 both above F_lim; onset force must lie within H"
+}

@@ -1,0 +1,11 @@
+{
+  "censored": 4,
+  "dataset_sha256": "6ec62c8f2fef68315e6c1c0d468c362f3995ff304eccfb5ac0768b633accabaa",
+  "partial_summary_sha256": "9cde69dcf8b6e796d23cde625f9d1bfd7388b2ebd12d92782503d9d556d0c7f7",
+  "reason": "frozen assembler wrote complete NPZ then JSON summary failed on numpy.int64",
+  "repaired_summary_sha256": "d50c5d9cd3e910b108e063c7e6a38fbeff972b87cca18c9f87906c3fd80e0380",
+  "rows": 1076,
+  "source_and_evaluation_metrics_unchanged": true,
+  "states": 120,
+  "status": "OUTPUT_SERIALIZATION_REPAIR_ONLY"
+}

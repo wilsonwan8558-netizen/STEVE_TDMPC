@@ -1,0 +1,22 @@
+{
+  "architecture": "input_dim-64-ReLU-64-ReLU-1",
+  "batch_size": 512,
+  "checkpoint_selection": "lowest VALIDATION behavior MSE per training seed/configuration",
+  "early_stopping_patience": 8,
+  "learning_rate": 0.001,
+  "loss": "raw nominal-N MSE",
+  "matched_budget": "each model draws the common d>=1 TRAIN behavior row count per validation round without replacement; same optimizer steps per round",
+  "max_validation_rounds": 60,
+  "minimum_validation_MSE_improvement": 0.0001,
+  "no_test_or_confirmation_labels_for_selection": true,
+  "normalization": "TRAIN behavior only, same suffix0/1 for each representation; no target normalization",
+  "optimizer": "Adam",
+  "same_seeds_for_all_eight_configurations": true,
+  "status": "FROZEN_BEFORE_G4_TRAINING",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ],
+  "weight_decay": 0.0
+}

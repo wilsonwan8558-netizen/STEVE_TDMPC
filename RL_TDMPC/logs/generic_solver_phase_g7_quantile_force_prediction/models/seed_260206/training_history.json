@@ -1,0 +1,178 @@
+[
+  {
+    "epoch": 1,
+    "validation_mean_four_quantile_pinball_N": 0.20051637291908264
+  },
+  {
+    "epoch": 2,
+    "validation_mean_four_quantile_pinball_N": 0.15951579809188843
+  },
+  {
+    "epoch": 3,
+    "validation_mean_four_quantile_pinball_N": 0.13118167221546173
+  },
+  {
+    "epoch": 4,
+    "validation_mean_four_quantile_pinball_N": 0.10832967609167099
+  },
+  {
+    "epoch": 5,
+    "validation_mean_four_quantile_pinball_N": 0.10479125380516052
+  },
+  {
+    "epoch": 6,
+    "validation_mean_four_quantile_pinball_N": 0.10065072774887085
+  },
+  {
+    "epoch": 7,
+    "validation_mean_four_quantile_pinball_N": 0.0954730436205864
+  },
+  {
+    "epoch": 8,
+    "validation_mean_four_quantile_pinball_N": 0.09568635374307632
+  },
+  {
+    "epoch": 9,
+    "validation_mean_four_quantile_pinball_N": 0.09470546990633011
+  },
+  {
+    "epoch": 10,
+    "validation_mean_four_quantile_pinball_N": 0.08883129060268402
+  },
+  {
+    "epoch": 11,
+    "validation_mean_four_quantile_pinball_N": 0.08869463205337524
+  },
+  {
+    "epoch": 12,
+    "validation_mean_four_quantile_pinball_N": 0.08739014714956284
+  },
+  {
+    "epoch": 13,
+    "validation_mean_four_quantile_pinball_N": 0.0864643082022667
+  },
+  {
+    "epoch": 14,
+    "validation_mean_four_quantile_pinball_N": 0.08752933889627457
+  },
+  {
+    "epoch": 15,
+    "validation_mean_four_quantile_pinball_N": 0.08518383651971817
+  },
+  {
+    "epoch": 16,
+    "validation_mean_four_quantile_pinball_N": 0.08586056530475616
+  },
+  {
+    "epoch": 17,
+    "validation_mean_four_quantile_pinball_N": 0.08549588918685913
+  },
+  {
+    "epoch": 18,
+    "validation_mean_four_quantile_pinball_N": 0.08483248949050903
+  },
+  {
+    "epoch": 19,
+    "validation_mean_four_quantile_pinball_N": 0.08256186544895172
+  },
+  {
+    "epoch": 20,
+    "validation_mean_four_quantile_pinball_N": 0.0845479741692543
+  },
+  {
+    "epoch": 21,
+    "validation_mean_four_quantile_pinball_N": 0.08217085897922516
+  },
+  {
+    "epoch": 22,
+    "validation_mean_four_quantile_pinball_N": 0.08099695295095444
+  },
+  {
+    "epoch": 23,
+    "validation_mean_four_quantile_pinball_N": 0.0776258334517479
+  },
+  {
+    "epoch": 24,
+    "validation_mean_four_quantile_pinball_N": 0.08183947205543518
+  },
+  {
+    "epoch": 25,
+    "validation_mean_four_quantile_pinball_N": 0.07867313176393509
+  },
+  {
+    "epoch": 26,
+    "validation_mean_four_quantile_pinball_N": 0.0788930281996727
+  },
+  {
+    "epoch": 27,
+    "validation_mean_four_quantile_pinball_N": 0.07868845760822296
+  },
+  {
+    "epoch": 28,
+    "validation_mean_four_quantile_pinball_N": 0.07670117914676666
+  },
+  {
+    "epoch": 29,
+    "validation_mean_four_quantile_pinball_N": 0.08014693111181259
+  },
+  {
+    "epoch": 30,
+    "validation_mean_four_quantile_pinball_N": 0.0763789489865303
+  },
+  {
+    "epoch": 31,
+    "validation_mean_four_quantile_pinball_N": 0.07898343354463577
+  },
+  {
+    "epoch": 32,
+    "validation_mean_four_quantile_pinball_N": 0.07802681624889374
+  },
+  {
+    "epoch": 33,
+    "validation_mean_four_quantile_pinball_N": 0.07855159789323807
+  },
+  {
+    "epoch": 34,
+    "validation_mean_four_quantile_pinball_N": 0.07844690978527069
+  },
+  {
+    "epoch": 35,
+    "validation_mean_four_quantile_pinball_N": 0.07617013901472092
+  },
+  {
+    "epoch": 36,
+    "validation_mean_four_quantile_pinball_N": 0.07534392178058624
+  },
+  {
+    "epoch": 37,
+    "validation_mean_four_quantile_pinball_N": 0.07600908726453781
+  },
+  {
+    "epoch": 38,
+    "validation_mean_four_quantile_pinball_N": 0.07825206220149994
+  },
+  {
+    "epoch": 39,
+    "validation_mean_four_quantile_pinball_N": 0.0794120505452156
+  },
+  {
+    "epoch": 40,
+    "validation_mean_four_quantile_pinball_N": 0.07725371420383453
+  },
+  {
+    "epoch": 41,
+    "validation_mean_four_quantile_pinball_N": 0.07688818871974945
+  },
+  {
+    "epoch": 42,
+    "validation_mean_four_quantile_pinball_N": 0.0786796435713768
+  },
+  {
+    "epoch": 43,
+    "validation_mean_four_quantile_pinball_N": 0.07708679139614105
+  },
+  {
+    "epoch": 44,
+    "validation_mean_four_quantile_pinball_N": 0.08033750206232071
+  }
+]

@@ -1,0 +1,277 @@
+{
+  "dimension": 38,
+  "dtype": "float32",
+  "features": [
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "Global SOFA mm",
+      "deployability_class": "B",
+      "dimension": 3,
+      "feature_name": "distal_tip_xyz",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        16.941294426239256,
+        -29.89879181920292,
+        137.17273190475697
+      ],
+      "g4_train_behavior_input_std": [
+        17.077406025097183,
+        24.53821394242606,
+        53.175262124717406
+      ],
+      "indices": [
+        0,
+        1,
+        2
+      ],
+      "semantic_group": "K",
+      "semantic_meaning_and_rationale": "3D tip position; not present in 2D policy tracking, plausibly image-trackable in principle",
+      "source_object_or_field": "CollisionModel.CollisionDOFs.position.value[-1]",
+      "timing": "after prior control interval and before a_d, d>=1"
+    },
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "Tip-relative SOFA mm",
+      "deployability_class": "B",
+      "dimension": 12,
+      "feature_name": "distal_relative_node_xyz",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        0.3791842205214647,
+        0.12058734211010166,
+        -0.586787545803545,
+        0.2829796511188611,
+        0.08143683482749042,
+        -0.42514971823922854,
+        0.1876691615392506,
+        0.048252787692447195,
+        -0.27176205682794574,
+        0.09336100377619552,
+        0.02108126915167077,
+        -0.128893080770042
+      ],
+      "g4_train_behavior_input_std": [
+        1.39529079452077,
+        0.8185342580121764,
+        0.7917824555763222,
+        1.0521930711748875,
+        0.6215065445956697,
+        0.5935043981241663,
+        0.7049352822817818,
+        0.41930862499081156,
+        0.39464283633576913,
+        0.35399115831311273,
+        0.21206419505704666,
+        0.19623631319798623
+      ],
+      "indices": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "semantic_group": "D",
+      "semantic_meaning_and_rationale": "Four proximal-to-distal collision-node offsets; a 3D shape estimate would require sensing/imaging",
+      "source_object_or_field": "CollisionModel.CollisionDOFs.position.value[-5:-1] minus tip",
+      "timing": "after prior control interval and before a_d, d>=1"
+    },
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "Global scene mm/s",
+      "deployability_class": "B",
+      "dimension": 15,
+      "feature_name": "distal_node_velocity_xyz",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        -0.1680613997920288,
+        -4.659842137405088,
+        18.31738484257713,
+        -0.17581476244366723,
+        -4.645162126996687,
+        18.344940400996624,
+        -0.18296973293867555,
+        -4.629993002107058,
+        18.3553883465579,
+        -0.189691613705735,
+        -4.61442920563306,
+        18.359270371155386,
+        -0.19635113949159735,
+        -4.598656272477967,
+        18.371445974100077
+      ],
+      "g4_train_behavior_input_std": [
+        17.163369475721193,
+        18.60267054494551,
+        24.325226937312465,
+        17.230903659936526,
+        18.66304733862132,
+        24.346756574646225,
+        17.303478162642712,
+        18.72644716098256,
+        24.365078103231703,
+        17.381412644078477,
+        18.793220541246207,
+        24.3838770318041,
+        17.46496380543417,
+        18.863605433566818,
+        24.410983382905982
+      ],
+      "indices": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "semantic_group": "K",
+      "semantic_meaning_and_rationale": "Five distal velocities; plausibly estimable from tracked motion, not currently measured",
+      "source_object_or_field": "CollisionModel.CollisionDOFs.velocity.value[-5:]",
+      "timing": "after prior control interval and before a_d, d>=1"
+    },
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "Global SOFA nominal N",
+      "deployability_class": "C",
+      "dimension": 3,
+      "feature_name": "current_distal_force_vector",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        0.08204164206275848,
+        0.07949162962595356,
+        -0.11904136351187014
+      ],
+      "g4_train_behavior_input_std": [
+        0.8566945759686534,
+        0.43965422745438715,
+        0.38036199142870414
+      ],
+      "indices": [
+        30,
+        31,
+        32
+      ],
+      "semantic_group": "C",
+      "semantic_meaning_and_rationale": "Exact G4 solver-reconstructed pre-action contact reaction; a physical force sensor would be a different, unvalidated surrogate",
+      "source_object_or_field": "Generic.constraintForces plus CollisionDOFs.constraint, position and edge geometry",
+      "timing": "after prior control interval and before a_d, d>=1"
+    },
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "Nominal N",
+      "deployability_class": "C",
+      "dimension": 1,
+      "feature_name": "current_distal_force_magnitude",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        0.46740761893540794
+      ],
+      "g4_train_behavior_input_std": [
+        0.938428152138002
+      ],
+      "indices": [
+        33
+      ],
+      "semantic_group": "C",
+      "semantic_meaning_and_rationale": "Exact preceding-interval final-substep solver contact force; not the future target",
+      "source_object_or_field": "Norm of exact current distal force vector",
+      "timing": "after prior control interval and before a_d, d>=1"
+    },
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "Count",
+      "deployability_class": "C",
+      "dimension": 1,
+      "feature_name": "current_distal_contact_group_count",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        0.644593231220765
+      ],
+      "g4_train_behavior_input_std": [
+        0.675551399785553
+      ],
+      "indices": [
+        34
+      ],
+      "semantic_group": "C",
+      "semantic_meaning_and_rationale": "Constraint-manifold-derived contact count; no direct current controller measurement",
+      "source_object_or_field": "Generic contact reconstruction / current constraint manifold",
+      "timing": "after prior control interval and before a_d, d>=1"
+    },
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "SOFA mm",
+      "deployability_class": "A",
+      "dimension": 1,
+      "feature_name": "insertion_length",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        170.76945882515767
+      ],
+      "g4_train_behavior_input_std": [
+        71.48263380067627
+      ],
+      "indices": [
+        35
+      ],
+      "semantic_group": "K",
+      "semantic_meaning_and_rationale": "Current controller/device insertion state, before requested action",
+      "source_object_or_field": "simulation.inserted_lengths[0] / intervention.device_lengths_inserted[0]",
+      "timing": "after prior control interval and before a_d, d>=1"
+    },
+    {
+      "available_before_a_d": true,
+      "candidate_action_dependent": false,
+      "coordinate_frame": "Dimensionless, global device rotation",
+      "deployability_class": "A",
+      "dimension": 2,
+      "feature_name": "rotation_sin_cos",
+      "future_or_post_action_information": false,
+      "g4_train_behavior_input_mean": [
+        0.014255227511012077,
+        -0.19283669715761137
+      ],
+      "g4_train_behavior_input_std": [
+        0.5883202807973086,
+        0.7851687998525589
+      ],
+      "indices": [
+        36,
+        37
+      ],
+      "semantic_group": "K",
+      "semantic_meaning_and_rationale": "Already included in the 14-D policy observation; this is an exact duplicate channel",
+      "source_object_or_field": "sin/cos(simulation.rotations[0]) / existing Rotations observation",
+      "timing": "after prior control interval and before a_d, d>=1"
+    }
+  ],
+  "no_future_target_or_candidate_outcome": true,
+  "normalization": "train behavior mean/std per input coordinate, zero-std fallback 1; candidate action appended last",
+  "source_definition_sha256": "cdc7f37a03ffaa48e3774a56832b05715d6cae70177c81070a927b9dc03bdc97",
+  "source_extractor_sha256": "6df2134072fac8b00d817e02c2c6ae5468aeaf138b00ed5eb8f6fb8228ec4929",
+  "status": "EXACT_G4_P_RECOVERED_BEFORE_G5_FITTING"
+}

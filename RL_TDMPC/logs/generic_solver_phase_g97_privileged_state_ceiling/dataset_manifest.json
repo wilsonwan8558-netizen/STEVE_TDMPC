@@ -1,0 +1,13 @@
+{
+  "censored_planner_forks": 7,
+  "complete_planner_rows": 7193,
+  "confirmation_106000_series_accessed": false,
+  "development_states": 800,
+  "source_G2_behavior_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "source_G95_candidate_protocol_sha256": "f6de34ecd814fb9e4f98b9c01dfb335c028470c5a2d7259d557626add7ba14a8",
+  "source_G95_dataset_sha256": "81fb1fbf4e9eab0aa1c17704bbfaae506c5f45bdfcd92f113a2e70bcffda1ee3",
+  "source_G95_state_split_sha256": "4d6129589c5a0745b2276ced29e96816eed264b386e2c8b8462acfbcaa3cde23",
+  "source_G9_E1_model_sha256": "1ab6ba33e15e79b0418084ad82830e8c46e9374ed3d279cdf482bf28fa22f665",
+  "state_replay_required": "raw 3582D pre-action physical/solver state was not stored in G9.5; reuse all original planner actions and F1/F2/R2 fork labels without reforking",
+  "status": "EXACT_G95_LABELS_REUSED_PRIVILEGED_PREACTION_REPLAY_PENDING"
+}

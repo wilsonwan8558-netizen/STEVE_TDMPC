@@ -1,0 +1,29 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "H": 2,
+  "absolute_reconstruction": "nominal G10 conservative Q95 + maximum over three M_DELTA validation-corrected Q95(delta_R2)",
+  "absolute_reconstruction_caveat": "sum of separately estimated nominal and delta quantiles is an operational conservative score, not a mathematically guaranteed Q95 of absolute R2 or a clinical safety bound",
+  "diagnostic_only_attribution": "repeat the offline boundary calculation with true R2_nom as the baseline to separate nominal-baseline error from delta-response error; never use true future R2_nom for a deployed decision",
+  "alternative_model": "NOT_TRAINED; avoid model-comparison suite",
+  "architecture": "296->64->64->3 ReLU MLP; unrestricted Q50 plus cumulative softplus increments to Q90/Q95",
+  "batch_size": 512,
+  "excluded": "true future R2_nom, privileged SOFA state, current rotation as separate feature (already encoded in fixed nominal plan semantics)",
+  "input": "frozen deployable 256D TD-MPC2 current latent + 38D E1 current physical estimate + v_nom + realized delta_v; 296D total",
+  "input_normalization": "train-only mean/std, std floored at 1e-6; frozen after training",
+  "loss": "weighted pinball at quantiles 0.50,0.90,0.95",
+  "max_epochs": 80,
+  "nominal_delta_override": "exact delta_v=0 predicts delta_R2=0 by definition",
+  "nominal_force_deployment_baseline": "max over all three frozen G10 single-action validation-corrected Q95(R2) outputs at the exact nominal optimized-mean pair; never true future R2_nom",
+  "optimizer": "Adam lr=1e-3",
+  "output": "Q50,Q90,Q95 of delta_R2 in nominal N, noncrossing",
+  "primary_model": "M_DELTA",
+  "target": "delta_R2=R2_true([v,w_nom], fixed second action)-R2_true(nominal pair)",
+  "training_seeds": [
+    261021,
+    261022,
+    261023
+  ],
+  "replica_artifact_directories": ["models/delta_seed_1", "models/delta_seed_2", "models/delta_seed_3"],
+  "validation_correction": "per replica max(0, validation 95th percentile of true delta_R2 minus predicted Q95 with higher interpolation); validation only",
+  "validation_patience": 10
+}

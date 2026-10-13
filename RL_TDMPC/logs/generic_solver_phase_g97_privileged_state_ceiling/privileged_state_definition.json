@@ -1,0 +1,228 @@
+{
+  "additional_exact_G4_physical_dimension": 38,
+  "both_model_families_same_592D_64x64_network": true,
+  "compressed_extra_dimension": 256,
+  "contact_force_units": "nominal N, J_contact^T lambda / 0.006 s",
+  "features": [
+    {
+      "availability": "simulator-only",
+      "dimension": 38,
+      "future_or_post_action_information": false,
+      "indices": [
+        0,
+        38
+      ],
+      "name": "exact_G4_physical",
+      "physical_meaning": "Current tip/distal shape, velocity, reconstructed distal contact, insertion/rotation",
+      "pre_action": true,
+      "source_object_or_field": "G4 physical_features.extract(env)"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 441,
+      "future_or_post_action_information": false,
+      "indices": [
+        38,
+        479
+      ],
+      "name": "guidewire_rigid_position",
+      "physical_meaning": "All rigid generalized coordinates: xyz and quaternion for each guidewire node",
+      "pre_action": true,
+      "source_object_or_field": "InstrumentCombined.DOFs.position.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 378,
+      "future_or_post_action_information": false,
+      "indices": [
+        479,
+        857
+      ],
+      "name": "guidewire_rigid_velocity",
+      "physical_meaning": "All generalized linear/angular node velocities",
+      "pre_action": true,
+      "source_object_or_field": "InstrumentCombined.DOFs.velocity.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 441,
+      "future_or_post_action_information": false,
+      "indices": [
+        857,
+        1298
+      ],
+      "name": "guidewire_free_position",
+      "physical_meaning": "Exposed unconstrained-position buffer from the completed pre-action substep",
+      "pre_action": true,
+      "source_object_or_field": "InstrumentCombined.DOFs.free_position.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 378,
+      "future_or_post_action_information": false,
+      "indices": [
+        1298,
+        1676
+      ],
+      "name": "guidewire_free_velocity",
+      "physical_meaning": "Exposed unconstrained-velocity buffer from the completed pre-action substep",
+      "pre_action": true,
+      "source_object_or_field": "InstrumentCombined.DOFs.free_velocity.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 378,
+      "future_or_post_action_information": false,
+      "indices": [
+        1676,
+        2054
+      ],
+      "name": "guidewire_force",
+      "physical_meaning": "Distributed generalized force buffer at the current completed state",
+      "pre_action": true,
+      "source_object_or_field": "InstrumentCombined.DOFs.force.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 228,
+      "future_or_post_action_information": false,
+      "indices": [
+        2054,
+        2282
+      ],
+      "name": "collision_position",
+      "physical_meaning": "Full mapped collision-node geometry, including shaft and distal tip",
+      "pre_action": true,
+      "source_object_or_field": "CollisionModel.CollisionDOFs.position.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 228,
+      "future_or_post_action_information": false,
+      "indices": [
+        2282,
+        2510
+      ],
+      "name": "collision_velocity",
+      "physical_meaning": "Full mapped collision-node velocities",
+      "pre_action": true,
+      "source_object_or_field": "CollisionModel.CollisionDOFs.velocity.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 228,
+      "future_or_post_action_information": false,
+      "indices": [
+        2510,
+        2738
+      ],
+      "name": "collision_free_position",
+      "physical_meaning": "Exposed unconstrained mapped collision-node positions",
+      "pre_action": true,
+      "source_object_or_field": "CollisionModel.CollisionDOFs.free_position.value"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 228,
+      "future_or_post_action_information": false,
+      "indices": [
+        2738,
+        2966
+      ],
+      "name": "contact_node_normal_force",
+      "physical_meaning": "Current per-collision-node normal reaction vectors from J^T lambda / dt",
+      "pre_action": true,
+      "source_object_or_field": "Generic.constraintForces + CollisionDOFs.constraint normal rows / dt"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 228,
+      "future_or_post_action_information": false,
+      "indices": [
+        2966,
+        3194
+      ],
+      "name": "contact_node_tangent_force",
+      "physical_meaning": "Current per-collision-node tangential reaction vectors from J^T lambda / dt",
+      "pre_action": true,
+      "source_object_or_field": "Generic.constraintForces + CollisionDOFs.constraint tangent rows / dt"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 76,
+      "future_or_post_action_information": false,
+      "indices": [
+        3194,
+        3270
+      ],
+      "name": "contact_node_indicator",
+      "physical_meaning": "Which mapped guidewire nodes participate in current contact constraints",
+      "pre_action": true,
+      "source_object_or_field": "Nonzero support of current CollisionDOFs.constraint rows"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 228,
+      "future_or_post_action_information": false,
+      "indices": [
+        3270,
+        3498
+      ],
+      "name": "nearest_vessel_vertex_displacement",
+      "physical_meaning": "Guidewire-to-nearest-static-vessel-vertex vectors; vertex proxy, not exact wall distance",
+      "pre_action": true,
+      "source_object_or_field": "vesselTree.dofs.position.value KD-tree nearest vertex minus CollisionDOFs.position"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 76,
+      "future_or_post_action_information": false,
+      "indices": [
+        3498,
+        3574
+      ],
+      "name": "nearest_vessel_vertex_distance",
+      "physical_meaning": "Approximate local vessel proximity for every mapped guidewire node",
+      "pre_action": true,
+      "source_object_or_field": "Norm of nearest-vessel-vertex displacement"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 4,
+      "future_or_post_action_information": false,
+      "indices": [
+        3574,
+        3578
+      ],
+      "name": "solver_summary",
+      "physical_meaning": "Current exposed projected-Gauss-Seidel contact/solve summary",
+      "pre_action": true,
+      "source_object_or_field": "Generic.currentNumConstraints/currentNumConstraintGroups/currentIterations/currentError"
+    },
+    {
+      "availability": "simulator-only",
+      "dimension": 4,
+      "future_or_post_action_information": false,
+      "indices": [
+        3578,
+        3582
+      ],
+      "name": "device_controller_state",
+      "physical_meaning": "Current insertion, sin/cos rotation, and active first node",
+      "pre_action": true,
+      "source_object_or_field": "m_ircontroller.xtip/rotationInstrument/indexFirstNode"
+    }
+  ],
+  "full_Markov_state_claimed": false,
+  "includes_exact_X_DEPLOY_state": true,
+  "model_input_dimension_with_unchanged_two_planner_actions": 592,
+  "model_state_dimension": 588,
+  "name": "X_PRIV",
+  "not_a_full_Markov_state": true,
+  "raw_extra_adapter": "train-state-only coordinate standardization, then first 256 right singular vectors of the 560 train states; deterministic sign convention; no labels, validation, development-test, or confirmation in fitting",
+  "raw_feature_dimension": 3582,
+  "raw_feature_source_sha256": "836ffd3669c761e7bcb42ff2b6c5d16c56d05475946d1eb8f4a269fb40183ff2",
+  "raw_privileged_extra_dimension": 3582,
+  "timing": "at decision t after previous completed RL interval, before selected candidate action a_t",
+  "vessel_proximity_caveat": "nearest mesh vertex, not exact triangle-surface signed distance"
+}

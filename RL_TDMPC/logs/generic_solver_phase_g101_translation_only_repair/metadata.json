@@ -1,0 +1,17 @@
+{
+  "107000_107199_online_seeds_unopened": true,
+  "CUDA_VISIBLE_DEVICES": "0",
+  "F_lim_N": 3.685331040756903,
+  "F_lim_interpretation": "Generic-simulation statistical high-force reference, not a clinical injury threshold",
+  "G10_no_go_decision_sha256": "456c622b7bc431215943cd7f98ee57e1e2fca4c8203e3e21152711b6825d92ff",
+  "G10_state_manifest_sha256": "76305322a667a01e914bed08bd37c3f3d510e8253f93864748f0f5aa96c99901",
+  "branch": "feature/generic-contact-force-safety",
+  "controller_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "cuda_device_index": 0,
+  "cuda_device_name": "NVIDIA GeForce RTX 5090",
+  "phase": "G10.1",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "status": "OFFLINE_TRANSLATION_ONLY_PROTOCOL_PREDECLARED",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

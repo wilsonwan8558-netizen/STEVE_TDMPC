@@ -1,0 +1,172 @@
+{
+  "behavior_train_rows": 10203,
+  "behavior_validation_rows": 2136,
+  "best_validation_sum_step_pinball_N": 0.24583621323108673,
+  "checkpoint_selected_on": "minimum VALIDATION sum of F1+F2 four-quantile pinball",
+  "checkpoint_sha256": "861223bd85d535d2f03faf7e26e04fcaec7e66e84431f27474f14ee593777030",
+  "history": [
+    {
+      "epoch": 0,
+      "validation_sum_step_pinball_N": 0.419888436794281
+    },
+    {
+      "epoch": 1,
+      "validation_sum_step_pinball_N": 0.34651678800582886
+    },
+    {
+      "epoch": 2,
+      "validation_sum_step_pinball_N": 0.3127438426017761
+    },
+    {
+      "epoch": 3,
+      "validation_sum_step_pinball_N": 0.29823464155197144
+    },
+    {
+      "epoch": 4,
+      "validation_sum_step_pinball_N": 0.2929193377494812
+    },
+    {
+      "epoch": 5,
+      "validation_sum_step_pinball_N": 0.2822052240371704
+    },
+    {
+      "epoch": 6,
+      "validation_sum_step_pinball_N": 0.27519285678863525
+    },
+    {
+      "epoch": 7,
+      "validation_sum_step_pinball_N": 0.2783961296081543
+    },
+    {
+      "epoch": 8,
+      "validation_sum_step_pinball_N": 0.2645547389984131
+    },
+    {
+      "epoch": 9,
+      "validation_sum_step_pinball_N": 0.2683413028717041
+    },
+    {
+      "epoch": 10,
+      "validation_sum_step_pinball_N": 0.2641425132751465
+    },
+    {
+      "epoch": 11,
+      "validation_sum_step_pinball_N": 0.2579185664653778
+    },
+    {
+      "epoch": 12,
+      "validation_sum_step_pinball_N": 0.2601903975009918
+    },
+    {
+      "epoch": 13,
+      "validation_sum_step_pinball_N": 0.257130891084671
+    },
+    {
+      "epoch": 14,
+      "validation_sum_step_pinball_N": 0.2575012743473053
+    },
+    {
+      "epoch": 15,
+      "validation_sum_step_pinball_N": 0.2535473108291626
+    },
+    {
+      "epoch": 16,
+      "validation_sum_step_pinball_N": 0.2519580125808716
+    },
+    {
+      "epoch": 17,
+      "validation_sum_step_pinball_N": 0.2558751702308655
+    },
+    {
+      "epoch": 18,
+      "validation_sum_step_pinball_N": 0.2544682025909424
+    },
+    {
+      "epoch": 19,
+      "validation_sum_step_pinball_N": 0.25502726435661316
+    },
+    {
+      "epoch": 20,
+      "validation_sum_step_pinball_N": 0.25822198390960693
+    },
+    {
+      "epoch": 21,
+      "validation_sum_step_pinball_N": 0.24751999974250793
+    },
+    {
+      "epoch": 22,
+      "validation_sum_step_pinball_N": 0.25057679414749146
+    },
+    {
+      "epoch": 23,
+      "validation_sum_step_pinball_N": 0.2533746063709259
+    },
+    {
+      "epoch": 24,
+      "validation_sum_step_pinball_N": 0.257238507270813
+    },
+    {
+      "epoch": 25,
+      "validation_sum_step_pinball_N": 0.2465166449546814
+    },
+    {
+      "epoch": 26,
+      "validation_sum_step_pinball_N": 0.24901165068149567
+    },
+    {
+      "epoch": 27,
+      "validation_sum_step_pinball_N": 0.2518674433231354
+    },
+    {
+      "epoch": 28,
+      "validation_sum_step_pinball_N": 0.2501903772354126
+    },
+    {
+      "epoch": 29,
+      "validation_sum_step_pinball_N": 0.25239720940589905
+    },
+    {
+      "epoch": 30,
+      "validation_sum_step_pinball_N": 0.24583621323108673
+    },
+    {
+      "epoch": 31,
+      "validation_sum_step_pinball_N": 0.24798715114593506
+    },
+    {
+      "epoch": 32,
+      "validation_sum_step_pinball_N": 0.25633442401885986
+    },
+    {
+      "epoch": 33,
+      "validation_sum_step_pinball_N": 0.25276634097099304
+    },
+    {
+      "epoch": 34,
+      "validation_sum_step_pinball_N": 0.25499728322029114
+    },
+    {
+      "epoch": 35,
+      "validation_sum_step_pinball_N": 0.2552206516265869
+    },
+    {
+      "epoch": 36,
+      "validation_sum_step_pinball_N": 0.2584715783596039
+    },
+    {
+      "epoch": 37,
+      "validation_sum_step_pinball_N": 0.25116968154907227
+    },
+    {
+      "epoch": 38,
+      "validation_sum_step_pinball_N": 0.25250735878944397
+    }
+  ],
+  "normalization": "exact frozen G9 E1/H2 input mean/std",
+  "planner_train_rows": 5038,
+  "planner_validation_rows": 1080,
+  "replica_index": 1,
+  "train_rows": 15241,
+  "training_seed": 260312,
+  "validation_rows": 3216
+}

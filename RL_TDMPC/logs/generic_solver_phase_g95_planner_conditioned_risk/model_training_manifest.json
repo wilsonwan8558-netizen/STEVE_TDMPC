@@ -1,0 +1,60 @@
+{
+  "G95_planner_dataset_sha256": "81fb1fbf4e9eab0aa1c17704bbfaae506c5f45bdfcd92f113a2e70bcffda1ee3",
+  "G9_behavior_temporal_sha256": "cc45f18ecedc5497421d4899781f1b3b218bd676fc147d8a2b76ac3859f60ef0",
+  "G9_exact_old_model_vs_M0_first_replica_max_abs_weight_difference": 0.0,
+  "G9_original_model_sha256": "1daa2b2dae4679f666d2c541b4f1d4c2473feba78dba36fc38f94520d05104b8",
+  "G9_risk_normalization_sha256": "697408d9f9acdbb63c4adfbaf0e3b39f4c3966d1212b86dcc566708969f94976",
+  "M1_validation_distribution": "behavior validation plus planner-state validation; same pinball selection and higher-order Q95 residual rule",
+  "architecture_loss_optimizer_budget_identical_to_G9_E1_H2": true,
+  "development_test_or_confirmation_used_for_training_selection": false,
+  "models": {
+    "M0_behavior": {
+      "260312": {
+        "best_validation_pinball_N": 0.10873857885599136,
+        "checkpoint_sha256": "56d0508a344c364e9d1e5ed26bfab15a85d17aaef0744e8c030e6e156e1cb214",
+        "selection_sha256": "6ef8ea8c68a15fe186c0cdcc90ea497849bc259fa528a76abbe3bb6cb73dc30a",
+        "validation_Q95_delta_N": 0.14689749479293823
+      },
+      "260313": {
+        "best_validation_pinball_N": 0.11327935010194778,
+        "checkpoint_sha256": "4e24468767dd23b23ce5548adcd84c1282c76074bfc6d9d3bbaae687ce8d4c16",
+        "selection_sha256": "81e8d1f4ba9d887c021c38aa03f40094a40bce5e7cf53142a9a7680f6a86c0b0",
+        "validation_Q95_delta_N": 0.0686795562505722
+      },
+      "260314": {
+        "best_validation_pinball_N": 0.10951241105794907,
+        "checkpoint_sha256": "291a27c17a606a5e407d02f9a823e04a18df420eb1e4df13d3791efaea6968db",
+        "selection_sha256": "9062f1fdf1ef074d082a6de892fa3c775af6b27399ed2abcaa973f6ab3cbe011",
+        "validation_Q95_delta_N": 0.21518445014953613
+      }
+    },
+    "M1_planner_conditioned": {
+      "260312": {
+        "best_validation_pinball_N": 0.1370173543691635,
+        "checkpoint_sha256": "7f2ce7d27a01a0772bfbcb103042d419c8718b73ce3b63354e7b8e1d9b6b9b66",
+        "selection_sha256": "b45b1d1e6adc877ff4d76115cfa164f3febc84cb9fe579881ef93f8557a671a9",
+        "validation_Q95_delta_N": 0.2981063723564148
+      },
+      "260313": {
+        "best_validation_pinball_N": 0.12860263884067535,
+        "checkpoint_sha256": "decee08e203d53e828a95ccdf71f528492f11c07079a23779dc108bbc8ebaa20",
+        "selection_sha256": "2cb621d722e3ffe6be12d7f12aca8bc328008aac608b832eeac93d45e276695c",
+        "validation_Q95_delta_N": 0.13973617553710938
+      },
+      "260314": {
+        "best_validation_pinball_N": 0.13332396745681763,
+        "checkpoint_sha256": "6932c520d8421cda7f9454248d4b79d86919e8bed67c47c5c5a98d67eb3330f0",
+        "selection_sha256": "1532dc9ccd3016aae54c1b5e46cc8e58061fcb279fe1cadd07e24314f7268342",
+        "validation_Q95_delta_N": 0.24504351615905762
+      }
+    }
+  },
+  "only_supervision_distribution_differs": true,
+  "status": "THREE_FIXED_REPLICAS_PER_MODEL_BEFORE_DEVELOPMENT_TEST",
+  "training_code_sha256": "d0dad466b8e7079390501477ded41ebb71d604ca3f34e8426fc6362693acfc44",
+  "training_seeds": [
+    260312,
+    260313,
+    260314
+  ]
+}

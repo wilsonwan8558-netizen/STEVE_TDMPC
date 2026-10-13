@@ -1,0 +1,11 @@
+{
+  "name": "P0",
+  "optimizer_steps_per_round": 22,
+  "samples_per_validation_round": 10903,
+  "selected_epoch": 60,
+  "selected_validation_behavior_MSE_N2": 0.4447413682937622,
+  "train_rows": 10903,
+  "train_wall_seconds": 0.5634461930021644,
+  "training_seed": 260206,
+  "validation_rows": 2286
+}

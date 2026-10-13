@@ -1,0 +1,15 @@
+{
+  "CUDA_VISIBLE_DEVICES": "0",
+  "F_lim_N": 3.685331040756903,
+  "G6B_pre_confirmation_freeze_sha256": "c1258c0a147d809dd8d3a9ed9df5f1172974cea0062766ce86335617431ed501",
+  "Q99_reference_N": 7.466568793559142,
+  "branch": "feature/generic-contact-force-safety",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "model_device_index": 0,
+  "phase": "G7",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8",
+  "visible_cuda_device_count": 1
+}

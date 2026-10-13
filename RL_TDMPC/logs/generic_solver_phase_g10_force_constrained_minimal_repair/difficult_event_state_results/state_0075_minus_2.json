@@ -1,0 +1,101 @@
+{
+  "cohort": "difficult_event_early_intervention",
+  "decision_index": 42,
+  "event_decision_index": 44,
+  "fallback_zero_true": {
+    "F1_N": 1.462955787963412,
+    "F2_N": 2.0621138126371137,
+    "R2_N": 2.0621138126371137,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": true
+  },
+  "lookback_steps": 2,
+  "nominal_pair": [
+    [
+      0.844549298286438,
+      -0.9503049254417419
+    ],
+    [
+      0.9055342674255371,
+      -0.14395776391029358
+    ]
+  ],
+  "nominal_true": {
+    "F1_N": 1.5070275156157802,
+    "F2_N": 4.35297084756079,
+    "R2_N": 4.35297084756079,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": false
+  },
+  "optimized_mean_numerical_semantics": {
+    "ambiguous_matches": 0,
+    "canonical_executable_mean_pair": [
+      [
+        0.844549298286438,
+        -0.9503049254417419
+      ],
+      [
+        0.9055342674255371,
+        -0.14395776391029358
+      ]
+    ],
+    "changed_by_clipping": false,
+    "changed_by_tolerance_only": false,
+    "raw_optimized_mean_pair": [
+      [
+        0.844549298286438,
+        -0.9503049254417419
+      ],
+      [
+        0.9055342674255371,
+        -0.14395776391029358
+      ]
+    ]
+  },
+  "parent_scene_unchanged_by_forks": true,
+  "proposal": {
+    "action": [
+      0.16600000858306885,
+      -0.6349999904632568
+    ],
+    "delta_rotation": 0.3153049349784851,
+    "delta_translation": -0.6785492897033691,
+    "distance": 0.7482288022916075,
+    "grid_predicted_safe_count": 1163,
+    "max_corrected_Q95_N": 3.6852097511291504,
+    "nominal_action": [
+      0.844549298286438,
+      -0.9503049254417419
+    ],
+    "nominal_corrected_Q95_N": [
+      3.5357415080070496,
+      4.015700340270996,
+      4.3006603717803955
+    ],
+    "predictor_evaluations": 1754,
+    "refinement_predictor_evaluations": 72,
+    "repaired_corrected_Q95_N": [
+      3.2962953448295593,
+      3.4914236068725586,
+      3.6852097511291504
+    ],
+    "second_action_fixed": [
+      0.9055342674255371,
+      -0.14395776391029358
+    ],
+    "status": "PREDICTED_SAFE_REPAIR"
+  },
+  "repaired_action_executed_only_in_counterfactual_fork": true,
+  "repaired_true": {
+    "F1_N": 1.4452544025351624,
+    "F2_N": 1.7086336685377614,
+    "R2_N": 1.7086336685377614,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": true
+  },
+  "seed": 101018,
+  "state_id": 75
+}

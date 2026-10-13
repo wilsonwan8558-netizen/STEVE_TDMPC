@@ -1,0 +1,22 @@
+{
+  "status": "FROZEN_280K_VERIFIED",
+  "source_branch": "experiment/generic-solver-baseline",
+  "g2_branch": "feature/generic-contact-force-safety",
+  "baseline_commit": "69b51499881aa92bf43641393e6b61f82d9daef1",
+  "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+  "checkpoint_step": 280000,
+  "checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "model_state_sha256": "d659a53bb5734f3354669bc5f8b8a3e2789a96a57d9096ac6ba4671b9dad934d",
+  "training_seed": 1,
+  "checkpoint_format_version": 1,
+  "g1b_selected_checkpoint_manifest_sha256": "de590aa75c6c13a1b3cfb3527449348f28e4fbf2b8560184030e8d686e441417",
+  "g1b_confirmation_csv_sha256": "ab6db447e17ac23322d967cc8d9321801c7f7c50fff7752088fee819855e5040",
+  "g1b_confirmation_success_count": 172,
+  "g1b_confirmation_episodes": 200,
+  "g1b_confirmation_mean_steps": 77.5,
+  "g1b_confirmation_median_steps": 58,
+  "g1b_confirmation_mean_reward": 3.4300794214612553,
+  "solver_adapter_sha256": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67",
+  "controller_modified": false,
+  "retraining_performed": false
+}

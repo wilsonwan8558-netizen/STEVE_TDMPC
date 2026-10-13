@@ -1,0 +1,99 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "raw_by_replica": {
+    "260206": {
+      "accepted_high_force_count": 2,
+      "all_no_contact_accepted_count": 1302,
+      "all_no_contact_rejected_count": 42,
+      "false_safe_CI95_exact": [
+        0.006614570411528816,
+        0.1819491183777493
+      ],
+      "false_safe_count": 2,
+      "false_safe_rate": 0.05405405405405406,
+      "no_contact_to_Q95_high_force_count": 37,
+      "no_current_contact_candidate_count": 1344,
+      "no_current_contact_states": 64,
+      "rejected_high_force_count": 35
+    },
+    "260207": {
+      "accepted_high_force_count": 1,
+      "all_no_contact_accepted_count": 1299,
+      "all_no_contact_rejected_count": 45,
+      "false_safe_CI95_exact": [
+        0.0006840310246946647,
+        0.14160309561115805
+      ],
+      "false_safe_count": 1,
+      "false_safe_rate": 0.02702702702702703,
+      "no_contact_to_Q95_high_force_count": 37,
+      "no_current_contact_candidate_count": 1344,
+      "no_current_contact_states": 64,
+      "rejected_high_force_count": 36
+    },
+    "260208": {
+      "accepted_high_force_count": 19,
+      "all_no_contact_accepted_count": 1321,
+      "all_no_contact_rejected_count": 23,
+      "false_safe_CI95_exact": [
+        0.34399681566576623,
+        0.6807858935184598
+      ],
+      "false_safe_count": 19,
+      "false_safe_rate": 0.5135135135135135,
+      "no_contact_to_Q95_high_force_count": 37,
+      "no_current_contact_candidate_count": 1344,
+      "no_current_contact_states": 64,
+      "rejected_high_force_count": 18
+    }
+  },
+  "raw_cutoff_N": 3.685331040756903,
+  "selected_by_replica": {
+    "260206": {
+      "accepted_high_force_count": 1,
+      "all_no_contact_accepted_count": 1256,
+      "all_no_contact_rejected_count": 88,
+      "false_safe_CI95_exact": [
+        0.0006840310246946647,
+        0.14160309561115805
+      ],
+      "false_safe_count": 1,
+      "false_safe_rate": 0.02702702702702703,
+      "no_contact_to_Q95_high_force_count": 37,
+      "no_current_contact_candidate_count": 1344,
+      "no_current_contact_states": 64,
+      "rejected_high_force_count": 36
+    },
+    "260207": {
+      "accepted_high_force_count": 1,
+      "all_no_contact_accepted_count": 1260,
+      "all_no_contact_rejected_count": 84,
+      "false_safe_CI95_exact": [
+        0.0006840310246946647,
+        0.14160309561115805
+      ],
+      "false_safe_count": 1,
+      "false_safe_rate": 0.02702702702702703,
+      "no_contact_to_Q95_high_force_count": 37,
+      "no_current_contact_candidate_count": 1344,
+      "no_current_contact_states": 64,
+      "rejected_high_force_count": 36
+    },
+    "260208": {
+      "accepted_high_force_count": 1,
+      "all_no_contact_accepted_count": 1281,
+      "all_no_contact_rejected_count": 63,
+      "false_safe_CI95_exact": [
+        0.0006840310246946647,
+        0.14160309561115805
+      ],
+      "false_safe_count": 1,
+      "false_safe_rate": 0.02702702702702703,
+      "no_contact_to_Q95_high_force_count": 37,
+      "no_current_contact_candidate_count": 1344,
+      "no_current_contact_states": 64,
+      "rejected_high_force_count": 36
+    }
+  },
+  "selected_cutoff_N": 2.105934143066406
+}

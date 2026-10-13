@@ -1,0 +1,34 @@
+{
+  "E1_mapper_normalization_sha256": "b236fbf685a95f266ce1790e05724bc702f02dfbcfeb138b6b682115036db092",
+  "E1_mapper_sha256": "1ab6ba33e15e79b0418084ad82830e8c46e9374ed3d279cdf482bf28fa22f665",
+  "family": "G9.5_M1_planner_conditioned",
+  "input": "256D frozen TD-MPC2 current-observation latent + 38D E1 estimated pre-action physical state + candidate (a_t,a_nom_t_plus_1), each 2D normalized",
+  "input_dimension": 298,
+  "multi_replica_rule": "predicted-safe iff all three frozen corrected Q95 values <= F_lim; no best-seed selection",
+  "network": "64x64 ReLU cumulative-softplus noncrossing quantile net",
+  "normalization_sha256": "697408d9f9acdbb63c4adfbaf0e3b39f4c3966d1212b86dcc566708969f94976",
+  "output": "each replica's Q95(R2) plus its frozen nonnegative validation-only correction in nominal N",
+  "quantiles": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "replica_checkpoint_sha256": {
+    "260312": "7f2ce7d27a01a0772bfbcb103042d419c8718b73ce3b63354e7b8e1d9b6b9b66",
+    "260313": "decee08e203d53e828a95ccdf71f528492f11c07079a23779dc108bbc8ebaa20",
+    "260314": "6932c520d8421cda7f9454248d4b79d86919e8bed67c47c5c5a98d67eb3330f0"
+  },
+  "replica_validation_only_Q95_delta_N": {
+    "260312": 0.2981063723564148,
+    "260313": 0.13973617553710938,
+    "260314": 0.24504351615905762
+  },
+  "target": "R2=max(F_t_plus_1,F_t_plus_2), true Generic-SOFA two complete RL intervals",
+  "training_or_recalibration_in_G10": false,
+  "training_seeds": [
+    260312,
+    260313,
+    260314
+  ]
+}

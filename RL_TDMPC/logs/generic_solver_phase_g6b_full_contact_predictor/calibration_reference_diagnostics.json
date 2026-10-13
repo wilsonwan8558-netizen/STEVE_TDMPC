@@ -1,0 +1,318 @@
+{
+  "by_reference": {
+    "q90": {
+      "by_replica": {
+        "260206": {
+          "FN": 51,
+          "FP": 52,
+          "NPV": 0.9745,
+          "TN": 1949,
+          "TP": 468,
+          "acceptance_rate": 0.7936507936507936,
+          "accepted_count": 2000,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.07404277984605451,
+            0.12717496959392263
+          ],
+          "false_safe_count": 51,
+          "false_safe_rate": 0.09826589595375723,
+          "false_safe_severity": {
+            "count": 51,
+            "max_N": 5.427814903273695,
+            "max_true_force_N": 7.554330583261519,
+            "mean_N": 1.6529185917712332,
+            "median_N": 0.5313618849124842,
+            "q90_N": 5.245224051784352
+          },
+          "false_unsafe_count": 52,
+          "false_unsafe_rate": 0.025987006496751622,
+          "precision": 0.9,
+          "rejected_count": 520,
+          "rejection_rate": 0.20634920634920634,
+          "specificity": 0.9740129935032483,
+          "true_safe_count": 2001,
+          "true_unsafe_count": 519,
+          "unsafe_recall": 0.9017341040462428
+        },
+        "260207": {
+          "FN": 62,
+          "FP": 64,
+          "NPV": 0.968984492246123,
+          "TN": 1937,
+          "TP": 457,
+          "acceptance_rate": 0.7932539682539682,
+          "accepted_count": 1999,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.0928277995609089,
+            0.1505154340647262
+          ],
+          "false_safe_count": 62,
+          "false_safe_rate": 0.11946050096339114,
+          "false_safe_severity": {
+            "count": 62,
+            "max_N": 7.526721683525818,
+            "max_true_force_N": 9.653237363513643,
+            "mean_N": 1.721373047779405,
+            "median_N": 0.7590583925849124,
+            "q90_N": 5.598416801935138
+          },
+          "false_unsafe_count": 64,
+          "false_unsafe_rate": 0.031984007996002,
+          "precision": 0.8771593090211133,
+          "rejected_count": 521,
+          "rejection_rate": 0.20674603174603173,
+          "specificity": 0.968015992003998,
+          "true_safe_count": 2001,
+          "true_unsafe_count": 519,
+          "unsafe_recall": 0.8805394990366089
+        },
+        "260208": {
+          "FN": 50,
+          "FP": 57,
+          "NPV": 0.9749247743229689,
+          "TN": 1944,
+          "TP": 469,
+          "acceptance_rate": 0.7912698412698412,
+          "accepted_count": 1994,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.07235182078553162,
+            0.12503672341046757
+          ],
+          "false_safe_count": 50,
+          "false_safe_rate": 0.09633911368015415,
+          "false_safe_severity": {
+            "count": 50,
+            "max_N": 2.7518037655744934,
+            "max_true_force_N": 4.878319445562318,
+            "mean_N": 0.7802193270887295,
+            "median_N": 0.5296506714235445,
+            "q90_N": 1.7438192360408098
+          },
+          "false_unsafe_count": 57,
+          "false_unsafe_rate": 0.02848575712143928,
+          "precision": 0.8916349809885932,
+          "rejected_count": 526,
+          "rejection_rate": 0.20873015873015874,
+          "specificity": 0.9715142428785607,
+          "true_safe_count": 2001,
+          "true_unsafe_count": 519,
+          "unsafe_recall": 0.9036608863198459
+        }
+      },
+      "true_reference_N": 2.1265156799878246
+    },
+    "q97.5": {
+      "by_replica": {
+        "260206": {
+          "FN": 11,
+          "FP": 336,
+          "NPV": 0.9945,
+          "TN": 1989,
+          "TP": 184,
+          "acceptance_rate": 0.7936507936507936,
+          "accepted_count": 2000,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.028492879609989682,
+            0.09869030271414367
+          ],
+          "false_safe_count": 11,
+          "false_safe_rate": 0.05641025641025641,
+          "false_safe_severity": {
+            "count": 11,
+            "max_N": 1.6280801185174116,
+            "max_true_force_N": 7.554330583261519,
+            "mean_N": 1.126997324525156,
+            "median_N": 1.4454892670280692,
+            "q90_N": 1.619442206652069
+          },
+          "false_unsafe_count": 336,
+          "false_unsafe_rate": 0.14451612903225808,
+          "precision": 0.35384615384615387,
+          "rejected_count": 520,
+          "rejection_rate": 0.20634920634920634,
+          "specificity": 0.8554838709677419,
+          "true_safe_count": 2325,
+          "true_unsafe_count": 195,
+          "unsafe_recall": 0.9435897435897436
+        },
+        "260207": {
+          "FN": 11,
+          "FP": 337,
+          "NPV": 0.9944972486243121,
+          "TN": 1988,
+          "TP": 184,
+          "acceptance_rate": 0.7932539682539682,
+          "accepted_count": 1999,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.028492879609989682,
+            0.09869030271414367
+          ],
+          "false_safe_count": 11,
+          "false_safe_rate": 0.05641025641025641,
+          "false_safe_severity": {
+            "count": 11,
+            "max_N": 3.7269868987695354,
+            "max_true_force_N": 9.653237363513643,
+            "mean_N": 2.333288678781215,
+            "median_N": 1.9387581891042363,
+            "q90_N": 3.311373720721793
+          },
+          "false_unsafe_count": 337,
+          "false_unsafe_rate": 0.1449462365591398,
+          "precision": 0.3531669865642994,
+          "rejected_count": 521,
+          "rejection_rate": 0.20674603174603173,
+          "specificity": 0.8550537634408603,
+          "true_safe_count": 2325,
+          "true_unsafe_count": 195,
+          "unsafe_recall": 0.9435897435897436
+        },
+        "260208": {
+          "FN": 0,
+          "FP": 331,
+          "NPV": 1.0,
+          "TN": 1994,
+          "TP": 195,
+          "acceptance_rate": 0.7912698412698412,
+          "accepted_count": 1994,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.0,
+            0.01873952083028601
+          ],
+          "false_safe_count": 0,
+          "false_safe_rate": 0.0,
+          "false_safe_severity": {
+            "count": 0,
+            "max_N": null,
+            "max_true_force_N": null,
+            "mean_N": null,
+            "median_N": null,
+            "q90_N": null
+          },
+          "false_unsafe_count": 331,
+          "false_unsafe_rate": 0.14236559139784946,
+          "precision": 0.37072243346007605,
+          "rejected_count": 526,
+          "rejection_rate": 0.20873015873015874,
+          "specificity": 0.8576344086021506,
+          "true_safe_count": 2325,
+          "true_unsafe_count": 195,
+          "unsafe_recall": 1.0
+        }
+      },
+      "true_reference_N": 5.926250464744108
+    },
+    "q99": {
+      "by_replica": {
+        "260206": {
+          "FN": 3,
+          "FP": 460,
+          "NPV": 0.9985,
+          "TN": 1997,
+          "TP": 60,
+          "acceptance_rate": 0.7936507936507936,
+          "accepted_count": 2000,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.009929951150733278,
+            0.13291840074815062
+          ],
+          "false_safe_count": 3,
+          "false_safe_rate": 0.047619047619047616,
+          "false_safe_severity": {
+            "count": 3,
+            "max_N": 0.08776178970237769,
+            "max_true_force_N": 7.554330583261519,
+            "mean_N": 0.07944904596599163,
+            "median_N": 0.07912387783703512,
+            "q90_N": 0.08603420732930918
+          },
+          "false_unsafe_count": 460,
+          "false_unsafe_rate": 0.1872201872201872,
+          "precision": 0.11538461538461539,
+          "rejected_count": 520,
+          "rejection_rate": 0.20634920634920634,
+          "specificity": 0.8127798127798128,
+          "true_safe_count": 2457,
+          "true_unsafe_count": 63,
+          "unsafe_recall": 0.9523809523809523
+        },
+        "260207": {
+          "FN": 8,
+          "FP": 466,
+          "NPV": 0.9959979989994997,
+          "TN": 1991,
+          "TP": 55,
+          "acceptance_rate": 0.7932539682539682,
+          "accepted_count": 1999,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.056451279545303004,
+            0.23496557569565407
+          ],
+          "false_safe_count": 8,
+          "false_safe_rate": 0.12698412698412698,
+          "false_safe_severity": {
+            "count": 8,
+            "max_N": 2.1866685699545014,
+            "max_true_force_N": 9.653237363513643,
+            "mean_N": 1.219722471637344,
+            "median_N": 1.612689165630135,
+            "q90_N": 1.8957393453210818
+          },
+          "false_unsafe_count": 466,
+          "false_unsafe_rate": 0.18966218966218967,
+          "precision": 0.10556621880998081,
+          "rejected_count": 521,
+          "rejection_rate": 0.20674603174603173,
+          "specificity": 0.8103378103378104,
+          "true_safe_count": 2457,
+          "true_unsafe_count": 63,
+          "unsafe_recall": 0.873015873015873
+        },
+        "260208": {
+          "FN": 0,
+          "FP": 463,
+          "NPV": 1.0,
+          "TN": 1994,
+          "TP": 63,
+          "acceptance_rate": 0.7912698412698412,
+          "accepted_count": 1994,
+          "candidate_count": 2520,
+          "false_safe_CI95_exact": [
+            0.0,
+            0.05687235233201624
+          ],
+          "false_safe_count": 0,
+          "false_safe_rate": 0.0,
+          "false_safe_severity": {
+            "count": 0,
+            "max_N": null,
+            "max_true_force_N": null,
+            "mean_N": null,
+            "median_N": null,
+            "q90_N": null
+          },
+          "false_unsafe_count": 463,
+          "false_unsafe_rate": 0.18844118844118843,
+          "precision": 0.11977186311787072,
+          "rejected_count": 526,
+          "rejection_rate": 0.20873015873015874,
+          "specificity": 0.8115588115588116,
+          "true_safe_count": 2457,
+          "true_unsafe_count": 63,
+          "unsafe_recall": 1.0
+        }
+      },
+      "true_reference_N": 7.466568793559142
+    }
+  },
+  "purpose": "descriptive only; Q95 cutoff not retuned",
+  "selected_cutoff_N": 2.105934143066406
+}

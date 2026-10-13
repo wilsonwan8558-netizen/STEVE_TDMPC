@@ -1,0 +1,11 @@
+{
+  "name": "Pmin1",
+  "optimizer_steps_per_round": 22,
+  "samples_per_validation_round": 10903,
+  "selected_epoch": 60,
+  "selected_validation_behavior_MSE_N2": 0.7199651598930359,
+  "train_rows": 22663,
+  "train_wall_seconds": 2.7348046391271055,
+  "training_seed": 260207,
+  "validation_rows": 2286
+}

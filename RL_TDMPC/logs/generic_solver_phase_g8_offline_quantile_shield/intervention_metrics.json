@@ -1,0 +1,378 @@
+{
+  "G6B": {
+    "260206": {
+      "all_intervention_action_distance_l2": {
+        "count": 5,
+        "max": 2.022700352644753,
+        "mean": 1.4583092700262856,
+        "median": 1.7890060936688597,
+        "min": 0.19999998807907104,
+        "q90": 1.999773718543941
+      },
+      "failed_repair_count": 0,
+      "false_intervention_count": 3,
+      "false_intervention_rate_given_nominal_true_safe": 0.028846153846153848,
+      "final_selected_true_exceedance_count": 0,
+      "final_selected_true_exceedance_rate": 0.0,
+      "intervention_count": 5,
+      "intervention_rate": 0.041666666666666664,
+      "missed_unsafe_nominal_count": 0,
+      "rescue_rate_given_repairable_unsafe": 0.5,
+      "selected_action_count": 104,
+      "successful_repair_abs_delta_rotation": {
+        "count": 2,
+        "max": 0.44611281156539917,
+        "mean": 0.26805351534858346,
+        "median": 0.26805351534858346,
+        "min": 0.08999421913176775,
+        "q90": 0.41050095232203604
+      },
+      "successful_repair_abs_delta_translation": {
+        "count": 2,
+        "max": 1.9140837788581848,
+        "mean": 1.612727791070938,
+        "median": 1.612727791070938,
+        "min": 1.3113718032836914,
+        "q90": 1.8538125813007356
+      },
+      "successful_repair_action_distance_l2": {
+        "count": 2,
+        "max": 1.9653837673927232,
+        "mean": 1.6399199578693722,
+        "median": 1.6399199578693722,
+        "min": 1.314456148346021,
+        "q90": 1.900291005488053
+      },
+      "successful_repair_count": 2
+    },
+    "260207": {
+      "all_intervention_action_distance_l2": {
+        "count": 7,
+        "max": 2.022700352644753,
+        "mean": 1.4190223291244126,
+        "median": 1.3847746439438529,
+        "min": 0.19999998807907104,
+        "q90": 1.988310401493535
+      },
+      "failed_repair_count": 0,
+      "false_intervention_count": 5,
+      "false_intervention_rate_given_nominal_true_safe": 0.04807692307692308,
+      "final_selected_true_exceedance_count": 0,
+      "final_selected_true_exceedance_rate": 0.0,
+      "intervention_count": 7,
+      "intervention_rate": 0.058333333333333334,
+      "missed_unsafe_nominal_count": 0,
+      "rescue_rate_given_repairable_unsafe": 0.5,
+      "selected_action_count": 104,
+      "successful_repair_abs_delta_rotation": {
+        "count": 2,
+        "max": 0.44611281156539917,
+        "mean": 0.26805351534858346,
+        "median": 0.26805351534858346,
+        "min": 0.08999421913176775,
+        "q90": 0.41050095232203604
+      },
+      "successful_repair_abs_delta_translation": {
+        "count": 2,
+        "max": 1.9140837788581848,
+        "mean": 1.612727791070938,
+        "median": 1.612727791070938,
+        "min": 1.3113718032836914,
+        "q90": 1.8538125813007356
+      },
+      "successful_repair_action_distance_l2": {
+        "count": 2,
+        "max": 1.9653837673927232,
+        "mean": 1.6399199578693722,
+        "median": 1.6399199578693722,
+        "min": 1.314456148346021,
+        "q90": 1.900291005488053
+      },
+      "successful_repair_count": 2
+    },
+    "260208": {
+      "all_intervention_action_distance_l2": {
+        "count": 4,
+        "max": 1.634861748046211,
+        "mean": 1.3841720789311098,
+        "median": 1.3068425094998481,
+        "min": 1.2881415486785324,
+        "q90": 1.538740068136154
+      },
+      "failed_repair_count": 0,
+      "false_intervention_count": 3,
+      "false_intervention_rate_given_nominal_true_safe": 0.028846153846153848,
+      "final_selected_true_exceedance_count": 0,
+      "final_selected_true_exceedance_rate": 0.0,
+      "intervention_count": 4,
+      "intervention_rate": 0.03333333333333333,
+      "missed_unsafe_nominal_count": 0,
+      "rescue_rate_given_repairable_unsafe": 0.25,
+      "selected_action_count": 101,
+      "successful_repair_abs_delta_rotation": {
+        "count": 1,
+        "max": 0.08999421913176775,
+        "mean": 0.08999421913176775,
+        "median": 0.08999421913176775,
+        "min": 0.08999421913176775,
+        "q90": 0.08999421913176775
+      },
+      "successful_repair_abs_delta_translation": {
+        "count": 1,
+        "max": 1.3113718032836914,
+        "mean": 1.3113718032836914,
+        "median": 1.3113718032836914,
+        "min": 1.3113718032836914,
+        "q90": 1.3113718032836914
+      },
+      "successful_repair_action_distance_l2": {
+        "count": 1,
+        "max": 1.314456148346021,
+        "mean": 1.314456148346021,
+        "median": 1.314456148346021,
+        "min": 1.314456148346021,
+        "q90": 1.314456148346021
+      },
+      "successful_repair_count": 1
+    }
+  },
+  "G7": {
+    "260206": {
+      "all_intervention_action_distance_l2": {
+        "count": 7,
+        "max": 1.9653837673927232,
+        "mean": 0.8980898570561546,
+        "median": 0.3999999761581421,
+        "min": 0.19999998807907104,
+        "q90": 1.8595571631584051
+      },
+      "failed_repair_count": 1,
+      "false_intervention_count": 5,
+      "false_intervention_rate_given_nominal_true_safe": 0.04807692307692308,
+      "final_selected_true_exceedance_count": 1,
+      "final_selected_true_exceedance_rate": 0.009523809523809525,
+      "intervention_count": 7,
+      "intervention_rate": 0.058333333333333334,
+      "missed_unsafe_nominal_count": 0,
+      "rescue_rate_given_repairable_unsafe": 0.25,
+      "selected_action_count": 105,
+      "successful_repair_abs_delta_rotation": {
+        "count": 1,
+        "max": 0.44611281156539917,
+        "mean": 0.44611281156539917,
+        "median": 0.44611281156539917,
+        "min": 0.44611281156539917,
+        "q90": 0.44611281156539917
+      },
+      "successful_repair_abs_delta_translation": {
+        "count": 1,
+        "max": 1.9140837788581848,
+        "mean": 1.9140837788581848,
+        "median": 1.9140837788581848,
+        "min": 1.9140837788581848,
+        "q90": 1.9140837788581848
+      },
+      "successful_repair_action_distance_l2": {
+        "count": 1,
+        "max": 1.9653837673927232,
+        "mean": 1.9653837673927232,
+        "median": 1.9653837673927232,
+        "min": 1.9653837673927232,
+        "q90": 1.9653837673927232
+      },
+      "successful_repair_count": 1
+    },
+    "260207": {
+      "all_intervention_action_distance_l2": {
+        "count": 7,
+        "max": 2.022700352644753,
+        "mean": 1.0419762885878223,
+        "median": 1.119448514024428,
+        "min": 0.19999998807907104,
+        "q90": 1.988310401493535
+      },
+      "failed_repair_count": 0,
+      "false_intervention_count": 5,
+      "false_intervention_rate_given_nominal_true_safe": 0.04807692307692308,
+      "final_selected_true_exceedance_count": 0,
+      "final_selected_true_exceedance_rate": 0.0,
+      "intervention_count": 7,
+      "intervention_rate": 0.058333333333333334,
+      "missed_unsafe_nominal_count": 0,
+      "rescue_rate_given_repairable_unsafe": 0.5,
+      "selected_action_count": 104,
+      "successful_repair_abs_delta_rotation": {
+        "count": 2,
+        "max": 0.9852905571460724,
+        "mean": 0.7157016843557358,
+        "median": 0.7157016843557358,
+        "min": 0.44611281156539917,
+        "q90": 0.931372782588005
+      },
+      "successful_repair_abs_delta_translation": {
+        "count": 2,
+        "max": 1.9140837788581848,
+        "mean": 1.4446467757225037,
+        "median": 1.4446467757225037,
+        "min": 0.9752097725868225,
+        "q90": 1.8201963782310486
+      },
+      "successful_repair_action_distance_l2": {
+        "count": 2,
+        "max": 1.9653837673927232,
+        "mean": 1.6758425856634842,
+        "median": 1.6758425856634842,
+        "min": 1.3863014039342454,
+        "q90": 1.9074755310468754
+      },
+      "successful_repair_count": 2
+    },
+    "260208": {
+      "all_intervention_action_distance_l2": {
+        "count": 5,
+        "max": 1.3282027486550039,
+        "mean": 0.5757636888834137,
+        "median": 0.3999999761581421,
+        "min": 0.35061573748531577,
+        "q90": 0.9569216515771881
+      },
+      "failed_repair_count": 2,
+      "false_intervention_count": 3,
+      "false_intervention_rate_given_nominal_true_safe": 0.028846153846153848,
+      "final_selected_true_exceedance_count": 3,
+      "final_selected_true_exceedance_rate": 0.02830188679245283,
+      "intervention_count": 5,
+      "intervention_rate": 0.041666666666666664,
+      "missed_unsafe_nominal_count": 1,
+      "rescue_rate_given_repairable_unsafe": 0.0,
+      "selected_action_count": 106,
+      "successful_repair_abs_delta_rotation": {
+        "count": 0,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "min": null,
+        "q90": null
+      },
+      "successful_repair_abs_delta_translation": {
+        "count": 0,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "min": null,
+        "q90": null
+      },
+      "successful_repair_action_distance_l2": {
+        "count": 0,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "min": null,
+        "q90": null
+      },
+      "successful_repair_count": 0
+    }
+  },
+  "ORACLE": {
+    "all_intervention_action_distance_l2": {
+      "count": 4,
+      "max": 1.3863014039342454,
+      "mean": 0.7714046510791379,
+      "median": 0.7572280682125461,
+      "min": 0.18486106395721436,
+      "q90": 1.3647478272577782
+    },
+    "conservative_infeasible_count": 0,
+    "failed_repair_count": 0,
+    "failure_taxonomy_counts": {
+      "CANDIDATE_SET_INFEASIBLE": 12,
+      "NONE": 108,
+      "OTHER_AMBIGUOUS": 0,
+      "PREDICTED_INFEASIBLE": 0,
+      "UNSAFE_PASS_THROUGH": 0,
+      "WRONG_REPAIR": 0
+    },
+    "false_intervention_count": 0,
+    "false_intervention_rate_given_nominal_true_safe": 0.0,
+    "final_selected_true_exceedance_count": 0,
+    "final_selected_true_exceedance_rate": 0.0,
+    "fraction_interventions_increasing_true_force": 0.0,
+    "fraction_interventions_reducing_true_force": 1.0,
+    "fraction_predicted_infeasible_with_true_safe_alternative": null,
+    "intervened_force_delta_N": {
+      "count": 4,
+      "max": -0.5083614914253469,
+      "mean": -1.365442000014337,
+      "median": -1.2112412476796162,
+      "min": -2.530924013272769,
+      "q90": -0.5753756896815857
+    },
+    "intervention_count": 4,
+    "intervention_rate": 0.03333333333333333,
+    "largest_force_increase_N": -0.5083614914253469,
+    "largest_force_reduction_N": -2.530924013272769,
+    "missed_unsafe_nominal_count": 0,
+    "nominal_Q95_excess_N": {
+      "count": 16,
+      "max": 4.19355993530025,
+      "mean": 2.2793537145926077,
+      "median": 2.6759945932987543,
+      "min": 0.11185672722056283,
+      "q90": 3.3975363477337317
+    },
+    "nominal_above_G2_Q99_count": 1,
+    "nominal_above_Q99_force_change_N": {
+      "count": 0,
+      "max": null,
+      "mean": null,
+      "median": null,
+      "min": null,
+      "q90": null
+    },
+    "nominal_above_Q99_selected_below_F_lim_count": 0,
+    "nominal_above_Q99_selected_still_above_Q99_count": 0,
+    "nominal_above_Q99_with_selected_count": 0,
+    "nominal_true_unsafe_count": 16,
+    "nominal_unsafe_selected_below_F_lim_count": 4,
+    "predicted_infeasible_count": 0,
+    "predicted_infeasible_rate": 0.0,
+    "repairable_unsafe_nominal_count": 4,
+    "rescue_rate_given_repairable_unsafe": 1.0,
+    "selected_Q95_excess_among_nominal_unsafe_N": {
+      "count": 4,
+      "max": 0.0,
+      "mean": 0.0,
+      "median": 0.0,
+      "min": 0.0,
+      "q90": 0.0
+    },
+    "selected_action_count": 108,
+    "state_count": 120,
+    "successful_repair_abs_delta_rotation": {
+      "count": 4,
+      "max": 0.9852905571460724,
+      "mean": 0.3150364600587636,
+      "median": 0.13742764154449105,
+      "min": 0.0,
+      "q90": 0.7451617091894152
+    },
+    "successful_repair_abs_delta_translation": {
+      "count": 4,
+      "max": 1.3113718032836914,
+      "mean": 0.6216453909873962,
+      "median": 0.5876048803329468,
+      "min": 0.0,
+      "q90": 1.2105231940746308
+    },
+    "successful_repair_action_distance_l2": {
+      "count": 4,
+      "max": 1.3863014039342454,
+      "mean": 0.7714046510791379,
+      "median": 0.7572280682125461,
+      "min": 0.18486106395721436,
+      "q90": 1.3647478272577782
+    },
+    "successful_repair_count": 4,
+    "true_candidate_set_infeasible_count": 12
+  }
+}

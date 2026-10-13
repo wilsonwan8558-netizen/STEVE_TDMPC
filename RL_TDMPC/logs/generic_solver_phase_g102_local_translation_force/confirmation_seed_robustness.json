@@ -1,0 +1,54 @@
+{
+  "all_fixed_replicas_reported_no_best_seed_selection": true,
+  "per_replica_response": {
+    "261021": {
+      "sign_agreement_rate": 0.3420180009474183,
+      "sign_correct": 722,
+      "sign_valid": 2111,
+      "single_replica_repair_diagnostic_not_deployment_rule": {
+        "abstain": 18,
+        "censored_unverifiable": 0,
+        "false_infeasible": 12,
+        "false_safe": 0,
+        "proposed": 42,
+        "true_safe": 42
+      },
+      "slope_sign_agreement_count": 19,
+      "slope_sign_valid": 59,
+      "state_mean_delta_R2_Q50_MAE_N": 0.1186503757283577
+    },
+    "261022": {
+      "sign_agreement_rate": 0.3211747986736144,
+      "sign_correct": 678,
+      "sign_valid": 2111,
+      "single_replica_repair_diagnostic_not_deployment_rule": {
+        "abstain": 18,
+        "censored_unverifiable": 0,
+        "false_infeasible": 12,
+        "false_safe": 0,
+        "proposed": 42,
+        "true_safe": 42
+      },
+      "slope_sign_agreement_count": 19,
+      "slope_sign_valid": 59,
+      "state_mean_delta_R2_Q50_MAE_N": 0.1114033582151382
+    },
+    "261023": {
+      "sign_agreement_rate": 0.3287541449549976,
+      "sign_correct": 694,
+      "sign_valid": 2111,
+      "single_replica_repair_diagnostic_not_deployment_rule": {
+        "abstain": 18,
+        "censored_unverifiable": 0,
+        "false_infeasible": 12,
+        "false_safe": 0,
+        "proposed": 42,
+        "true_safe": 42
+      },
+      "slope_sign_agreement_count": 19,
+      "slope_sign_valid": 59,
+      "state_mean_delta_R2_Q50_MAE_N": 0.12332845635247833
+    }
+  },
+  "single_replica_repair_diagnostics_omit_ensemble_disagreement_abstention": true
+}

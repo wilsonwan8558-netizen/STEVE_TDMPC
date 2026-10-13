@@ -1,0 +1,11 @@
+{
+  "name": "ZK",
+  "optimizer_steps_per_round": 22,
+  "samples_per_validation_round": 10903,
+  "selected_epoch": 50,
+  "selected_validation_behavior_MSE_N2": 0.5861472487449646,
+  "train_rows": 10903,
+  "train_wall_seconds": 1.3503636443056166,
+  "training_seed": 260207,
+  "validation_rows": 2286
+}

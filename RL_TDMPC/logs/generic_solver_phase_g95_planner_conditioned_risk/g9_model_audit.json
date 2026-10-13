@@ -1,0 +1,25 @@
+{
+  "E1_current_state_input": "obs[d-2],obs[d-1],obs[d] (3x14) plus actions[d-2],actions[d-1] (2x2), in this order",
+  "E1_mapper": "46-128-ReLU-128-ReLU-38, G9 TRAIN-only input/target normalization frozen",
+  "G9_original_mapper_checkpoint_sha256": "1ab6ba33e15e79b0418084ad82830e8c46e9374ed3d279cdf482bf28fa22f665",
+  "G9_original_risk_checkpoint_sha256": "1daa2b2dae4679f666d2c541b4f1d4c2473feba78dba36fc38f94520d05104b8",
+  "G9_original_seed": 260312,
+  "G9_original_training_code_sha256": "d1ad2aa79bf3221ba5a104660441c0fade499c917b8adda97f67cdc40a907d4a",
+  "G9_original_validation_Q95_delta_N": 0.14689749479293823,
+  "Q95_correction_rule": "nonnegative additive 95th percentile of VALIDATION residual y-Q95 using higher order statistic; no development-test or confirmation recalibration",
+  "checkpoint_rule": "strict minimum VALIDATION four-quantile pinball improvement >=1e-5",
+  "loss": "equal-weight four-quantile pinball",
+  "model": "298-64-ReLU-64-ReLU-4 with cumulative softplus increments, noncrossing nonnegative quantiles",
+  "normalization": "exact G9 E1/H2 risk input TRAIN-behavior mean/std, frozen for M0 and M1",
+  "optimizer": "Adam lr=0.001, batch=512, max 60 epochs, early-stop patience 8",
+  "quantile_levels": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "risk_input": "frozen 256D current TD-MPC2 latent + 38D E1 estimated current physical state + original candidate [a_d,a_(d+1)] flattened in time order",
+  "risk_input_dimension": 298,
+  "risk_target": "R2=max(F1_true,F2_true) for two complete true Generic-SOFA RL intervals",
+  "status": "G9_E1_H2_EXACT_RECOVERY"
+}

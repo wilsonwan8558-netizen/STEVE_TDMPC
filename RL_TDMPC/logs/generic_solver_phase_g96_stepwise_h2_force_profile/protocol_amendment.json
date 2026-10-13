@@ -1,0 +1,16 @@
+{
+  "status": "PREDECLARED_G96_EXECUTABLE_OPTIMIZED_MEAN_REPAIR_BEFORE_105000_CONFIRMATION",
+  "scope": "optimized-mean planner candidate only",
+  "raw_mean": "frozen TD-MPC2 previous_mean after the sixth CEM update",
+  "canonical_executable_action_pair": "componentwise np.clip(raw optimized mean first two 2D actions,-1,1)",
+  "matching": "np.allclose(canonical first action,actual executed frozen TD-MPC2 action,rtol=0,atol=1e-6)",
+  "rtol": 0,
+  "atol": 1e-06,
+  "sampled_eight_candidates": "unchanged G9.5 final-population score/diversity selection, exact float32 values, order, and identity",
+  "ambiguity_test": "canonical mean full two-action 2x2 float32 plan must be distinguishable from each of eight sampled plans under np.allclose(rtol=0,atol=1e-6); eight sampled identities retain frozen exact float32/index semantics and are not rematched by tolerance",
+  "SOFA_label_action": "canonical clipped executable optimized-mean pair; original sampled plan pairs unchanged",
+  "planner_controller_force_H2_E1_models_calibration_thresholds_changed": false,
+  "previous_opened_confirmation_seeds": "104000-104029 diagnostic only; never used in final 105000-series statistics",
+  "new_untouched_confirmation_seeds": "105000-105029",
+  "no_confirmation_model_selection": true
+}

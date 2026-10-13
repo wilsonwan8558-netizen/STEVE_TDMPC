@@ -1,0 +1,44 @@
+{
+  "all_three_fixed_replicas_reported": true,
+  "ensemble_rule": "max three corrected Q95 delta plus validation-only spread abstention",
+  "no_best_seed_selection": true,
+  "per_replica_development_diagnostics": {
+    "261021": {
+      "false_infeasible": 25,
+      "false_safe": 2,
+      "local_Q50_delta_MAE_N": 0.5515574679476666,
+      "local_sign_agreement_rate": 0.7399445214979196,
+      "mae_sum": 795.3458687805352,
+      "proposed": 2,
+      "rows": 1442,
+      "sign_correct": 1067,
+      "sign_valid": 1442,
+      "true_safe": 0
+    },
+    "261022": {
+      "false_infeasible": 24,
+      "false_safe": 2,
+      "local_Q50_delta_MAE_N": 0.5736462919884742,
+      "local_sign_agreement_rate": 0.7656033287101248,
+      "mae_sum": 827.1979530473798,
+      "proposed": 3,
+      "rows": 1442,
+      "sign_correct": 1104,
+      "sign_valid": 1442,
+      "true_safe": 1
+    },
+    "261023": {
+      "false_infeasible": 24,
+      "false_safe": 2,
+      "local_Q50_delta_MAE_N": 0.5386472708447247,
+      "local_sign_agreement_rate": 0.7371705963938974,
+      "mae_sum": 776.7293645580932,
+      "proposed": 3,
+      "rows": 1442,
+      "sign_correct": 1063,
+      "sign_valid": 1442,
+      "true_safe": 1
+    }
+  },
+  "per_replica_repair_diagnostics_are_non_deployable_and_omit_ensemble_disagreement_abstention": true
+}

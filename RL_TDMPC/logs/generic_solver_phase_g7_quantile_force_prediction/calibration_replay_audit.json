@@ -1,0 +1,15 @@
+{
+  "candidate_evaluations": 2520,
+  "candidate_states": 120,
+  "max_abs_difference": {
+    "applied_action": 0.0,
+    "force_next_max_N": 0.0,
+    "insertion_length_mm": 0.0,
+    "observation": 0.0,
+    "preaction_previous_final_force_N": 0.0,
+    "reward": 0.0,
+    "tip_position_mm": 0.0
+  },
+  "parent_steps_compared": 1799,
+  "status": "PASS"
+}

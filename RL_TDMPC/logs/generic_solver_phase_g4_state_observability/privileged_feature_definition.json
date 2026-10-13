@@ -1,0 +1,29 @@
+{
+  "alignment_assertion": "P[33] equals G2 prior row distal_contact_force_final_N at d>=1; P never uses current target force_next_max_N",
+  "coordinate_frame": "global SOFA scene for xyz vectors; relative distal-node offsets to tip; SOFA scene length in mm and velocity in scene length per second",
+  "diagnostic_only_not_assumed_deployable": true,
+  "dimension": 38,
+  "dtype": "float32 after finite double-precision source checks",
+  "extractor_sha256": "6df2134072fac8b00d817e02c2c6ae5468aeaf138b00ed5eb8f6fb8228ec4929",
+  "force_formula": "G2 reconstruct_distal_contact_force using current Generic multiplier/Jacobian/collision geometry, 3mm tip region, vector sum before norm, divided by 0.006 s",
+  "indices": {
+    "0:3": "absolute distal collision-tip xyz position (mm)",
+    "15:30": "last five collision-node xyz velocities, same node order, flattened (scene mm/s)",
+    "30:33": "current distal contact-force vector from prior interval final substep (nominal N)",
+    "33": "current distal contact-force magnitude from prior interval final substep (nominal N)",
+    "34": "current distal contact-group count from prior interval final substep",
+    "35": "current guidewire insertion length (mm)",
+    "36": "sin(current guidewire rotation)",
+    "37": "cos(current guidewire rotation)",
+    "3:15": "four preceding collision-node xyz positions minus tip position, ordered proximal-to-distal, flattened (mm)"
+  },
+  "normalization": "per-representation input mean/std fit on TRAIN behavior rows only; shared exactly between suffix0 and suffix1; zero-std fallback 1",
+  "observation_instant": "after previous control interval, before agent.act or candidate env.step(a_d)",
+  "omitted_features": {
+    "all_SOFA_state": "Not compact/interpretable and risks leakage or overfitting",
+    "contact_normal_set": "Variable cardinality and topology; no deterministic compact summary audited",
+    "vessel_wall_proximity": "No robust, audited fixed-dimensional triangle-distance extractor established in this phase"
+  },
+  "source": "Generic CollisionDOFs and current Generic constraintForces at decision instant; no fork outcome",
+  "status": "FROZEN_BEFORE_G4_TRAINING_AND_CONFIRMATION"
+}

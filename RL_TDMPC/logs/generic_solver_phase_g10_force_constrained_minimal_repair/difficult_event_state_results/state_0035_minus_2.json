@@ -1,0 +1,87 @@
+{
+  "cohort": "difficult_event_early_intervention",
+  "decision_index": 57,
+  "event_decision_index": 59,
+  "fallback_zero_true": {
+    "F1_N": 0.0,
+    "F2_N": 0.0,
+    "R2_N": 0.0,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": true
+  },
+  "lookback_steps": 2,
+  "nominal_pair": [
+    [
+      0.9942793846130371,
+      -0.825160801410675
+    ],
+    [
+      0.9580681920051575,
+      0.7406439185142517
+    ]
+  ],
+  "nominal_true": {
+    "F1_N": 0.0,
+    "F2_N": 5.5774834168160226,
+    "R2_N": 5.5774834168160226,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": false
+  },
+  "optimized_mean_numerical_semantics": {
+    "ambiguous_matches": 0,
+    "canonical_executable_mean_pair": [
+      [
+        0.9942793846130371,
+        -0.825160801410675
+      ],
+      [
+        0.9580681920051575,
+        0.7406439185142517
+      ]
+    ],
+    "changed_by_clipping": false,
+    "changed_by_tolerance_only": false,
+    "raw_optimized_mean_pair": [
+      [
+        0.9942793846130371,
+        -0.825160801410675
+      ],
+      [
+        0.9580681920051575,
+        0.7406439185142517
+      ]
+    ]
+  },
+  "parent_scene_unchanged_by_forks": true,
+  "proposal": {
+    "action": null,
+    "delta_rotation": null,
+    "delta_translation": null,
+    "distance": null,
+    "grid_predicted_safe_count": 0,
+    "max_corrected_Q95_N": null,
+    "nominal_action": [
+      0.9942793846130371,
+      -0.825160801410675
+    ],
+    "nominal_corrected_Q95_N": [
+      7.966426074504852,
+      7.405119895935059,
+      9.100894689559937
+    ],
+    "predictor_evaluations": 1682,
+    "refinement_predictor_evaluations": 0,
+    "repaired_corrected_Q95_N": null,
+    "second_action_fixed": [
+      0.9580681920051575,
+      0.7406439185142517
+    ],
+    "status": "INFEASIBLE_ON_PREDECLARED_SEARCH"
+  },
+  "repaired_action_executed_only_in_counterfactual_fork": true,
+  "repaired_true": null,
+  "seed": 101008,
+  "state_id": 35
+}

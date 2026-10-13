@@ -1,0 +1,258 @@
+{
+  "behavior_train_rows": 10203,
+  "behavior_validation_rows": 2136,
+  "best_validation_pinball_N": 0.10951241105794907,
+  "checkpoint_sha256": "291a27c17a606a5e407d02f9a823e04a18df420eb1e4df13d3791efaea6968db",
+  "history": [
+    {
+      "epoch": 0,
+      "validation_pinball_N": 0.2548977732658386
+    },
+    {
+      "epoch": 1,
+      "validation_pinball_N": 0.19437377154827118
+    },
+    {
+      "epoch": 2,
+      "validation_pinball_N": 0.1686754822731018
+    },
+    {
+      "epoch": 3,
+      "validation_pinball_N": 0.15593217313289642
+    },
+    {
+      "epoch": 4,
+      "validation_pinball_N": 0.14714859426021576
+    },
+    {
+      "epoch": 5,
+      "validation_pinball_N": 0.1422961801290512
+    },
+    {
+      "epoch": 6,
+      "validation_pinball_N": 0.1382155418395996
+    },
+    {
+      "epoch": 7,
+      "validation_pinball_N": 0.13678652048110962
+    },
+    {
+      "epoch": 8,
+      "validation_pinball_N": 0.1357296109199524
+    },
+    {
+      "epoch": 9,
+      "validation_pinball_N": 0.13290633261203766
+    },
+    {
+      "epoch": 10,
+      "validation_pinball_N": 0.12980400025844574
+    },
+    {
+      "epoch": 11,
+      "validation_pinball_N": 0.1260872483253479
+    },
+    {
+      "epoch": 12,
+      "validation_pinball_N": 0.12561272084712982
+    },
+    {
+      "epoch": 13,
+      "validation_pinball_N": 0.12522239983081818
+    },
+    {
+      "epoch": 14,
+      "validation_pinball_N": 0.12694227695465088
+    },
+    {
+      "epoch": 15,
+      "validation_pinball_N": 0.12627793848514557
+    },
+    {
+      "epoch": 16,
+      "validation_pinball_N": 0.12603060901165009
+    },
+    {
+      "epoch": 17,
+      "validation_pinball_N": 0.12249304354190826
+    },
+    {
+      "epoch": 18,
+      "validation_pinball_N": 0.12225397676229477
+    },
+    {
+      "epoch": 19,
+      "validation_pinball_N": 0.12248044461011887
+    },
+    {
+      "epoch": 20,
+      "validation_pinball_N": 0.12135647982358932
+    },
+    {
+      "epoch": 21,
+      "validation_pinball_N": 0.1195741593837738
+    },
+    {
+      "epoch": 22,
+      "validation_pinball_N": 0.11999469250440598
+    },
+    {
+      "epoch": 23,
+      "validation_pinball_N": 0.11686411499977112
+    },
+    {
+      "epoch": 24,
+      "validation_pinball_N": 0.1179831326007843
+    },
+    {
+      "epoch": 25,
+      "validation_pinball_N": 0.1166127547621727
+    },
+    {
+      "epoch": 26,
+      "validation_pinball_N": 0.11782728135585785
+    },
+    {
+      "epoch": 27,
+      "validation_pinball_N": 0.12037724256515503
+    },
+    {
+      "epoch": 28,
+      "validation_pinball_N": 0.11737413704395294
+    },
+    {
+      "epoch": 29,
+      "validation_pinball_N": 0.11517596244812012
+    },
+    {
+      "epoch": 30,
+      "validation_pinball_N": 0.11401296406984329
+    },
+    {
+      "epoch": 31,
+      "validation_pinball_N": 0.11582712829113007
+    },
+    {
+      "epoch": 32,
+      "validation_pinball_N": 0.11621338874101639
+    },
+    {
+      "epoch": 33,
+      "validation_pinball_N": 0.11316829919815063
+    },
+    {
+      "epoch": 34,
+      "validation_pinball_N": 0.1151973083615303
+    },
+    {
+      "epoch": 35,
+      "validation_pinball_N": 0.1131647527217865
+    },
+    {
+      "epoch": 36,
+      "validation_pinball_N": 0.11585911363363266
+    },
+    {
+      "epoch": 37,
+      "validation_pinball_N": 0.11706797033548355
+    },
+    {
+      "epoch": 38,
+      "validation_pinball_N": 0.11431663483381271
+    },
+    {
+      "epoch": 39,
+      "validation_pinball_N": 0.11229902505874634
+    },
+    {
+      "epoch": 40,
+      "validation_pinball_N": 0.11359310895204544
+    },
+    {
+      "epoch": 41,
+      "validation_pinball_N": 0.11490325629711151
+    },
+    {
+      "epoch": 42,
+      "validation_pinball_N": 0.11310872435569763
+    },
+    {
+      "epoch": 43,
+      "validation_pinball_N": 0.11433529108762741
+    },
+    {
+      "epoch": 44,
+      "validation_pinball_N": 0.11462882161140442
+    },
+    {
+      "epoch": 45,
+      "validation_pinball_N": 0.1147807165980339
+    },
+    {
+      "epoch": 46,
+      "validation_pinball_N": 0.11429422348737717
+    },
+    {
+      "epoch": 47,
+      "validation_pinball_N": 0.10979007929563522
+    },
+    {
+      "epoch": 48,
+      "validation_pinball_N": 0.11123798042535782
+    },
+    {
+      "epoch": 49,
+      "validation_pinball_N": 0.11358793079853058
+    },
+    {
+      "epoch": 50,
+      "validation_pinball_N": 0.11177810281515121
+    },
+    {
+      "epoch": 51,
+      "validation_pinball_N": 0.11246103048324585
+    },
+    {
+      "epoch": 52,
+      "validation_pinball_N": 0.11030881851911545
+    },
+    {
+      "epoch": 53,
+      "validation_pinball_N": 0.11168335378170013
+    },
+    {
+      "epoch": 54,
+      "validation_pinball_N": 0.11051525175571442
+    },
+    {
+      "epoch": 55,
+      "validation_pinball_N": 0.10951241105794907
+    },
+    {
+      "epoch": 56,
+      "validation_pinball_N": 0.11330065876245499
+    },
+    {
+      "epoch": 57,
+      "validation_pinball_N": 0.11357478052377701
+    },
+    {
+      "epoch": 58,
+      "validation_pinball_N": 0.11353296041488647
+    },
+    {
+      "epoch": 59,
+      "validation_pinball_N": 0.11479548364877701
+    }
+  ],
+  "model": "M0_behavior",
+  "normalization": "exact frozen G9 E1/H2 behavior-TRAIN input mean/std",
+  "planner_train_rows": 0,
+  "planner_validation_rows": 0,
+  "train_rows": 10203,
+  "training_seed": 260314,
+  "validation_corrected_Q95_coverage": 0.950374531835206,
+  "validation_only_Q95_delta_N": 0.21518445014953613,
+  "validation_raw_Q95_coverage": 0.9021535580524345,
+  "validation_rows": 2136
+}

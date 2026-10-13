@@ -1,0 +1,176 @@
+{
+  "Delta_N": 1.579396897690497,
+  "F_lim_N": 3.685331040756903,
+  "all_replicas_meet_empirical_5pct": true,
+  "availability_by_replica": {
+    "260206": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.875,
+      "fraction_states_with_zero_accepted": 0.125,
+      "mean_accepted_actions_per_state": 16.666666666666668,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 105,
+      "states_with_zero_accepted": 15
+    },
+    "260207": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.8333333333333334,
+      "fraction_states_with_zero_accepted": 0.16666666666666666,
+      "mean_accepted_actions_per_state": 16.658333333333335,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 100,
+      "states_with_zero_accepted": 20
+    },
+    "260208": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.825,
+      "fraction_states_with_zero_accepted": 0.175,
+      "mean_accepted_actions_per_state": 16.616666666666667,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 99,
+      "states_with_zero_accepted": 21
+    }
+  },
+  "c_pred_N": 2.105934143066406,
+  "calibration_candidate_results_sha256": "03bc8887cdad3783b4573b8379c2793444a3d55f216ec8aa2309b0a86d12c2a6",
+  "calibration_metrics_by_replica": {
+    "260206": {
+      "FN": 17,
+      "FP": 189,
+      "NPV": 0.9915,
+      "TN": 1983,
+      "TP": 331,
+      "acceptance_rate": 0.7936507936507936,
+      "accepted_count": 2000,
+      "candidate_count": 2520,
+      "false_safe_CI95_exact": [
+        0.028711298533539365,
+        0.07706413069377059
+      ],
+      "false_safe_count": 17,
+      "false_safe_rate": 0.04885057471264368,
+      "false_safe_severity": {
+        "count": 17,
+        "max_N": 3.8689995425046164,
+        "max_true_force_N": 7.554330583261519,
+        "mean_N": 2.3873600848596546,
+        "median_N": 2.7228561239650824,
+        "q90_N": 3.85576418615219
+      },
+      "false_unsafe_count": 189,
+      "false_unsafe_rate": 0.08701657458563536,
+      "precision": 0.6365384615384615,
+      "rejected_count": 520,
+      "rejection_rate": 0.20634920634920634,
+      "specificity": 0.9129834254143646,
+      "true_safe_count": 2172,
+      "true_unsafe_count": 348,
+      "unsafe_recall": 0.9511494252873564
+    },
+    "260207": {
+      "FN": 17,
+      "FP": 190,
+      "NPV": 0.991495747873937,
+      "TN": 1982,
+      "TP": 331,
+      "acceptance_rate": 0.7932539682539682,
+      "accepted_count": 1999,
+      "candidate_count": 2520,
+      "false_safe_CI95_exact": [
+        0.028711298533539365,
+        0.07706413069377059
+      ],
+      "false_safe_count": 17,
+      "false_safe_rate": 0.04885057471264368,
+      "false_safe_severity": {
+        "count": 17,
+        "max_N": 5.96790632275674,
+        "max_true_force_N": 9.653237363513643,
+        "mean_N": 3.1679015493782807,
+        "median_N": 3.658386969286538,
+        "q90_N": 5.5415355077707575
+      },
+      "false_unsafe_count": 190,
+      "false_unsafe_rate": 0.08747697974217311,
+      "precision": 0.6353166986564299,
+      "rejected_count": 521,
+      "rejection_rate": 0.20674603174603173,
+      "specificity": 0.9125230202578268,
+      "true_safe_count": 2172,
+      "true_unsafe_count": 348,
+      "unsafe_recall": 0.9511494252873564
+    },
+    "260208": {
+      "FN": 6,
+      "FP": 184,
+      "NPV": 0.9969909729187563,
+      "TN": 1988,
+      "TP": 342,
+      "acceptance_rate": 0.7912698412698412,
+      "accepted_count": 1994,
+      "candidate_count": 2520,
+      "false_safe_CI95_exact": [
+        0.006352902648328936,
+        0.03714766974446826
+      ],
+      "false_safe_count": 6,
+      "false_safe_rate": 0.017241379310344827,
+      "false_safe_severity": {
+        "count": 6,
+        "max_N": 1.1929884048054151,
+        "max_true_force_N": 4.878319445562318,
+        "mean_N": 0.5896728681630267,
+        "median_N": 0.5449226777147786,
+        "q90_N": 0.9387398972057572
+      },
+      "false_unsafe_count": 184,
+      "false_unsafe_rate": 0.0847145488029466,
+      "precision": 0.6501901140684411,
+      "rejected_count": 526,
+      "rejection_rate": 0.20873015873015874,
+      "specificity": 0.9152854511970534,
+      "true_safe_count": 2172,
+      "true_unsafe_count": 348,
+      "unsafe_recall": 0.9827586206896551
+    }
+  },
+  "calibration_true_unsafe_count": 348,
+  "confirmation_seeds_opened_before_selection": false,
+  "degenerate_all_candidates_rejected_any_replica": false,
+  "exact_event_breakpoint_count": 6697,
+  "last_passing_event_cutoff_N": 2.1058924198150635,
+  "next_failing_prediction_N": 2.1059341430664062,
+  "selection_detail": "largest float64 below first failing exact prediction breakpoint",
+  "selection_rule": "largest float64 cutoff <=F_lim with every frozen replica empirical Q95 false-safe rate <=5%",
+  "status": "SHARED_WORST_REPLICA_Q95_CUTOFF_SELECTED_ON_CALIBRATION_ONLY",
+  "worst_replica_acceptance_rate": 0.7912698412698412,
+  "worst_replica_false_safe_rate": 0.04885057471264368,
+  "worst_replica_fraction_states_with_accepted_action": 0.825
+}

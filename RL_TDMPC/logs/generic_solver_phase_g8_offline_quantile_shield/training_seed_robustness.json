@@ -1,0 +1,63 @@
+{
+  "G7_three_seed_metrics": {
+    "false_intervention_rate_given_nominal_true_safe": {
+      "by_seed": {
+        "260206": 0.04807692307692308,
+        "260207": 0.04807692307692308,
+        "260208": 0.028846153846153848
+      },
+      "mean": 0.041666666666666664,
+      "sample_sd": 0.011102889792108188,
+      "worst": 0.04807692307692308
+    },
+    "final_selected_true_exceedance_rate": {
+      "by_seed": {
+        "260206": 0.009523809523809525,
+        "260207": 0.0,
+        "260208": 0.02830188679245283
+      },
+      "mean": 0.012608565438754119,
+      "sample_sd": 0.014400902343057994,
+      "worst": 0.02830188679245283
+    },
+    "mean_action_deviation_l2_all_interventions": {
+      "by_seed": {
+        "260206": 0.8980898570561546,
+        "260207": 1.0419762885878223,
+        "260208": 0.5757636888834137
+      },
+      "mean": 0.8386099448424634,
+      "sample_sd": 0.2387298515026914,
+      "worst": 1.0419762885878223
+    },
+    "predicted_infeasible_rate": {
+      "by_seed": {
+        "260206": 0.125,
+        "260207": 0.13333333333333333,
+        "260208": 0.11666666666666667
+      },
+      "mean": 0.125,
+      "sample_sd": 0.008333333333333331,
+      "worst": 0.13333333333333333
+    },
+    "rescue_rate_given_repairable_unsafe": {
+      "by_seed": {
+        "260206": 0.25,
+        "260207": 0.5,
+        "260208": 0.0
+      },
+      "mean": 0.25,
+      "sample_sd": 0.25,
+      "worst": 0.0
+    }
+  },
+  "all_three_choose_different_actions_count": 3,
+  "all_three_choose_different_actions_fraction": 0.025,
+  "all_three_choose_same_action_count": 96,
+  "all_three_choose_same_action_fraction": 0.8,
+  "any_replica_predicted_infeasible_count": 16,
+  "any_replica_predicted_infeasible_fraction": 0.13333333333333333,
+  "not_all_three_choose_same_action_count": 24,
+  "same_selection_including_all_infeasible_count": 110,
+  "same_selection_including_all_infeasible_fraction": 0.9166666666666666
+}

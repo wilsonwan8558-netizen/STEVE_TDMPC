@@ -1,0 +1,69 @@
+{
+  "best_validation_pinball_N": 0.2172020673751831,
+  "checkpoint_sha256": "af8d99aa3d1bd63ba9d4b1678b4944c58faa04bedc6cf26e3566c59249af2756",
+  "family": "M_PRIV",
+  "hidden_depth": 2,
+  "hidden_width": 64,
+  "history": [
+    {
+      "epoch": 0,
+      "validation_pinball_N": 0.4967981278896332
+    },
+    {
+      "epoch": 1,
+      "validation_pinball_N": 0.29309067130088806
+    },
+    {
+      "epoch": 2,
+      "validation_pinball_N": 0.24555601179599762
+    },
+    {
+      "epoch": 3,
+      "validation_pinball_N": 0.22629854083061218
+    },
+    {
+      "epoch": 4,
+      "validation_pinball_N": 0.2172020673751831
+    },
+    {
+      "epoch": 5,
+      "validation_pinball_N": 0.22469766438007355
+    },
+    {
+      "epoch": 6,
+      "validation_pinball_N": 0.23650506138801575
+    },
+    {
+      "epoch": 7,
+      "validation_pinball_N": 0.2344040423631668
+    },
+    {
+      "epoch": 8,
+      "validation_pinball_N": 0.2415991872549057
+    },
+    {
+      "epoch": 9,
+      "validation_pinball_N": 0.24637578427791595
+    },
+    {
+      "epoch": 10,
+      "validation_pinball_N": 0.25062844157218933
+    },
+    {
+      "epoch": 11,
+      "validation_pinball_N": 0.254779577255249
+    },
+    {
+      "epoch": 12,
+      "validation_pinball_N": 0.25537750124931335
+    }
+  ],
+  "normalization_sha256": "73c40289e44e4d7cec80d3e28ca84b34b7a023649cb81879663f8213a3831488",
+  "parameter_count": 42372,
+  "train_planner_rows": 5038,
+  "training_seed": 260324,
+  "validation_corrected_Q95_coverage": 0.950925925925926,
+  "validation_only_Q95_delta_N": 0.2136847972869873,
+  "validation_planner_rows": 1080,
+  "validation_raw_Q95_coverage": 0.9333333333333333
+}

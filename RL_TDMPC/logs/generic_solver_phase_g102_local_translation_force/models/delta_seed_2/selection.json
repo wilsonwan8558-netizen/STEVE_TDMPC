@@ -1,0 +1,170 @@
+{
+  "best_validation_weighted_pinball_N": 0.08470124751329422,
+  "checkpoint_sha256": "1297b8ba8efd4da945b8767a401bbc5c4b2cf58984864897ac2b8f1337789900",
+  "epochs_run": 39,
+  "history": [
+    {
+      "epoch": 0,
+      "validation_weighted_pinball_N": 0.10000516474246979
+    },
+    {
+      "epoch": 1,
+      "validation_weighted_pinball_N": 0.09306566417217255
+    },
+    {
+      "epoch": 2,
+      "validation_weighted_pinball_N": 0.08921296894550323
+    },
+    {
+      "epoch": 3,
+      "validation_weighted_pinball_N": 0.08753891289234161
+    },
+    {
+      "epoch": 4,
+      "validation_weighted_pinball_N": 0.08914754539728165
+    },
+    {
+      "epoch": 5,
+      "validation_weighted_pinball_N": 0.0880603939294815
+    },
+    {
+      "epoch": 6,
+      "validation_weighted_pinball_N": 0.08785334974527359
+    },
+    {
+      "epoch": 7,
+      "validation_weighted_pinball_N": 0.08764564245939255
+    },
+    {
+      "epoch": 8,
+      "validation_weighted_pinball_N": 0.08729857951402664
+    },
+    {
+      "epoch": 9,
+      "validation_weighted_pinball_N": 0.08709948509931564
+    },
+    {
+      "epoch": 10,
+      "validation_weighted_pinball_N": 0.08735506236553192
+    },
+    {
+      "epoch": 11,
+      "validation_weighted_pinball_N": 0.08749030530452728
+    },
+    {
+      "epoch": 12,
+      "validation_weighted_pinball_N": 0.08714146912097931
+    },
+    {
+      "epoch": 13,
+      "validation_weighted_pinball_N": 0.08698294311761856
+    },
+    {
+      "epoch": 14,
+      "validation_weighted_pinball_N": 0.08794405311346054
+    },
+    {
+      "epoch": 15,
+      "validation_weighted_pinball_N": 0.08667312562465668
+    },
+    {
+      "epoch": 16,
+      "validation_weighted_pinball_N": 0.08677265793085098
+    },
+    {
+      "epoch": 17,
+      "validation_weighted_pinball_N": 0.08652768284082413
+    },
+    {
+      "epoch": 18,
+      "validation_weighted_pinball_N": 0.08805791288614273
+    },
+    {
+      "epoch": 19,
+      "validation_weighted_pinball_N": 0.08834274858236313
+    },
+    {
+      "epoch": 20,
+      "validation_weighted_pinball_N": 0.0860620066523552
+    },
+    {
+      "epoch": 21,
+      "validation_weighted_pinball_N": 0.08721666783094406
+    },
+    {
+      "epoch": 22,
+      "validation_weighted_pinball_N": 0.08607105910778046
+    },
+    {
+      "epoch": 23,
+      "validation_weighted_pinball_N": 0.08693059533834457
+    },
+    {
+      "epoch": 24,
+      "validation_weighted_pinball_N": 0.08619284629821777
+    },
+    {
+      "epoch": 25,
+      "validation_weighted_pinball_N": 0.08634945750236511
+    },
+    {
+      "epoch": 26,
+      "validation_weighted_pinball_N": 0.08534259349107742
+    },
+    {
+      "epoch": 27,
+      "validation_weighted_pinball_N": 0.0888805091381073
+    },
+    {
+      "epoch": 28,
+      "validation_weighted_pinball_N": 0.08470124751329422
+    },
+    {
+      "epoch": 29,
+      "validation_weighted_pinball_N": 0.08628244698047638
+    },
+    {
+      "epoch": 30,
+      "validation_weighted_pinball_N": 0.08518726378679276
+    },
+    {
+      "epoch": 31,
+      "validation_weighted_pinball_N": 0.08646296709775925
+    },
+    {
+      "epoch": 32,
+      "validation_weighted_pinball_N": 0.0879121869802475
+    },
+    {
+      "epoch": 33,
+      "validation_weighted_pinball_N": 0.08472996950149536
+    },
+    {
+      "epoch": 34,
+      "validation_weighted_pinball_N": 0.08651152998209
+    },
+    {
+      "epoch": 35,
+      "validation_weighted_pinball_N": 0.08521224558353424
+    },
+    {
+      "epoch": 36,
+      "validation_weighted_pinball_N": 0.08492933213710785
+    },
+    {
+      "epoch": 37,
+      "validation_weighted_pinball_N": 0.08720599859952927
+    },
+    {
+      "epoch": 38,
+      "validation_weighted_pinball_N": 0.08790513128042221
+    }
+  ],
+  "no_development_or_confirmation_labels_used": true,
+  "seed": 261022,
+  "train_rows_nonzero_delta": 5050,
+  "validation_corrected_Q95_coverage": 0.950281425891182,
+  "validation_only_Q95_delta_correction_N": 0.11004181206226349,
+  "validation_raw_Q95_coverage": 0.8893058161350844,
+  "validation_rows_nonzero_delta": 1066
+}

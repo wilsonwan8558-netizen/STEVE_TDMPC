@@ -1,0 +1,50 @@
+{
+  "Q95_true_high_force_count": 307,
+  "candidate_results_sha256": "05e1b99f885808cf9276d4b3679825f68304ba6a95528fd3d2cb0567d7282639",
+  "candidate_rows": 2520,
+  "checkpoint_hashes": {
+    "260206": "05efea349196c83e088fc0a8337539977c883ad89ef4899e07eb72cafac596a5",
+    "260207": "40f54351b98c19c2ee7a4662eb61156c0b8a2bb6c7b3b17967c3a41444ecb148",
+    "260208": "77f75420b6b31339fdb462b7d14fe5e8d306a567e5f4db6d657510ea0ee9f4aa"
+  },
+  "input_dimension": 291,
+  "model_training_seeds": [
+    260206,
+    260207,
+    260208
+  ],
+  "seeds": [
+    96000,
+    96001,
+    96002,
+    96003,
+    96004,
+    96005,
+    96006,
+    96007,
+    96008,
+    96009,
+    96010,
+    96011,
+    96012,
+    96013,
+    96014,
+    96015,
+    96016,
+    96017,
+    96018,
+    96019,
+    96020,
+    96021,
+    96022,
+    96023,
+    96024,
+    96025,
+    96026,
+    96027,
+    96028,
+    96029
+  ],
+  "states": 120,
+  "status": "PASS_THREE_FROZEN_REPLICA_PREDICTIONS"
+}

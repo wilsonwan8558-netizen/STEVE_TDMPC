@@ -1,0 +1,45 @@
+{
+  "action_components": "absolute normalized translation and rotation; L2 norm",
+  "correlations": {
+    "abs_rotation": {
+      "following_control_interval_force": {
+        "pairs": 15300,
+        "pearson": 0.0819870519788479,
+        "spearman": -0.10241029029605118
+      },
+      "same_control_interval_force": {
+        "pairs": 15500,
+        "pearson": 0.07946409468891717,
+        "spearman": -0.10089790080341736
+      }
+    },
+    "abs_translation": {
+      "following_control_interval_force": {
+        "pairs": 15300,
+        "pearson": 0.0016787910427915331,
+        "spearman": -0.29173278134788994
+      },
+      "same_control_interval_force": {
+        "pairs": 15500,
+        "pearson": -0.024938261917668146,
+        "spearman": -0.3242407298410072
+      }
+    },
+    "action_norm": {
+      "following_control_interval_force": {
+        "pairs": 15300,
+        "pearson": 0.05584473088967651,
+        "spearman": -0.20777052898295917
+      },
+      "same_control_interval_force": {
+        "pairs": 15500,
+        "pearson": 0.038782964175561235,
+        "spearman": -0.22126688006276143
+      }
+    }
+  },
+  "following_interval_timing": "a_t versus force measured during the next control interval, within the same episode only.",
+  "interpretation": "Descriptive association only; correlation does not establish controllability or causal force effects.",
+  "same_interval_timing": "a_t is selected from decision observation s_t, then force is measured over env.step(a_t); CSV target is F_(t+1) from decision-state indexing.",
+  "status": "COMPLETE"
+}

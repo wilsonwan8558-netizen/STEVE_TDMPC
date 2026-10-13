@@ -1,0 +1,1210 @@
+{
+  "candidate_outcome_labels_used": false,
+  "count": 120,
+  "rule": "exact frozen G3 four per episode progress/prior-force strata",
+  "source_behavior_episodes_sha256": "f11ed1e07e373cedeeb24fb2795b18e7e025a8fff6bf37086a495e92eebc4daa",
+  "source_behavior_steps_sha256": "b0d7762e27a670f5f9709bf41217bf0c3bad5d06bdc0c506e4590adfd0ee6517",
+  "states": [
+    {
+      "decision_index": 32,
+      "episode_length": 200,
+      "episode_progress": 0.16,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.7622317473938203,
+      "seed": 106000,
+      "slot": "early",
+      "state_id": 0
+    },
+    {
+      "decision_index": 67,
+      "episode_length": 200,
+      "episode_progress": 0.335,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.9673700463737704,
+      "seed": 106000,
+      "slot": "middle",
+      "state_id": 1
+    },
+    {
+      "decision_index": 157,
+      "episode_length": 200,
+      "episode_progress": 0.785,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.2623580477950054,
+      "seed": 106000,
+      "slot": "late",
+      "state_id": 2
+    },
+    {
+      "decision_index": 47,
+      "episode_length": 200,
+      "episode_progress": 0.235,
+      "group": "confirmation",
+      "previous_executed_force_N": 2.489151330671358,
+      "seed": 106000,
+      "slot": "prior_force_Q95",
+      "state_id": 3
+    },
+    {
+      "decision_index": 10,
+      "episode_length": 58,
+      "episode_progress": 0.1724137931034483,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106001,
+      "slot": "early",
+      "state_id": 4
+    },
+    {
+      "decision_index": 36,
+      "episode_length": 58,
+      "episode_progress": 0.6206896551724138,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.9516814149191201,
+      "seed": 106001,
+      "slot": "middle",
+      "state_id": 5
+    },
+    {
+      "decision_index": 51,
+      "episode_length": 58,
+      "episode_progress": 0.8793103448275862,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106001,
+      "slot": "late",
+      "state_id": 6
+    },
+    {
+      "decision_index": 34,
+      "episode_length": 58,
+      "episode_progress": 0.5862068965517241,
+      "group": "confirmation",
+      "previous_executed_force_N": 3.7688815452353186,
+      "seed": 106001,
+      "slot": "prior_force_Q95",
+      "state_id": 7
+    },
+    {
+      "decision_index": 17,
+      "episode_length": 55,
+      "episode_progress": 0.3090909090909091,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.3731894322280202,
+      "seed": 106002,
+      "slot": "early",
+      "state_id": 8
+    },
+    {
+      "decision_index": 28,
+      "episode_length": 55,
+      "episode_progress": 0.509090909090909,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106002,
+      "slot": "middle",
+      "state_id": 9
+    },
+    {
+      "decision_index": 38,
+      "episode_length": 55,
+      "episode_progress": 0.6909090909090909,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106002,
+      "slot": "late",
+      "state_id": 10
+    },
+    {
+      "decision_index": 47,
+      "episode_length": 55,
+      "episode_progress": 0.8545454545454545,
+      "group": "confirmation",
+      "previous_executed_force_N": 7.40879725680311,
+      "seed": 106002,
+      "slot": "prior_force_Q95",
+      "state_id": 11
+    },
+    {
+      "decision_index": 11,
+      "episode_length": 66,
+      "episode_progress": 0.16666666666666666,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106003,
+      "slot": "early",
+      "state_id": 12
+    },
+    {
+      "decision_index": 38,
+      "episode_length": 66,
+      "episode_progress": 0.5757575757575758,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.16748172519268908,
+      "seed": 106003,
+      "slot": "middle",
+      "state_id": 13
+    },
+    {
+      "decision_index": 51,
+      "episode_length": 66,
+      "episode_progress": 0.7727272727272727,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.27086785959763,
+      "seed": 106003,
+      "slot": "late",
+      "state_id": 14
+    },
+    {
+      "decision_index": 31,
+      "episode_length": 66,
+      "episode_progress": 0.4696969696969697,
+      "group": "confirmation",
+      "previous_executed_force_N": 5.416339890231672,
+      "seed": 106003,
+      "slot": "prior_force_Q95",
+      "state_id": 15
+    },
+    {
+      "decision_index": 9,
+      "episode_length": 56,
+      "episode_progress": 0.16071428571428573,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106004,
+      "slot": "early",
+      "state_id": 16
+    },
+    {
+      "decision_index": 35,
+      "episode_length": 56,
+      "episode_progress": 0.625,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.9657102889336822,
+      "seed": 106004,
+      "slot": "middle",
+      "state_id": 17
+    },
+    {
+      "decision_index": 51,
+      "episode_length": 56,
+      "episode_progress": 0.9107142857142857,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106004,
+      "slot": "late",
+      "state_id": 18
+    },
+    {
+      "decision_index": 34,
+      "episode_length": 56,
+      "episode_progress": 0.6071428571428571,
+      "group": "confirmation",
+      "previous_executed_force_N": 4.751097148600036,
+      "seed": 106004,
+      "slot": "prior_force_Q95",
+      "state_id": 19
+    },
+    {
+      "decision_index": 16,
+      "episode_length": 68,
+      "episode_progress": 0.23529411764705882,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.4025244950123552,
+      "seed": 106005,
+      "slot": "early",
+      "state_id": 20
+    },
+    {
+      "decision_index": 37,
+      "episode_length": 68,
+      "episode_progress": 0.5441176470588235,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106005,
+      "slot": "middle",
+      "state_id": 21
+    },
+    {
+      "decision_index": 56,
+      "episode_length": 68,
+      "episode_progress": 0.8235294117647058,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106005,
+      "slot": "late",
+      "state_id": 22
+    },
+    {
+      "decision_index": 41,
+      "episode_length": 68,
+      "episode_progress": 0.6029411764705882,
+      "group": "confirmation",
+      "previous_executed_force_N": 4.116404738698165,
+      "seed": 106005,
+      "slot": "prior_force_Q95",
+      "state_id": 23
+    },
+    {
+      "decision_index": 11,
+      "episode_length": 66,
+      "episode_progress": 0.16666666666666666,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106006,
+      "slot": "early",
+      "state_id": 24
+    },
+    {
+      "decision_index": 30,
+      "episode_length": 66,
+      "episode_progress": 0.45454545454545453,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106006,
+      "slot": "middle",
+      "state_id": 25
+    },
+    {
+      "decision_index": 52,
+      "episode_length": 66,
+      "episode_progress": 0.7878787878787878,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.8947323597286587,
+      "seed": 106006,
+      "slot": "late",
+      "state_id": 26
+    },
+    {
+      "decision_index": 34,
+      "episode_length": 66,
+      "episode_progress": 0.5151515151515151,
+      "group": "confirmation",
+      "previous_executed_force_N": 3.9284554074376885,
+      "seed": 106006,
+      "slot": "prior_force_Q95",
+      "state_id": 27
+    },
+    {
+      "decision_index": 7,
+      "episode_length": 44,
+      "episode_progress": 0.1590909090909091,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106007,
+      "slot": "early",
+      "state_id": 28
+    },
+    {
+      "decision_index": 22,
+      "episode_length": 44,
+      "episode_progress": 0.5,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106007,
+      "slot": "middle",
+      "state_id": 29
+    },
+    {
+      "decision_index": 40,
+      "episode_length": 44,
+      "episode_progress": 0.9090909090909091,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106007,
+      "slot": "late",
+      "state_id": 30
+    },
+    {
+      "decision_index": 41,
+      "episode_length": 44,
+      "episode_progress": 0.9318181818181818,
+      "group": "confirmation",
+      "previous_executed_force_N": 7.784316342557032,
+      "seed": 106007,
+      "slot": "prior_force_Q95",
+      "state_id": 31
+    },
+    {
+      "decision_index": 12,
+      "episode_length": 38,
+      "episode_progress": 0.3157894736842105,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.5749471009121359,
+      "seed": 106008,
+      "slot": "early",
+      "state_id": 32
+    },
+    {
+      "decision_index": 22,
+      "episode_length": 38,
+      "episode_progress": 0.5789473684210527,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106008,
+      "slot": "middle",
+      "state_id": 33
+    },
+    {
+      "decision_index": 34,
+      "episode_length": 38,
+      "episode_progress": 0.8947368421052632,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106008,
+      "slot": "late",
+      "state_id": 34
+    },
+    {
+      "decision_index": 29,
+      "episode_length": 38,
+      "episode_progress": 0.7631578947368421,
+      "group": "confirmation",
+      "previous_executed_force_N": 2.058478540862764,
+      "seed": 106008,
+      "slot": "prior_force_Q95",
+      "state_id": 35
+    },
+    {
+      "decision_index": 10,
+      "episode_length": 62,
+      "episode_progress": 0.16129032258064516,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106009,
+      "slot": "early",
+      "state_id": 36
+    },
+    {
+      "decision_index": 30,
+      "episode_length": 62,
+      "episode_progress": 0.4838709677419355,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106009,
+      "slot": "middle",
+      "state_id": 37
+    },
+    {
+      "decision_index": 47,
+      "episode_length": 62,
+      "episode_progress": 0.7580645161290323,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.9811050217723472,
+      "seed": 106009,
+      "slot": "late",
+      "state_id": 38
+    },
+    {
+      "decision_index": 52,
+      "episode_length": 62,
+      "episode_progress": 0.8387096774193549,
+      "group": "confirmation",
+      "previous_executed_force_N": 6.243521660837607,
+      "seed": 106009,
+      "slot": "prior_force_Q95",
+      "state_id": 39
+    },
+    {
+      "decision_index": 10,
+      "episode_length": 60,
+      "episode_progress": 0.16666666666666666,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106010,
+      "slot": "early",
+      "state_id": 40
+    },
+    {
+      "decision_index": 35,
+      "episode_length": 60,
+      "episode_progress": 0.5833333333333334,
+      "group": "confirmation",
+      "previous_executed_force_N": 2.0525019871064365,
+      "seed": 106010,
+      "slot": "middle",
+      "state_id": 41
+    },
+    {
+      "decision_index": 52,
+      "episode_length": 60,
+      "episode_progress": 0.8666666666666667,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106010,
+      "slot": "late",
+      "state_id": 42
+    },
+    {
+      "decision_index": 50,
+      "episode_length": 60,
+      "episode_progress": 0.8333333333333334,
+      "group": "confirmation",
+      "previous_executed_force_N": 6.186413623141498,
+      "seed": 106010,
+      "slot": "prior_force_Q95",
+      "state_id": 43
+    },
+    {
+      "decision_index": 4,
+      "episode_length": 61,
+      "episode_progress": 0.06557377049180328,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.1974889236011517,
+      "seed": 106011,
+      "slot": "early",
+      "state_id": 44
+    },
+    {
+      "decision_index": 30,
+      "episode_length": 61,
+      "episode_progress": 0.4918032786885246,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106011,
+      "slot": "middle",
+      "state_id": 45
+    },
+    {
+      "decision_index": 51,
+      "episode_length": 61,
+      "episode_progress": 0.8360655737704918,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106011,
+      "slot": "late",
+      "state_id": 46
+    },
+    {
+      "decision_index": 42,
+      "episode_length": 61,
+      "episode_progress": 0.6885245901639344,
+      "group": "confirmation",
+      "previous_executed_force_N": 3.24989816744625,
+      "seed": 106011,
+      "slot": "prior_force_Q95",
+      "state_id": 47
+    },
+    {
+      "decision_index": 3,
+      "episode_length": 69,
+      "episode_progress": 0.043478260869565216,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106012,
+      "slot": "early",
+      "state_id": 48
+    },
+    {
+      "decision_index": 39,
+      "episode_length": 69,
+      "episode_progress": 0.5652173913043478,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.45034028451347385,
+      "seed": 106012,
+      "slot": "middle",
+      "state_id": 49
+    },
+    {
+      "decision_index": 57,
+      "episode_length": 69,
+      "episode_progress": 0.8260869565217391,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.771431359725887,
+      "seed": 106012,
+      "slot": "late",
+      "state_id": 50
+    },
+    {
+      "decision_index": 56,
+      "episode_length": 69,
+      "episode_progress": 0.8115942028985508,
+      "group": "confirmation",
+      "previous_executed_force_N": 3.5711972006563446,
+      "seed": 106012,
+      "slot": "prior_force_Q95",
+      "state_id": 51
+    },
+    {
+      "decision_index": 7,
+      "episode_length": 40,
+      "episode_progress": 0.175,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106013,
+      "slot": "early",
+      "state_id": 52
+    },
+    {
+      "decision_index": 26,
+      "episode_length": 40,
+      "episode_progress": 0.65,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.141678573161475,
+      "seed": 106013,
+      "slot": "middle",
+      "state_id": 53
+    },
+    {
+      "decision_index": 34,
+      "episode_length": 40,
+      "episode_progress": 0.85,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106013,
+      "slot": "late",
+      "state_id": 54
+    },
+    {
+      "decision_index": 27,
+      "episode_length": 40,
+      "episode_progress": 0.675,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.9725003424602017,
+      "seed": 106013,
+      "slot": "prior_force_Q95",
+      "state_id": 55
+    },
+    {
+      "decision_index": 9,
+      "episode_length": 53,
+      "episode_progress": 0.16981132075471697,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106014,
+      "slot": "early",
+      "state_id": 56
+    },
+    {
+      "decision_index": 26,
+      "episode_length": 53,
+      "episode_progress": 0.49056603773584906,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106014,
+      "slot": "middle",
+      "state_id": 57
+    },
+    {
+      "decision_index": 43,
+      "episode_length": 53,
+      "episode_progress": 0.8113207547169812,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106014,
+      "slot": "late",
+      "state_id": 58
+    },
+    {
+      "decision_index": 46,
+      "episode_length": 53,
+      "episode_progress": 0.8679245283018868,
+      "group": "confirmation",
+      "previous_executed_force_N": 6.106219306780661,
+      "seed": 106014,
+      "slot": "prior_force_Q95",
+      "state_id": 59
+    },
+    {
+      "decision_index": 7,
+      "episode_length": 43,
+      "episode_progress": 0.16279069767441862,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106015,
+      "slot": "early",
+      "state_id": 60
+    },
+    {
+      "decision_index": 21,
+      "episode_length": 43,
+      "episode_progress": 0.4883720930232558,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106015,
+      "slot": "middle",
+      "state_id": 61
+    },
+    {
+      "decision_index": 37,
+      "episode_length": 43,
+      "episode_progress": 0.8604651162790697,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.899691806782077,
+      "seed": 106015,
+      "slot": "late",
+      "state_id": 62
+    },
+    {
+      "decision_index": 34,
+      "episode_length": 43,
+      "episode_progress": 0.7906976744186046,
+      "group": "confirmation",
+      "previous_executed_force_N": 2.552931132726078,
+      "seed": 106015,
+      "slot": "prior_force_Q95",
+      "state_id": 63
+    },
+    {
+      "decision_index": 9,
+      "episode_length": 55,
+      "episode_progress": 0.16363636363636364,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106016,
+      "slot": "early",
+      "state_id": 64
+    },
+    {
+      "decision_index": 33,
+      "episode_length": 55,
+      "episode_progress": 0.6,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.7898127921460185,
+      "seed": 106016,
+      "slot": "middle",
+      "state_id": 65
+    },
+    {
+      "decision_index": 45,
+      "episode_length": 55,
+      "episode_progress": 0.8181818181818182,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106016,
+      "slot": "late",
+      "state_id": 66
+    },
+    {
+      "decision_index": 27,
+      "episode_length": 55,
+      "episode_progress": 0.4909090909090909,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.6078078778795426,
+      "seed": 106016,
+      "slot": "prior_force_Q95",
+      "state_id": 67
+    },
+    {
+      "decision_index": 4,
+      "episode_length": 64,
+      "episode_progress": 0.0625,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.1053055164493824,
+      "seed": 106017,
+      "slot": "early",
+      "state_id": 68
+    },
+    {
+      "decision_index": 30,
+      "episode_length": 64,
+      "episode_progress": 0.46875,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106017,
+      "slot": "middle",
+      "state_id": 69
+    },
+    {
+      "decision_index": 57,
+      "episode_length": 64,
+      "episode_progress": 0.890625,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106017,
+      "slot": "late",
+      "state_id": 70
+    },
+    {
+      "decision_index": 51,
+      "episode_length": 64,
+      "episode_progress": 0.796875,
+      "group": "confirmation",
+      "previous_executed_force_N": 5.932856978996111,
+      "seed": 106017,
+      "slot": "prior_force_Q95",
+      "state_id": 71
+    },
+    {
+      "decision_index": 10,
+      "episode_length": 59,
+      "episode_progress": 0.1694915254237288,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106018,
+      "slot": "early",
+      "state_id": 72
+    },
+    {
+      "decision_index": 29,
+      "episode_length": 59,
+      "episode_progress": 0.4915254237288136,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106018,
+      "slot": "middle",
+      "state_id": 73
+    },
+    {
+      "decision_index": 41,
+      "episode_length": 59,
+      "episode_progress": 0.6949152542372882,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.8618300408991626,
+      "seed": 106018,
+      "slot": "late",
+      "state_id": 74
+    },
+    {
+      "decision_index": 46,
+      "episode_length": 59,
+      "episode_progress": 0.7796610169491526,
+      "group": "confirmation",
+      "previous_executed_force_N": 5.127787828434639,
+      "seed": 106018,
+      "slot": "prior_force_Q95",
+      "state_id": 75
+    },
+    {
+      "decision_index": 7,
+      "episode_length": 100,
+      "episode_progress": 0.07,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.8831154812093935,
+      "seed": 106019,
+      "slot": "early",
+      "state_id": 76
+    },
+    {
+      "decision_index": 65,
+      "episode_length": 100,
+      "episode_progress": 0.65,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.8057626063160954,
+      "seed": 106019,
+      "slot": "middle",
+      "state_id": 77
+    },
+    {
+      "decision_index": 92,
+      "episode_length": 100,
+      "episode_progress": 0.92,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106019,
+      "slot": "late",
+      "state_id": 78
+    },
+    {
+      "decision_index": 48,
+      "episode_length": 100,
+      "episode_progress": 0.48,
+      "group": "confirmation",
+      "previous_executed_force_N": 5.632726055452852,
+      "seed": 106019,
+      "slot": "prior_force_Q95",
+      "state_id": 79
+    },
+    {
+      "decision_index": 5,
+      "episode_length": 30,
+      "episode_progress": 0.16666666666666666,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.0327448887255504,
+      "seed": 106020,
+      "slot": "early",
+      "state_id": 80
+    },
+    {
+      "decision_index": 15,
+      "episode_length": 30,
+      "episode_progress": 0.5,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106020,
+      "slot": "middle",
+      "state_id": 81
+    },
+    {
+      "decision_index": 21,
+      "episode_length": 30,
+      "episode_progress": 0.7,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106020,
+      "slot": "late",
+      "state_id": 82
+    },
+    {
+      "decision_index": 23,
+      "episode_length": 30,
+      "episode_progress": 0.7666666666666667,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.8757298966480922,
+      "seed": 106020,
+      "slot": "prior_force_Q95",
+      "state_id": 83
+    },
+    {
+      "decision_index": 6,
+      "episode_length": 39,
+      "episode_progress": 0.15384615384615385,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106021,
+      "slot": "early",
+      "state_id": 84
+    },
+    {
+      "decision_index": 20,
+      "episode_length": 39,
+      "episode_progress": 0.5128205128205128,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106021,
+      "slot": "middle",
+      "state_id": 85
+    },
+    {
+      "decision_index": 34,
+      "episode_length": 39,
+      "episode_progress": 0.8717948717948718,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.17406899133728232,
+      "seed": 106021,
+      "slot": "late",
+      "state_id": 86
+    },
+    {
+      "decision_index": 36,
+      "episode_length": 39,
+      "episode_progress": 0.9230769230769231,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.3612357585921824,
+      "seed": 106021,
+      "slot": "prior_force_Q95",
+      "state_id": 87
+    },
+    {
+      "decision_index": 5,
+      "episode_length": 30,
+      "episode_progress": 0.16666666666666666,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106022,
+      "slot": "early",
+      "state_id": 88
+    },
+    {
+      "decision_index": 15,
+      "episode_length": 30,
+      "episode_progress": 0.5,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106022,
+      "slot": "middle",
+      "state_id": 89
+    },
+    {
+      "decision_index": 21,
+      "episode_length": 30,
+      "episode_progress": 0.7,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106022,
+      "slot": "late",
+      "state_id": 90
+    },
+    {
+      "decision_index": 26,
+      "episode_length": 30,
+      "episode_progress": 0.8666666666666667,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.2916205036339927,
+      "seed": 106022,
+      "slot": "prior_force_Q95",
+      "state_id": 91
+    },
+    {
+      "decision_index": 6,
+      "episode_length": 38,
+      "episode_progress": 0.15789473684210525,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.12659037904320114,
+      "seed": 106023,
+      "slot": "early",
+      "state_id": 92
+    },
+    {
+      "decision_index": 19,
+      "episode_length": 38,
+      "episode_progress": 0.5,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106023,
+      "slot": "middle",
+      "state_id": 93
+    },
+    {
+      "decision_index": 30,
+      "episode_length": 38,
+      "episode_progress": 0.7894736842105263,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106023,
+      "slot": "late",
+      "state_id": 94
+    },
+    {
+      "decision_index": 4,
+      "episode_length": 38,
+      "episode_progress": 0.10526315789473684,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.0907953023305434,
+      "seed": 106023,
+      "slot": "prior_force_Q95",
+      "state_id": 95
+    },
+    {
+      "decision_index": 10,
+      "episode_length": 61,
+      "episode_progress": 0.16393442622950818,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106024,
+      "slot": "early",
+      "state_id": 96
+    },
+    {
+      "decision_index": 30,
+      "episode_length": 61,
+      "episode_progress": 0.4918032786885246,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106024,
+      "slot": "middle",
+      "state_id": 97
+    },
+    {
+      "decision_index": 58,
+      "episode_length": 61,
+      "episode_progress": 0.9508196721311475,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.6120343424162484,
+      "seed": 106024,
+      "slot": "late",
+      "state_id": 98
+    },
+    {
+      "decision_index": 50,
+      "episode_length": 61,
+      "episode_progress": 0.819672131147541,
+      "group": "confirmation",
+      "previous_executed_force_N": 6.816990696699452,
+      "seed": 106024,
+      "slot": "prior_force_Q95",
+      "state_id": 99
+    },
+    {
+      "decision_index": 10,
+      "episode_length": 60,
+      "episode_progress": 0.16666666666666666,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106025,
+      "slot": "early",
+      "state_id": 100
+    },
+    {
+      "decision_index": 31,
+      "episode_length": 60,
+      "episode_progress": 0.5166666666666667,
+      "group": "confirmation",
+      "previous_executed_force_N": 2.1681659164346394,
+      "seed": 106025,
+      "slot": "middle",
+      "state_id": 101
+    },
+    {
+      "decision_index": 50,
+      "episode_length": 60,
+      "episode_progress": 0.8333333333333334,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106025,
+      "slot": "late",
+      "state_id": 102
+    },
+    {
+      "decision_index": 47,
+      "episode_length": 60,
+      "episode_progress": 0.7833333333333333,
+      "group": "confirmation",
+      "previous_executed_force_N": 6.6300707489854425,
+      "seed": 106025,
+      "slot": "prior_force_Q95",
+      "state_id": 103
+    },
+    {
+      "decision_index": 16,
+      "episode_length": 58,
+      "episode_progress": 0.27586206896551724,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.33532684788120887,
+      "seed": 106026,
+      "slot": "early",
+      "state_id": 104
+    },
+    {
+      "decision_index": 29,
+      "episode_length": 58,
+      "episode_progress": 0.5,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106026,
+      "slot": "middle",
+      "state_id": 105
+    },
+    {
+      "decision_index": 39,
+      "episode_length": 58,
+      "episode_progress": 0.6724137931034483,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.031971938518379324,
+      "seed": 106026,
+      "slot": "late",
+      "state_id": 106
+    },
+    {
+      "decision_index": 48,
+      "episode_length": 58,
+      "episode_progress": 0.8275862068965517,
+      "group": "confirmation",
+      "previous_executed_force_N": 4.50216173917692,
+      "seed": 106026,
+      "slot": "prior_force_Q95",
+      "state_id": 107
+    },
+    {
+      "decision_index": 9,
+      "episode_length": 55,
+      "episode_progress": 0.16363636363636364,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106027,
+      "slot": "early",
+      "state_id": 108
+    },
+    {
+      "decision_index": 28,
+      "episode_length": 55,
+      "episode_progress": 0.509090909090909,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106027,
+      "slot": "middle",
+      "state_id": 109
+    },
+    {
+      "decision_index": 44,
+      "episode_length": 55,
+      "episode_progress": 0.8,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.9731487937438112,
+      "seed": 106027,
+      "slot": "late",
+      "state_id": 110
+    },
+    {
+      "decision_index": 49,
+      "episode_length": 55,
+      "episode_progress": 0.8909090909090909,
+      "group": "confirmation",
+      "previous_executed_force_N": 6.137662580229967,
+      "seed": 106027,
+      "slot": "prior_force_Q95",
+      "state_id": 111
+    },
+    {
+      "decision_index": 10,
+      "episode_length": 59,
+      "episode_progress": 0.1694915254237288,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106028,
+      "slot": "early",
+      "state_id": 112
+    },
+    {
+      "decision_index": 36,
+      "episode_length": 59,
+      "episode_progress": 0.6101694915254238,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.0282422799848547,
+      "seed": 106028,
+      "slot": "middle",
+      "state_id": 113
+    },
+    {
+      "decision_index": 49,
+      "episode_length": 59,
+      "episode_progress": 0.8305084745762712,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106028,
+      "slot": "late",
+      "state_id": 114
+    },
+    {
+      "decision_index": 41,
+      "episode_length": 59,
+      "episode_progress": 0.6949152542372882,
+      "group": "confirmation",
+      "previous_executed_force_N": 4.485615963923954,
+      "seed": 106028,
+      "slot": "prior_force_Q95",
+      "state_id": 115
+    },
+    {
+      "decision_index": 5,
+      "episode_length": 54,
+      "episode_progress": 0.09259259259259259,
+      "group": "confirmation",
+      "previous_executed_force_N": 1.4145239253007966,
+      "seed": 106029,
+      "slot": "early",
+      "state_id": 116
+    },
+    {
+      "decision_index": 27,
+      "episode_length": 54,
+      "episode_progress": 0.5,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106029,
+      "slot": "middle",
+      "state_id": 117
+    },
+    {
+      "decision_index": 50,
+      "episode_length": 54,
+      "episode_progress": 0.9259259259259259,
+      "group": "confirmation",
+      "previous_executed_force_N": 0.0,
+      "seed": 106029,
+      "slot": "late",
+      "state_id": 118
+    },
+    {
+      "decision_index": 41,
+      "episode_length": 54,
+      "episode_progress": 0.7592592592592593,
+      "group": "confirmation",
+      "previous_executed_force_N": 5.4326809693198275,
+      "seed": 106029,
+      "slot": "prior_force_Q95",
+      "state_id": 119
+    }
+  ],
+  "status": "SELECTED_WITHOUT_CANDIDATE_OUTCOMES"
+}

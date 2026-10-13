@@ -1,0 +1,87 @@
+{
+  "cohort": "difficult_event_early_intervention",
+  "decision_index": 45,
+  "event_decision_index": 46,
+  "fallback_zero_true": {
+    "F1_N": 4.415360080561645,
+    "F2_N": 5.496666334808085,
+    "R2_N": 5.496666334808085,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": false
+  },
+  "lookback_steps": 1,
+  "nominal_pair": [
+    [
+      0.9925254583358765,
+      0.036252882331609726
+    ],
+    [
+      0.9844743013381958,
+      -0.194257915019989
+    ]
+  ],
+  "nominal_true": {
+    "F1_N": 6.11767304448814,
+    "F2_N": 6.594356943017903,
+    "R2_N": 6.594356943017903,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": false
+  },
+  "optimized_mean_numerical_semantics": {
+    "ambiguous_matches": 0,
+    "canonical_executable_mean_pair": [
+      [
+        0.9925254583358765,
+        0.036252882331609726
+      ],
+      [
+        0.9844743013381958,
+        -0.194257915019989
+      ]
+    ],
+    "changed_by_clipping": false,
+    "changed_by_tolerance_only": false,
+    "raw_optimized_mean_pair": [
+      [
+        0.9925254583358765,
+        0.036252882331609726
+      ],
+      [
+        0.9844743013381958,
+        -0.194257915019989
+      ]
+    ]
+  },
+  "parent_scene_unchanged_by_forks": true,
+  "proposal": {
+    "action": null,
+    "delta_rotation": null,
+    "delta_translation": null,
+    "distance": null,
+    "grid_predicted_safe_count": 0,
+    "max_corrected_Q95_N": null,
+    "nominal_action": [
+      0.9925254583358765,
+      0.036252882331609726
+    ],
+    "nominal_corrected_Q95_N": [
+      8.440875232219696,
+      7.83473014831543,
+      8.87175726890564
+    ],
+    "predictor_evaluations": 1682,
+    "refinement_predictor_evaluations": 0,
+    "repaired_corrected_Q95_N": null,
+    "second_action_fixed": [
+      0.9844743013381958,
+      -0.194257915019989
+    ],
+    "status": "INFEASIBLE_ON_PREDECLARED_SEARCH"
+  },
+  "repaired_action_executed_only_in_counterfactual_fork": true,
+  "repaired_true": null,
+  "seed": 101009,
+  "state_id": 39
+}

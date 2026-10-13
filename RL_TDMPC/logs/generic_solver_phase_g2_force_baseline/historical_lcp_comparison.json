@@ -1,0 +1,73 @@
+{
+  "contact_fraction_caveat": "Generic primary contact step is any active distal contact group during the RL interval; the archived LCP count used positive peak force. Generic positive-force fraction is shown separately for closer alignment.",
+  "generic_episodes": 200,
+  "generic_total_rl_steps": 15500,
+  "historical_lcp_episodes": 200,
+  "historical_lcp_source_branch_commit": "8609163ff76c29638d483ba3d926dc2ac0daaac5",
+  "historical_lcp_source_sha256": "5026b21d54b9b485ebf54c69eab29fe54e765aa85f40d1d305bf786b258c3240",
+  "historical_lcp_total_rl_steps": 16541,
+  "interpretation_limit": "Different solvers change simulated contact dynamics, and the frozen TD-MPC2 checkpoints differ. This is not a controlled solver-only or algorithm ablation and says nothing about clinical correctness. Generic thresholds are computed solely from Generic data.",
+  "metrics": {
+    "all_step_force_median_nominal_N": {
+      "generic": 0.33377070345702653,
+      "generic_divided_by_historical_lcp": 0.7177118438806396,
+      "generic_minus_historical_lcp": -0.13127763913732376,
+      "historical_lcp": 0.4650483425943503
+    },
+    "all_step_force_q95_nominal_N": {
+      "generic": 3.685331040756903,
+      "generic_divided_by_historical_lcp": 1.1138818241222637,
+      "generic_minus_historical_lcp": 0.3767834363816047,
+      "historical_lcp": 3.308547604375298
+    },
+    "contact_only_force_median_nominal_N": {
+      "generic": 0.8832065935969151,
+      "generic_divided_by_historical_lcp": 0.8760849930203968,
+      "generic_minus_historical_lcp": -0.12492229872889205,
+      "historical_lcp": 1.0081288923258072
+    },
+    "contact_only_force_q95_nominal_N": {
+      "generic": 5.4765505381066175,
+      "generic_divided_by_historical_lcp": 1.1990603106404438,
+      "generic_minus_historical_lcp": 0.9091818332067998,
+      "historical_lcp": 4.567368704899818
+    },
+    "contact_step_fraction": {
+      "generic": 0.6065806451612903,
+      "generic_divided_by_historical_lcp": 0.9846369432397353,
+      "generic_minus_historical_lcp": -0.009464333981445971,
+      "historical_lcp": 0.6160449791427363
+    },
+    "episode_peak_median_nominal_N": {
+      "generic": 7.533136234214668,
+      "generic_divided_by_historical_lcp": 1.0673734085817288,
+      "generic_minus_historical_lcp": 0.4754971983834171,
+      "historical_lcp": 7.057639035831251
+    },
+    "episode_peak_q95_nominal_N": {
+      "generic": 13.152594381413701,
+      "generic_divided_by_historical_lcp": 1.4473892782707856,
+      "generic_minus_historical_lcp": 4.065478303611002,
+      "historical_lcp": 9.0871160778027
+    },
+    "episode_total_fti_median_nominal_Ns": {
+      "generic": 3.3042792649688604,
+      "generic_divided_by_historical_lcp": 0.6830286268913358,
+      "generic_minus_historical_lcp": -1.5334085490948155,
+      "historical_lcp": 4.837687814063676
+    },
+    "episode_total_fti_q95_nominal_Ns": {
+      "generic": 13.435565599013666,
+      "generic_divided_by_historical_lcp": 0.9028833817842729,
+      "generic_minus_historical_lcp": -1.445166364911044,
+      "historical_lcp": 14.88073196392471
+    },
+    "positive_force_step_fraction": {
+      "generic": 0.6065806451612903,
+      "generic_divided_by_historical_lcp": 0.9846369432397353,
+      "generic_minus_historical_lcp": -0.009464333981445971,
+      "historical_lcp": 0.6160449791427363
+    }
+  },
+  "status": "DESCRIPTIVE_ONLY"
+}

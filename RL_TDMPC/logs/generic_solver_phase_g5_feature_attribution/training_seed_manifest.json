@@ -1,0 +1,52 @@
+{
+  "architecture": "input_dim-64-ReLU-64-ReLU-1",
+  "batch_size": 512,
+  "checkpoint_selection": "lowest VALIDATION behavior MSE per training seed/configuration",
+  "early_stopping_patience": 8,
+  "learning_rate": 0.001,
+  "loss": "raw nominal-N MSE",
+  "matched_budget": "each model draws the common d>=1 TRAIN behavior row count per validation round without replacement; same optimizer steps per round",
+  "max_validation_rounds": 60,
+  "minimum_validation_MSE_improvement": 0.0001,
+  "no_test_or_confirmation_labels_for_selection": true,
+  "normalization": "TRAIN behavior only, same suffix0/1 for each representation; no target normalization",
+  "optimizer": "Adam",
+  "phase": "G5",
+  "primary_model_names": [
+    "Z",
+    "P",
+    "ZP",
+    "ZK",
+    "ZD",
+    "ZC",
+    "ZP_noK",
+    "ZP_noD",
+    "ZP_noC",
+    "PK",
+    "PD",
+    "PKD"
+  ],
+  "primary_supervision": "behavior-only",
+  "reference_reproduction": "retrain Z and P with exact G4 behavior-only fit code and compare validation selection to frozen G4 Z0/P0",
+  "same_seeds_for_all_eight_configurations": true,
+  "secondary_model_names": [
+    "Z1",
+    "P1",
+    "Pmin1"
+  ],
+  "selection_uses_confirmation": false,
+  "selection_uses_development_test": false,
+  "status": "FROZEN_BEFORE_G4_TRAINING",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ],
+  "validation_subset_candidates": [
+    "K",
+    "D",
+    "KD"
+  ],
+  "validation_subset_selection_model": "Z+subset, three-seed mean metrics; lexicographic Q95 false-safe rate, candidate RMSE, negative pairwise accuracy, safe-choice regret, group count, dimension",
+  "weight_decay": 0.0
+}

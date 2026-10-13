@@ -1,0 +1,11 @@
+{
+  "Q95_corrected_replica_spread_threshold_N": 0.4830828905105591,
+  "all_replica_corrected_Q95_delta_conservative_max": true,
+  "nominal_delta_zero_override": true,
+  "status": "FROZEN_FROM_VALIDATION_BEFORE_DEVELOPMENT_TEST",
+  "uncertainty_acceptance": "spread<=validation Q95 threshold",
+  "validation_nonzero_delta_rows": 1066,
+  "validation_spread_Q50_N": 0.08436000347137451,
+  "validation_spread_Q95_N": 0.4830828905105591,
+  "validation_spread_max_N": 1.3398622274398804
+}

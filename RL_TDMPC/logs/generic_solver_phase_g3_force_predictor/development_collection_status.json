@@ -1,0 +1,23 @@
+{
+  "completed_states": 800,
+  "last_state": {
+    "decision_index": 95,
+    "group": "validation",
+    "seed": 90199,
+    "state_id": 118
+  },
+  "max_abs_difference": {
+    "applied_action": 0.0,
+    "force_next_max_N": 0.0,
+    "insertion_length_mm": 0.0,
+    "observation": 0.0,
+    "reward": 0.0,
+    "tip_position_mm": 0.0
+  },
+  "method": "one reused Generic scene; complete parent replay from seed 90000 on resume",
+  "one_step_evaluations_completed": 16800,
+  "parent_episodes_compared": 200,
+  "parent_steps_compared": 15500,
+  "resume": false,
+  "status": "COMPLETE_ALL_800_STATES_AND_G2_PARENT_REPRODUCED"
+}

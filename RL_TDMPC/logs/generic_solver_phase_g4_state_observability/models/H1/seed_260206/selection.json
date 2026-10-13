@@ -1,0 +1,11 @@
+{
+  "name": "H1",
+  "optimizer_steps_per_round": 22,
+  "samples_per_validation_round": 10903,
+  "selected_epoch": 57,
+  "selected_validation_behavior_MSE_N2": 1.059716820716858,
+  "train_rows": 22663,
+  "train_wall_seconds": 0.5316251819022,
+  "training_seed": 260206,
+  "validation_rows": 2286
+}

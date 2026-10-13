@@ -1,0 +1,18 @@
+{
+  "CUDA_VISIBLE_DEVICES": "0",
+  "F_lim_N": 3.685331040756903,
+  "F_lim_not_clinical_injury_threshold": true,
+  "G101_comparison_sha256": "a81df826a31885b7ab133c863373d8655230dcda8c70ecc121a644fd7f133212",
+  "G101_report_sha256": "693d0b8a50c216cff32d44bb68d21364bd53c0819c000735f67cb594dd8353a5",
+  "G95_split_sha256": "4d6129589c5a0745b2276ced29e96816eed264b386e2c8b8462acfbcaa3cde23",
+  "branch": "feature/generic-contact-force-safety",
+  "confirmation_108000_108029_unopened": true,
+  "controller_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "cuda_device": "NVIDIA GeForce RTX 5090",
+  "online_107000_107199_unopened": true,
+  "phase": "G10.2",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "status": "LOCAL_PROTOCOL_PREDECLARED_BEFORE_NEW_LABELS",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

@@ -1,0 +1,14 @@
+{
+  "F1_F2_R2_action_targets_reused_without_refork": true,
+  "complete_planner_rows": 7193,
+  "confirmation_106000_series_accessed": false,
+  "original_G95_planner_dataset_sha256": "81fb1fbf4e9eab0aa1c17704bbfaae506c5f45bdfcd92f113a2e70bcffda1ee3",
+  "privileged_state_matrix_sha256": "ba65a02e6e8e5b8357fe281cc9af3ac0ef48d6ca62764370ce71279cf243cddf",
+  "raw_state_dimension": 3582,
+  "states_by_group": {
+    "development_test": 120,
+    "train": 560,
+    "validation": 120
+  },
+  "status": "PASS_ORIGINAL_7193_G95_LABELS_ACTIONS_AND_800_PRIVILEGED_STATES_ALIGNED"
+}

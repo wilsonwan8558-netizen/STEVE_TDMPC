@@ -1,0 +1,139 @@
+{
+  "R2_nom_true_N": 2.372856465859641,
+  "decision_index": 29,
+  "group": "validation",
+  "new_true_SOFA_forks": 9,
+  "no_candidate_applied_to_parent": true,
+  "nominal_pair": [
+    [
+      0.9478973150253296,
+      0.1361018717288971
+    ],
+    [
+      0.9584636688232422,
+      0.43580782413482666
+    ]
+  ],
+  "one_interval_censored_forks": 0,
+  "second_action_fixed": [
+    0.9584636688232422,
+    0.43580782413482666
+  ],
+  "seed": 90000,
+  "source_sha256": "4a707014ebb59dc4866b181fa668d5e659cd72e9d446a66174cdbabed22482df",
+  "state_id": 1,
+  "true_curve": [
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 0.0,
+      "R2_true_N": 0.0,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": -2.372856465859641,
+      "delta_v": -1.9478973150253296,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": -1.0
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 0.0,
+      "R2_true_N": 0.0,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": -2.372856465859641,
+      "delta_v": -1.4478973150253296,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": -0.5
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 0.0,
+      "R2_true_N": 0.0,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": -2.372856465859641,
+      "delta_v": -0.9478973150253296,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": 0.0
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 2.5415295644292746,
+      "R2_true_N": 2.5415295644292746,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": 0.16867309856963342,
+      "delta_v": -0.5,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": 0.4478973150253296
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 2.209172454031827,
+      "R2_true_N": 2.209172454031827,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": -0.16368401182781422,
+      "delta_v": -0.19999998807907104,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": 0.7478973269462585
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 2.357368374193398,
+      "R2_true_N": 2.357368374193398,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": -0.015488091666242987,
+      "delta_v": -0.10000002384185791,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": 0.8478972911834717
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 2.406543518169824,
+      "R2_true_N": 2.406543518169824,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": 0.033687052310182874,
+      "delta_v": -0.050000011920928955,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": 0.8978973031044006
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 2.372856465859641,
+      "R2_true_N": 2.372856465859641,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": 0.0,
+      "delta_v": 0.0,
+      "label_source": "EXACT_G95_ARCHIVED_NOMINAL_FORK",
+      "v": 0.9478973150253296
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 2.0379246817868895,
+      "R2_true_N": 2.0379246817868895,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": -0.3349317840727517,
+      "delta_v": 0.050000011920928955,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": 0.9978973269462585
+    },
+    {
+      "F1_true_N": 0.0,
+      "F2_true_N": 2.023438826615739,
+      "R2_true_N": 2.023438826615739,
+      "censor_reason": null,
+      "complete_two_intervals": true,
+      "delta_R2_true_N": -0.3494176392439021,
+      "delta_v": 0.05210268497467041,
+      "label_source": "NEW_EXACT_PARENT_TRUE_SOFA_FORK",
+      "v": 1.0
+    }
+  ],
+  "v_nom": 0.9478973150253296,
+  "w_nom_fixed": 0.1361018717288971
+}

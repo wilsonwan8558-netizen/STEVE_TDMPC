@@ -1,0 +1,91 @@
+{
+  "candidate_family_size": 135,
+  "candidates_attempted": 135,
+  "decision_index": 50,
+  "episode_seed": 101000,
+  "event_decision_index": 51,
+  "finite_search_exhausted": true,
+  "horizon_intervals": 2,
+  "lookback_steps": 1,
+  "minimum_observed_force_N": 3.9991441854930443,
+  "plan_fork_labels": [
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        5.960784127054072
+      ],
+      "horizon": 1,
+      "max_force_N": 5.960784127054072,
+      "plan_actions": [
+        [
+          0.9783182144165039,
+          0.9519476890563965
+        ]
+      ],
+      "status": "PASS",
+      "steps": 1,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        5.960784127054072,
+        7.851740719942541
+      ],
+      "horizon": 2,
+      "max_force_N": 7.851740719942541,
+      "plan_actions": [
+        [
+          0.9783182144165039,
+          0.9519476890563965
+        ],
+        [
+          0.9975454807281494,
+          0.8849750757217407
+        ]
+      ],
+      "status": "PASS",
+      "steps": 2,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        5.960784127054072,
+        7.851740719942541,
+        0.0
+      ],
+      "horizon": 3,
+      "max_force_N": 7.851740719942541,
+      "plan_actions": [
+        [
+          0.9783182144165039,
+          0.9519476890563965
+        ],
+        [
+          0.9975454807281494,
+          0.8849750757217407
+        ],
+        [
+          0.9972751140594482,
+          -0.5966857671737671
+        ]
+      ],
+      "status": "PASS",
+      "steps": 3,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    }
+  ],
+  "safe_trajectory_found": false,
+  "state_id": 3,
+  "witness": null
+}

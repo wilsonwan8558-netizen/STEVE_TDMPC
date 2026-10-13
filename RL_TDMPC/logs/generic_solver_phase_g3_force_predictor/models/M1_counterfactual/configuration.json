@@ -1,0 +1,21 @@
+{
+  "architecture": "258-64-ReLU-64-ReLU-1",
+  "batch_size": 512,
+  "checkpoint_sha256": "466849cd83ca4f52ce747d94b034fc31ddcb4ef4c6b88f5de6a9843bb0f45224",
+  "learning_rate": 0.001,
+  "loss": "MSE on raw nominal N",
+  "max_epochs": 60,
+  "maximum_optimizer_steps": 1320,
+  "minimum_improvement": 0.0001,
+  "model_seed": 260206,
+  "optimizer": "Adam",
+  "optimizer_steps_per_validation_round": 22,
+  "patience": 8,
+  "samples_per_validation_round": 11043,
+  "selected_epoch": 14,
+  "selected_validation_MSE_N2": 1.0703020095825195,
+  "train_samples": 22803,
+  "train_wall_seconds": 0.22141232388094068,
+  "validation_behavior_samples": 2316,
+  "validation_selection": "lowest validation behavior MSE only"
+}

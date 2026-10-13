@@ -1,0 +1,32 @@
+{
+  "architecture": "Linear(298,64)-ReLU-Linear(64,64)-ReLU-Linear(64,8); reshape 2x4; independent per-step cumulative softplus quantiles",
+  "input": "exact 298D G9.5 M1: 256D latent + 38D frozen E1 current-state estimate + original 2x2 action plan",
+  "loss": "mean pinball over F1 four quantiles + mean pinball over F2 four quantiles, equal step weighting",
+  "no_best_seed_selection": true,
+  "no_future_behavior_action_as_planner_candidate": true,
+  "normalization": "exact frozen G9 E1/H2 behavior-TRAIN input mean/std",
+  "optimizer": "Adam lr=0.001 batch=512 max_epochs=60 patience=8; validation min pinball improves by >1e-5",
+  "per_step_quantiles": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "ranking_diagnostic_only": "max(corrected Q95(F1),corrected Q95(F2))",
+  "scalar_baseline": "frozen G9.5 M1 planner-conditioned three checkpoints and per-seed validation correction",
+  "status": "PREDECLARED_BEFORE_G96_TRAINING",
+  "stepwise_decision": "Q95(F1)+delta1<=F_lim AND Q95(F2)+delta2<=F_lim",
+  "target": "[F1_true_N,F2_true_N], direct two complete true-SOFA control intervals",
+  "temporal_categories": [
+    "SAFE-SAFE",
+    "SAFE-HIGH",
+    "HIGH-SAFE",
+    "HIGH-HIGH"
+  ],
+  "train_validation_distribution": "same behavior+planner rows as G9.5 M1, same episode/state split",
+  "training_seeds": [
+    260312,
+    260313,
+    260314
+  ]
+}

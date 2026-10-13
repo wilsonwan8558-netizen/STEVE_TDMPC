@@ -1,0 +1,8 @@
+{
+  "no_development_test_or_confirmation_calibration": true,
+  "one_delta_per_step": true,
+  "per_step_rule": "if mean raw Q95 coverage across three fixed replicas is <0.95, shared delta=max(0, pooled seed-by-row validation residual 95th percentile with higher order statistic); otherwise delta=0",
+  "selection_data": "VALIDATION behavior+planner complete H2 rows only",
+  "shared_across_three_seeds": true,
+  "status": "PREDECLARED_BEFORE_G96_TRAINING_AND_DEVELOPMENT_TEST"
+}

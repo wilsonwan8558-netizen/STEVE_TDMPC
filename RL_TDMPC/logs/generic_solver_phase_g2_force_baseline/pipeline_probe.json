@@ -1,0 +1,925 @@
+{
+  "contact_control_steps": 47,
+  "control_steps": 100,
+  "distal_region_mm": 3.0,
+  "expected_substeps": 2200,
+  "max_endpoint_reconstruction_difference_N": 0.0,
+  "maximum_distal_force_N": 0.8389627165234413,
+  "maximum_endpoint_missed_peak_N": 0.2789443020980237,
+  "program": "G0.5 contact_heavy first actions",
+  "records": [
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 1,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 2,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 3,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 1,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0045230842541112305,
+      "force_integral_Ns": 2.7138505524667384e-05,
+      "force_max_N": 0.0045230842541112305,
+      "step": 4,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 16,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.009123754156594747,
+      "force_max_N": 0.24403376567812649,
+      "step": 5,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 6,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 7,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 8,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 9,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 10,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 11,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 12,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 13,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 14,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 15,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 16,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 17,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 18,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 19,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 20,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 21,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 22,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 4,
+      "distal_contact_count": 1,
+      "force_final_N": 0.12651369029064374,
+      "force_integral_Ns": 0.004477734895551593,
+      "force_max_N": 0.40261284130277736,
+      "step": 23,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.05959048031742469,
+      "force_integral_Ns": 0.009836320403403175,
+      "force_max_N": 0.10990632429980998,
+      "step": 24,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.05042620173754783,
+      "force_integral_Ns": 0.007184757319958362,
+      "force_max_N": 0.08674052406555967,
+      "step": 25,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0892192409339054,
+      "force_integral_Ns": 0.006740559376707386,
+      "force_max_N": 0.0892192409339054,
+      "step": 26,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.04531830552082372,
+      "force_integral_Ns": 0.006256727907708702,
+      "force_max_N": 0.05059580463274985,
+      "step": 27,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.05293753641588182,
+      "force_integral_Ns": 0.007835967000128239,
+      "force_max_N": 0.1525725616328546,
+      "step": 28,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.041967870891729736,
+      "force_integral_Ns": 0.006129616559190529,
+      "force_max_N": 0.05218534180926346,
+      "step": 29,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 20,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.00466969060055653,
+      "force_max_N": 0.04163792485723703,
+      "step": 30,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 31,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 32,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 33,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 34,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 35,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 36,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 37,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 11,
+      "distal_contact_count": 1,
+      "force_final_N": 0.23348449166823215,
+      "force_integral_Ns": 0.01849960513969629,
+      "force_max_N": 0.5124287937662558,
+      "step": 38,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.3137165456030631,
+      "force_integral_Ns": 0.03603356016384908,
+      "force_max_N": 0.3137165456030631,
+      "step": 39,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.3808305478996792,
+      "force_integral_Ns": 0.04623514981903884,
+      "force_max_N": 0.3808305478996792,
+      "step": 40,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.42882715165490193,
+      "force_integral_Ns": 0.05380853071466752,
+      "force_max_N": 0.42882715165490193,
+      "step": 41,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.7365244862872729,
+      "force_integral_Ns": 0.0752420014345469,
+      "force_max_N": 0.8389627165234413,
+      "step": 42,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.7378757878074763,
+      "force_integral_Ns": 0.09715907877781033,
+      "force_max_N": 0.7618881381511036,
+      "step": 43,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.7782362724657266,
+      "force_integral_Ns": 0.09748177218341839,
+      "force_max_N": 0.7822439879565857,
+      "step": 44,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.6734651796699683,
+      "force_integral_Ns": 0.09296236397910551,
+      "force_max_N": 0.7565334682686292,
+      "step": 45,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.6176525947519382,
+      "force_integral_Ns": 0.08507865451274542,
+      "force_max_N": 0.6709290810842952,
+      "step": 46,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.5584887222398651,
+      "force_integral_Ns": 0.07744622698847536,
+      "force_max_N": 0.6150103559253312,
+      "step": 47,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.4953350574864002,
+      "force_integral_Ns": 0.06948596122803781,
+      "force_max_N": 0.5557974600205803,
+      "step": 48,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.4268660533054139,
+      "force_integral_Ns": 0.06070839744983427,
+      "force_max_N": 0.49227337260620097,
+      "step": 49,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.3053300577869405,
+      "force_integral_Ns": 0.05072057778142696,
+      "force_max_N": 0.42365257927324884,
+      "step": 50,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.23022612643604384,
+      "force_integral_Ns": 0.03411276192489402,
+      "force_max_N": 0.2988437381991622,
+      "step": 51,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.18235517661943196,
+      "force_integral_Ns": 0.02706579229574473,
+      "force_max_N": 0.22799199165328762,
+      "step": 52,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.13927874220615127,
+      "force_integral_Ns": 0.020858776434075098,
+      "force_max_N": 0.18022020562442445,
+      "step": 53,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.15709723342074144,
+      "force_integral_Ns": 0.01969620594639787,
+      "force_max_N": 0.2270595494917887,
+      "step": 54,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 5,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.004378271846278091,
+      "force_max_N": 0.15025519079114458,
+      "step": 55,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 56,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 57,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 58,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 59,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 6,
+      "distal_contact_count": 1,
+      "force_final_N": 0.19312271822153879,
+      "force_integral_Ns": 0.006909631822236505,
+      "force_max_N": 0.2871149262389728,
+      "step": 60,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 21,
+      "distal_contact_count": 1,
+      "force_final_N": 0.08887383334911056,
+      "force_integral_Ns": 0.01779250484776336,
+      "force_max_N": 0.19051562398301986,
+      "step": 61,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 3,
+      "force_final_N": 0.3173418768331926,
+      "force_integral_Ns": 0.027770778532031165,
+      "force_max_N": 0.3173418768331926,
+      "step": 62,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.36978631103247506,
+      "force_integral_Ns": 0.04483581033917542,
+      "force_max_N": 0.36978631103247506,
+      "step": 63,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.4311118716079896,
+      "force_integral_Ns": 0.05307836060412814,
+      "force_max_N": 0.4311118716079896,
+      "step": 64,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.2818484835475267,
+      "force_integral_Ns": 0.04446290275509852,
+      "force_max_N": 0.4009298739313906,
+      "step": 65,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 2,
+      "force_final_N": 0.1994074975197924,
+      "force_integral_Ns": 0.031220588075245134,
+      "force_max_N": 0.2848066442054985,
+      "step": 66,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.12432854937247127,
+      "force_integral_Ns": 0.021280592996148946,
+      "force_max_N": 0.1960625924001073,
+      "step": 67,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.05070655361539838,
+      "force_integral_Ns": 0.010911352721693074,
+      "force_max_N": 0.12062651655738076,
+      "step": 68,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.022590983054048778,
+      "force_integral_Ns": 0.00432106354726303,
+      "force_max_N": 0.04850825477776281,
+      "step": 69,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.030326257926512376,
+      "force_integral_Ns": 0.004343007072327558,
+      "force_max_N": 0.11841109406288562,
+      "step": 70,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.010545158265749146,
+      "force_integral_Ns": 0.0061535005323948505,
+      "force_max_N": 0.15950018031046975,
+      "step": 71,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 2,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 5.6366591716354255e-05,
+      "force_max_N": 0.00649922819215381,
+      "step": 72,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 73,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 74,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 75,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 76,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 77,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 78,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 79,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 80,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 20,
+      "distal_contact_count": 1,
+      "force_final_N": 0.03008396776768573,
+      "force_integral_Ns": 0.006490537307109898,
+      "force_max_N": 0.14004641270882145,
+      "step": 81,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 9,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0007898424005341307,
+      "force_max_N": 0.027050281845287807,
+      "step": 82,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 83,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 5,
+      "distal_contact_count": 1,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0010212857329335737,
+      "force_max_N": 0.06647617462839896,
+      "step": 84,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 85,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 86,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 87,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 88,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 89,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 90,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 91,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 92,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 93,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 94,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 95,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 96,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 0,
+      "distal_contact_count": 0,
+      "force_final_N": 0.0,
+      "force_integral_Ns": 0.0,
+      "force_max_N": 0.0,
+      "step": 97,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 1,
+      "distal_contact_count": 1,
+      "force_final_N": 0.1560685945223574,
+      "force_integral_Ns": 0.0009364115671341445,
+      "force_max_N": 0.1560685945223574,
+      "step": 98,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.12863016652552675,
+      "force_integral_Ns": 0.01636429756814214,
+      "force_max_N": 0.1879081813661043,
+      "step": 99,
+      "substeps": 22
+    },
+    {
+      "contact_substeps": 22,
+      "distal_contact_count": 1,
+      "force_final_N": 0.12889636516406458,
+      "force_integral_Ns": 0.019895913899874922,
+      "force_max_N": 0.32664718043268065,
+      "step": 100,
+      "substeps": 22
+    }
+  ],
+  "scene": {
+    "compute_constraint_forces": true,
+    "contact_response": "FrictionContactConstraint",
+    "dt_s": 0.006,
+    "friction": "mu=0.001",
+    "max_iterations": 2000,
+    "resolution_method": "ProjectedGaussSeidel",
+    "solver": "GenericConstraintSolver",
+    "tolerance": 0.0001
+  },
+  "seed": 90008,
+  "sofa_substeps": 2200,
+  "status": "PASS"
+}

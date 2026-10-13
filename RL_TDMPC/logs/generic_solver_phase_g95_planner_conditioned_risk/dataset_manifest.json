@@ -1,0 +1,16 @@
+{
+  "all_training_labels_true_Generic_SOFA": true,
+  "development_state_selection_source": "G3 frozen development_state_selection.json",
+  "development_test_states": 120,
+  "one_step_terminal_censored_not_redefined_as_R2": true,
+  "planned_candidates_per_state": 9,
+  "planned_confirmation_candidate_forks": 1080,
+  "planned_confirmation_states": 120,
+  "planned_development_candidate_forks": 7200,
+  "selection_uses_candidate_force_labels": false,
+  "selection_uses_future_behavior_force": false,
+  "status": "PREDECLARED_NO_G95_PLAN_FORCE_LABELS_YET",
+  "total_development_states": 800,
+  "train_states": 560,
+  "validation_states": 120
+}

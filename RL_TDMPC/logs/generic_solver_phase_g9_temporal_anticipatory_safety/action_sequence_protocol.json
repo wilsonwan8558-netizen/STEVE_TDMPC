@@ -1,0 +1,16 @@
+{
+  "CEM_elites": 64,
+  "CEM_initial_std": 2.0,
+  "CEM_iterations": 6,
+  "CEM_min_std": 0.05,
+  "CEM_samples": 512,
+  "H5": "no native 5-step TD-MPC2 plan; behavior sequence is retrospective diagnostic only",
+  "controller_source_sha256": "b7ead501ad7607f2ce1b1a3a46c23d2f3e16827302a3d9f8c8862900e6b27ef5",
+  "development_training_sequence": "successive realized frozen-TD-MPC2 behavior actions, not falsely relabeled as one time-t plan",
+  "frozen_controller": "TD-MPC2 step_280000.pt",
+  "planning_horizon": 3,
+  "policy_trajectories": 24,
+  "prospective_H1_H2_H3": "must use plan mean captured at t and matched true-SOFA counterfactual fork labels",
+  "temperature": 0.5,
+  "warm_start": "previous optimized mean shifted one step; final eval action=clipped first mean action"
+}

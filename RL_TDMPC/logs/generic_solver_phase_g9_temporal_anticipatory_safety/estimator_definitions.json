@@ -1,0 +1,40 @@
+{
+  "phase": "G9",
+  "training_target": "Frozen G6B/G7-aligned 38D pre-action privileged physical state; supervision only, never a predictor input at evaluation",
+  "privileged_target_groups": {
+    "tip_position_3d_mm": [0, 3],
+    "distal_shape_offsets_mm": [3, 15],
+    "distal_velocity_mm_per_s": [15, 30],
+    "contact_force_vector_N": [30, 33],
+    "contact_magnitude_N": [33, 34],
+    "contact_count": [34, 35],
+    "insertion_length_mm": [35, 36],
+    "rotation_sin_cos": [36, 38]
+  },
+  "E0": {
+    "input": "14D current tracking/task observation only",
+    "input_dimension": 14,
+    "estimator": "TRAIN-fitted 14-128-ReLU-128-ReLU-38 MLP mapper",
+    "temporal_state": false
+  },
+  "E1": {
+    "input": "Three 14D observations at decisions d-2,d-1,d plus two realized 2D actions at d-2,d-1",
+    "input_dimension": 46,
+    "estimator": "TRAIN-fitted 46-128-ReLU-128-ReLU-38 MLP mapper",
+    "temporal_state": "fixed short history; no future action or observation"
+  },
+  "E2": {
+    "input": "Current 14D observation, posterior ten 2D-tracking velocities, log of ten posterior velocity variances",
+    "input_dimension": 34,
+    "estimator": "20D nonlinear tracking unscented Kalman filter with current-position measurement correction, followed by TRAIN-fitted 34-128-ReLU-128-ReLU-38 MLP mapper",
+    "filter_process_state": "Ten normalized 2D tracking positions plus ten per-control-step velocities",
+    "measurement": "Ten current normalized tracking-position values",
+    "initialization": "Per-episode first tracking positions, zero velocity; covariance reset at each episode",
+    "current_correction_only": true,
+    "future_measurement_or_force_input": false
+  },
+  "risk_model_shared_inputs": "Frozen 256D TD-MPC2 encoder latent of current observation plus each E0/E1/E2 38D estimated current physical state plus explicit Hx2 action sequence",
+  "mapper_selection": "TRAIN optimization, VALIDATION checkpoint selection; DEVELOPMENT-TEST and untouched confirmation never used for fitting",
+  "force_units": "nominal N",
+  "no_future_information_in_current_state_estimators": true
+}

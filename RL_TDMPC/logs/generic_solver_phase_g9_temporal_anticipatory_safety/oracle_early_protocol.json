@@ -1,0 +1,31 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "G8_behavior_sha256": "05b8725ace453a440d508800d12e6ffe19a3d0545d95760a34af6304a82a56c7",
+  "candidate_family": "archived behavior, current 3-step TD-MPC2 mean plus archived suffix, four constant withdrawals, G3 exact 21 first actions plus 5x5 coarse global actions with archived/constant/withdrawal continuation",
+  "causal_caveat": "archived future-action continuations are hindsight existence witnesses, not deployable time-t plans",
+  "confirmation_seeds_unopened": true,
+  "event_ids": [
+    3,
+    27,
+    35,
+    39,
+    47,
+    55,
+    67,
+    75,
+    83,
+    91,
+    99
+  ],
+  "method": "finite true-SOFA open-loop counterfactuals from exact G8 reused-scene parent",
+  "no_safe_found_caveat": "finite candidate search is not an impossibility proof",
+  "oracle_horizon": "lookback+1 intervals, so the force interval at t* is included; t*-5 uses six intervals",
+  "prior_offsets": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "safe_rule": "all attempted force intervals <= F_lim and full horizon completed or successful terminal; failure/truncation before horizon is not safe",
+  "search_order": "as listed; stop after first safe witness, otherwise exhaust finite set"
+}

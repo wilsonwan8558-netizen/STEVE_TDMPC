@@ -1,0 +1,52 @@
+{
+  "comparison": "M1 minus M0",
+  "method": "1000 fixed-seed state-level paired bootstrap; resample 120 states with all 21 candidates",
+  "metrics": {
+    "Q95_AUPRC": {
+      "CI95_percentile": [
+        -0.0895206327985479,
+        0.05380816693459573
+      ],
+      "M1_minus_M0_mean": -0.008774230262168572,
+      "point_estimate_M1_minus_M0": -0.006945803017596952,
+      "replicates": 1000
+    },
+    "Q95_false_safe_rate": {
+      "CI95_percentile": [
+        0.0,
+        0.3004250580337537
+      ],
+      "M1_minus_M0_mean": 0.0927027896485313,
+      "point_estimate_M1_minus_M0": 0.09595959595959595,
+      "replicates": 1000
+    },
+    "pairwise_accuracy": {
+      "CI95_percentile": [
+        -0.08025723921791757,
+        0.013911802984185422
+      ],
+      "M1_minus_M0_mean": -0.03170640815277397,
+      "point_estimate_M1_minus_M0": -0.03133963498428582,
+      "replicates": 1000
+    },
+    "safe_choice_regret_N": {
+      "CI95_percentile": [
+        -0.03925118816447156,
+        0.007067409318042642
+      ],
+      "M1_minus_M0_mean": -0.013541563822098708,
+      "point_estimate_M1_minus_M0": -0.013087905965584882,
+      "replicates": 1000
+    },
+    "within_state_Spearman": {
+      "CI95_percentile": [
+        -0.061038961038961004,
+        0.0012987012987013546
+      ],
+      "M1_minus_M0_mean": -0.01437376935486842,
+      "point_estimate_M1_minus_M0": -0.009090909090909038,
+      "replicates": 1000
+    }
+  },
+  "seed": 20261008
+}

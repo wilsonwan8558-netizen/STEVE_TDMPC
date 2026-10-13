@@ -1,0 +1,16 @@
+{
+  "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+  "checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "cuda_available": true,
+  "cuda_device_name_0": "NVIDIA GeForce RTX 5090",
+  "episodes": 10,
+  "mode": "on",
+  "physical_cuda_device_index": 0,
+  "python_executable": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "scene_lifecycle": "one scene, ordered reused-scene resets",
+  "seed_start": 90000,
+  "torch_cuda_version": "12.8",
+  "torch_version": "2.7.1+cu128",
+  "visible_cuda_device_count": 1,
+  "visible_cuda_device_index": 0
+}

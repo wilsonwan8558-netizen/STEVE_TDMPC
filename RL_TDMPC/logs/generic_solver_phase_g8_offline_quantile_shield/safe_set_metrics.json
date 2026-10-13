@@ -1,0 +1,156 @@
+{
+  "G6B": {
+    "260206": {
+      "candidate_intersection": 2096,
+      "candidate_predicted_safe": 2100,
+      "candidate_true_safe": 2204,
+      "mean_state_Jaccard": 0.9393849206349206,
+      "pooled_Jaccard": 0.9492753623188406,
+      "predicted_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 17.5,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      },
+      "safe_action_precision": 0.9980952380952381,
+      "safe_action_recall": 0.9509981851179673,
+      "true_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 18.366666666666667,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      }
+    },
+    "260207": {
+      "candidate_intersection": 2060,
+      "candidate_predicted_safe": 2061,
+      "candidate_true_safe": 2204,
+      "mean_state_Jaccard": 0.9248412698412698,
+      "pooled_Jaccard": 0.9342403628117913,
+      "predicted_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 17.175,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      },
+      "safe_action_precision": 0.9995147986414362,
+      "safe_action_recall": 0.9346642468239564,
+      "true_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 18.366666666666667,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      }
+    },
+    "260208": {
+      "candidate_intersection": 2050,
+      "candidate_predicted_safe": 2050,
+      "candidate_true_safe": 2204,
+      "mean_state_Jaccard": 0.9204248366013071,
+      "pooled_Jaccard": 0.9301270417422868,
+      "predicted_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 17.083333333333332,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      },
+      "safe_action_precision": 1.0,
+      "safe_action_recall": 0.9301270417422868,
+      "true_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 18.366666666666667,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      }
+    }
+  },
+  "G7": {
+    "260206": {
+      "candidate_intersection": 2090,
+      "candidate_predicted_safe": 2096,
+      "candidate_true_safe": 2204,
+      "mean_state_Jaccard": 0.9322420634920635,
+      "pooled_Jaccard": 0.9457013574660633,
+      "predicted_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 17.466666666666665,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      },
+      "safe_action_precision": 0.9971374045801527,
+      "safe_action_recall": 0.9482758620689655,
+      "true_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 18.366666666666667,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      }
+    },
+    "260207": {
+      "candidate_intersection": 2070,
+      "candidate_predicted_safe": 2072,
+      "candidate_true_safe": 2204,
+      "mean_state_Jaccard": 0.929906015037594,
+      "pooled_Jaccard": 0.9383499546690843,
+      "predicted_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 17.266666666666666,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      },
+      "safe_action_precision": 0.999034749034749,
+      "safe_action_recall": 0.9392014519056261,
+      "true_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 18.366666666666667,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      }
+    },
+    "260208": {
+      "candidate_intersection": 2119,
+      "candidate_predicted_safe": 2141,
+      "candidate_true_safe": 2204,
+      "mean_state_Jaccard": 0.9356715506715506,
+      "pooled_Jaccard": 0.9519317160826595,
+      "predicted_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 17.841666666666665,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      },
+      "safe_action_precision": 0.9897244278374592,
+      "safe_action_recall": 0.9614337568058077,
+      "true_safe_set_size": {
+        "count": 120,
+        "max": 21.0,
+        "mean": 18.366666666666667,
+        "median": 21.0,
+        "min": 0.0,
+        "q90": 21.0
+      }
+    }
+  }
+}

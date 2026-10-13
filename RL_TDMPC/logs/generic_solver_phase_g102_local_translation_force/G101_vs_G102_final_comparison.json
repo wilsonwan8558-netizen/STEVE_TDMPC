@@ -1,0 +1,50 @@
+{
+  "status": "POST_CONFIRMATION_DESCRIPTIVE_COMPARISON_NO_PROTOCOL_CHANGE",
+  "pre_confirmation_comparison_file": "G101_vs_G102_comparison.json",
+  "pre_confirmation_comparison_remains_frozen_and_its_confirmation_unopened_flag_describes_the_freeze_time": true,
+  "pre_confirmation_freeze_sha256": "b1db6ecf7bbf6639fb41bf48b17c1f1e9474abe022adf3e96b860c9502d94095",
+  "development_same_40_nominally_unsafe_states": {
+    "true_recoverable_on_finite_grid": 27,
+    "G101_global": {
+      "predicted_candidate": 5,
+      "nonzero_correction": 3,
+      "true_safe": 2,
+      "false_safe": 3,
+      "false_infeasible": 22
+    },
+    "G102_local": {
+      "predicted_candidate": 2,
+      "nonzero_correction": 0,
+      "true_safe": 0,
+      "false_safe": 2,
+      "false_infeasible": 25,
+      "abstain": 38,
+      "recoverable_unsafe_rescue_rate": 0.0
+    },
+    "G101_false_infeasible_22_revisited_by_G102": {
+      "abstain": 22,
+      "true_safe": 0
+    }
+  },
+  "untouched_confirmation_108000_108029": {
+    "states": 60,
+    "nominal_true_safe": 54,
+    "nominal_true_unsafe_complete": 5,
+    "nominal_two_interval_censored": 1,
+    "recoverable_nominal_true_unsafe_on_finite_grid": 0,
+    "nominal_true_safe_selected_unchanged": 42,
+    "nominal_true_safe_abstained": 12,
+    "nominal_true_unsafe_selected": 0,
+    "nominal_true_unsafe_abstained": 5,
+    "censored_nominal_abstained": 1,
+    "nonzero_correction": 0,
+    "aggregate_42_of_54_is_nominal_safe_pass_through_not_unsafe_repair": true,
+    "recoverable_nominal_unsafe_rescue_rate": null,
+    "true_SOFA_two_action_forks": 6354,
+    "one_interval_censored_forks": 29,
+    "parent_replay_max_abs_difference": 0.0
+  },
+  "final_classification": "C",
+  "limited_online_G103_justified": false,
+  "online_107000_107199_opened": false
+}

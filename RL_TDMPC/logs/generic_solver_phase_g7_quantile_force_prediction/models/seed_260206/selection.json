@@ -1,0 +1,10 @@
+{
+  "optimizer_steps_per_round": 22,
+  "samples_per_validation_round": 10903,
+  "selected_epoch": 36,
+  "selected_validation_mean_pinball_N": 0.07534392178058624,
+  "train_rows": 10903,
+  "train_wall_seconds": 0.739299513399601,
+  "training_seed": 260206,
+  "validation_rows": 2286
+}

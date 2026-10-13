@@ -1,0 +1,67 @@
+{
+  "by_method": {
+    "G6B": {
+      "260206": {
+        "candidate_set_true_infeasible": 1,
+        "interventions": 1,
+        "missed_unsafe_nominal_count": 0,
+        "predicted_infeasible": 1,
+        "selected_action_true_exceedances": 0,
+        "state_count": 2,
+        "successful_repairs": 1
+      },
+      "260207": {
+        "candidate_set_true_infeasible": 1,
+        "interventions": 1,
+        "missed_unsafe_nominal_count": 0,
+        "predicted_infeasible": 1,
+        "selected_action_true_exceedances": 0,
+        "state_count": 2,
+        "successful_repairs": 1
+      },
+      "260208": {
+        "candidate_set_true_infeasible": 1,
+        "interventions": 0,
+        "missed_unsafe_nominal_count": 0,
+        "predicted_infeasible": 2,
+        "selected_action_true_exceedances": 0,
+        "state_count": 2,
+        "successful_repairs": 0
+      }
+    },
+    "G7": {
+      "260206": {
+        "candidate_set_true_infeasible": 1,
+        "interventions": 1,
+        "missed_unsafe_nominal_count": 0,
+        "predicted_infeasible": 1,
+        "selected_action_true_exceedances": 0,
+        "state_count": 2,
+        "successful_repairs": 1
+      },
+      "260207": {
+        "candidate_set_true_infeasible": 1,
+        "interventions": 1,
+        "missed_unsafe_nominal_count": 0,
+        "predicted_infeasible": 1,
+        "selected_action_true_exceedances": 0,
+        "state_count": 2,
+        "successful_repairs": 1
+      },
+      "260208": {
+        "candidate_set_true_infeasible": 1,
+        "interventions": 1,
+        "missed_unsafe_nominal_count": 0,
+        "predicted_infeasible": 1,
+        "selected_action_true_exceedances": 1,
+        "state_count": 2,
+        "successful_repairs": 0
+      }
+    }
+  },
+  "state_count": 2,
+  "state_ids": [
+    39,
+    81
+  ]
+}

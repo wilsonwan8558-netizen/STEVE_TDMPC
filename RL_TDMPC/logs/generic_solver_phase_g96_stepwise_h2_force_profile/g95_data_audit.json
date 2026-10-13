@@ -1,0 +1,20 @@
+{
+  "G95_confirmation_not_used_for_G96_training": true,
+  "all_complete_planner_R2_equal_max_F1_F2": true,
+  "behavior_complete_rows": 14300,
+  "behavior_force_action_alignment": "EXACT_FLOAT32_TO_ARCHIVED_G2",
+  "g95_dataset_sha256": "81fb1fbf4e9eab0aa1c17704bbfaae506c5f45bdfcd92f113a2e70bcffda1ee3",
+  "g95_parent_audit_sha256": "6a23dc41184d8eb267ed066796721d63d7b7275ef1b8b0bab8dd949c1aebc1da",
+  "g95_split_sha256": "4d6129589c5a0745b2276ced29e96816eed264b386e2c8b8462acfbcaa3cde23",
+  "g9_behavior_dataset_sha256": "cc45f18ecedc5497421d4899781f1b3b218bd676fc147d8a2b76ac3859f60ef0",
+  "max_abs_original_json_vs_npz_force_N": 0.0,
+  "planner_censored_forks": 7,
+  "planner_complete_rows": 7193,
+  "planner_rows_by_group": {
+    "development_test": 1075,
+    "train": 5038,
+    "validation": 1080
+  },
+  "planner_states": 800,
+  "status": "PASS_EXACT_G95_F1_F2_ALIGNMENT"
+}

@@ -1,0 +1,6 @@
+cohort,state_id,seed,decision_index,lookback_steps,v_nom,v_true_closest_safe,v_pred_closest_safe,abs_boundary_error_v,true_side_of_nominal,predicted_side_of_nominal,same_side_or_nominal,predicted_candidate_true_safe
+heldout_development_unsafe_nominal,10,90007,37,,0.9869018197059631,0.9800000190734863,-0.25999999046325684,1.2400000095367432,-1,-1,True,True
+heldout_development_unsafe_nominal,11,90007,39,,0.9837367534637451,0.03999999910593033,0.9837367534637451,0.9437367543578148,-1,0,False,False
+heldout_development_unsafe_nominal,113,90192,30,,0.9996058344841003,0.8999999761581421,0.9996058344841003,0.09960585832595825,-1,0,False,False
+difficult_event_early_intervention,75,101018,43,1,0.9672307968139648,0.20000000298023224,0.28999999165534973,0.08999998867511749,-1,-1,True,False
+difficult_event_early_intervention,75,101018,42,2,0.844549298286438,0.6200000047683716,0.0,0.6200000047683716,-1,-1,True,True

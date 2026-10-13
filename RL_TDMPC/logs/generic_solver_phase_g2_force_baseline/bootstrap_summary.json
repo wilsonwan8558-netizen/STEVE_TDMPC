@@ -1,0 +1,46 @@
+{
+  "episodes": 200,
+  "method": "Nonparametric episode resampling with replacement; common 200-index draw across statistics; percentile 95% intervals. Correlated RL steps are not resampled independently.",
+  "replicates": 1000,
+  "seed": 20261008,
+  "statistics": {
+    "contact_fraction": {
+      "episode_mean_ci95": [
+        0.48154717403368763,
+        0.5363808283450615
+      ],
+      "episode_median_ci95": [
+        0.4339622641509434,
+        0.48754501800720285
+      ],
+      "observed_episode_mean": 0.5086977391918024,
+      "observed_episode_median": 0.4536878216123499
+    },
+    "episode_peak_force_N": {
+      "episode_mean_ci95": [
+        6.467725974334045,
+        7.357019664444189
+      ],
+      "episode_median_ci95": [
+        7.300880162446639,
+        7.68625935070928
+      ],
+      "observed_episode_mean": 6.893919584608855,
+      "observed_episode_median": 7.533136234214668
+    },
+    "episode_total_fti_Ns": {
+      "episode_mean_ci95": [
+        4.163176217582079,
+        5.55827847737783
+      ],
+      "episode_median_ci95": [
+        2.965537387617129,
+        3.693748748768125
+      ],
+      "observed_episode_mean": 4.809829018458331,
+      "observed_episode_median": 3.3042792649688604
+    }
+  },
+  "status": "COMPLETE",
+  "unit": "whole episode"
+}

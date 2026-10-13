@@ -1,0 +1,37 @@
+{
+  "episodes": 10,
+  "exact_mismatch_counts": {
+    "checkpoint_sha256": 0,
+    "checkpoint_step": 0,
+    "episode_index": 0,
+    "episode_length": 0,
+    "episode_success": 0,
+    "seed": 0,
+    "simulation_error": 0,
+    "step_index": 0,
+    "success": 0,
+    "success_step": 0,
+    "terminated": 0,
+    "trajectory_sha256": 0,
+    "truncated": 0
+  },
+  "force_off_contains_no_measurements": true,
+  "force_on_contains_nonempty_measurements": true,
+  "max_absolute_differences": {
+    "applied_action_json": 0.0,
+    "decision_observation_json": 0.0,
+    "episode_reward": 0.0,
+    "insertion_length_mm": 0.0,
+    "next_observation_json": 0.0,
+    "reward": 0.0,
+    "selected_action_json": 0.0,
+    "tip_position_mm_json": 0.0
+  },
+  "reference_trajectory_hashes_matched_by_both_modes": true,
+  "seeds": [
+    90000,
+    90009
+  ],
+  "status": "PASS",
+  "steps_per_mode": 692
+}

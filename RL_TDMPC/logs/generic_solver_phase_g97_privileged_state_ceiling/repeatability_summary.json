@@ -1,0 +1,97 @@
+{
+  "all_force_and_observable_next_state_max_abs_zero": true,
+  "cases": [
+    {
+      "F1_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 0.0
+      },
+      "F2_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 0.0
+      },
+      "R2_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 0.0
+      },
+      "candidate_id": 0,
+      "category": "low_force",
+      "decision_index": 10,
+      "next_state": {
+        "coordinate_count_per_post_action_state": 3582,
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std_mean_across_coordinates": 0.0,
+        "states_per_repeat": 2
+      },
+      "seed": 90005,
+      "state_global_id": 4
+    },
+    {
+      "F1_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 2.220446049250313e-16
+      },
+      "F2_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 0.0
+      },
+      "R2_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 0.0
+      },
+      "candidate_id": 6,
+      "category": "high_contact",
+      "decision_index": 29,
+      "next_state": {
+        "coordinate_count_per_post_action_state": 3582,
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std_mean_across_coordinates": 0.0,
+        "states_per_repeat": 2
+      },
+      "seed": 90078,
+      "state_global_id": 601
+    },
+    {
+      "F1_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 0.0
+      },
+      "F2_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 4.440892098500626e-16
+      },
+      "R2_N": {
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std": 0.0
+      },
+      "candidate_id": 0,
+      "category": "near_boundary",
+      "decision_index": 44,
+      "next_state": {
+        "coordinate_count_per_post_action_state": 3582,
+        "max_abs_difference": 0.0,
+        "mean_abs_difference": 0.0,
+        "population_std_mean_across_coordinates": 0.0,
+        "states_per_repeat": 2
+      },
+      "seed": 90120,
+      "state_global_id": 751
+    }
+  ],
+  "claim_limit": "three cases only; inaccessible simulator internals still prevent a full Markovity claim",
+  "method": "copy-on-write full live process/scene snapshot per child; no serialized partial SOFA state restore",
+  "repetitions_per_case": 10,
+  "status": "THREE_CASES_10_REPEATS_EACH",
+  "training_samples_added_from_repeats": 0
+}

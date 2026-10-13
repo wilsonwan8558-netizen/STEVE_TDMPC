@@ -1,0 +1,2 @@
+applied_force_nominal_N,applied_direction,reaction_impulse_delta,reaction_raw_norm,reaction_divided_by_dt_norm,raw_relative_error,divided_by_dt_relative_error,direction_cosine_against_opposing_applied,final_constraint_dimension,node_distance_to_tip_mm
+0.1,"[-0.08701119214941555, -0.018689098313776183, 0.04560449588533455]","[0.0005214560759017881, 0.00010863046149188046, -0.0003092193947941605]",0.0006159006822335053,0.10265011370558422,0.9938409931776649,0.026501137055842117,0.9986109219262267,15,10.436810827503741

@@ -1,0 +1,27 @@
+{
+  "CUDA_VISIBLE_DEVICES": "0",
+  "G2_reference_quantiles_nominal_N": {
+    "q90": 2.1265156799878246,
+    "q95": 3.685331040756903,
+    "q97.5": 5.926250464744108,
+    "q99": 7.466568793559142
+  },
+  "G2_step_force_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "G5_pre_confirmation_freeze_sha256": "d593f48ebcffa2c0c1bdb0af13a3b5482d75a06b30796e1eea75b797eb77d665",
+  "G6A_pre_confirmation_freeze_sha256": "496a70a272dd6ab7ce6a12a6e00a593d759b883ecc69c04cc24d8f7956b63b39",
+  "branch": "feature/generic-contact-force-safety",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "model_device_index": 0,
+  "navigation_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "phase": "G6B",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ],
+  "visible_cuda_device_count": 1
+}

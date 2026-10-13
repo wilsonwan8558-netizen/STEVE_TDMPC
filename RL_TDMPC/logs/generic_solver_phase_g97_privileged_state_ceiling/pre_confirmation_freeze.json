@@ -1,0 +1,131 @@
+{
+  "103000_104000_105000_cohorts_not_used_for_G97_final_confirmation": true,
+  "F_lim_N": 3.685331040756903,
+  "G95_candidate_protocol_sha256": "f6de34ecd814fb9e4f98b9c01dfb335c028470c5a2d7259d557626add7ba14a8",
+  "G95_dataset_sha256": "81fb1fbf4e9eab0aa1c17704bbfaae506c5f45bdfcd92f113a2e70bcffda1ee3",
+  "G96_authorized_executable_mean_protocol_sha256": "2f669e92e0ff7da92c364b838365c1f5cd0a4f93793abd3f0cbf10d44ebef899",
+  "G96_validated_executable_mean_source_sha256": "73cbbacd2b2800aa0c5a1f3f2eecb1b3172af8456fc316770f38853022d0623f",
+  "H": 2,
+  "checkpoint_sha256": {
+    "M_DEPLOY": {
+      "260322": "9f8b557643827c0bd4341e040444102c8cfcd5f925178057f6c0c366dfd04b59",
+      "260323": "47618071683e1905e0bb969f75d76587f2ec6cc888a2714bd89bd8b8b4532b63",
+      "260324": "8d71dfee7fd1d916e7ea5df0241ef9096110c4b81e8f40eafd83286f6ceeba88"
+    },
+    "M_PRIV": {
+      "260322": "2ccccc546b9596b26bdeda6f2fdf9229780a14949defc4a2a9b75c787df94321",
+      "260323": "2549cdfe12e5b9c91d065fcef7a8e3fc54195a74aff4e84f0fbd54804f1f655f",
+      "260324": "af8d99aa3d1bd63ba9d4b1678b4944c58faa04bedc6cf26e3566c59249af2756"
+    }
+  },
+  "controller_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "development_artifact_sha256": {
+    "dataset_alignment_audit.json": "8bf63db4210c7d5d0fa4c1c83c51ce884187820cd54b6aac311a0080398b7f88",
+    "dataset_manifest.json": "752d371add9558afe1b619d4bc781882238c259ed0e9b21f51052383bea1b56d",
+    "dataset_split.json": "eb3aa98ce6c2707973d23581f7458542fc3b9b3ca3348a82e255589e38d8d82f",
+    "deployable_state_definition.json": "61d1a59a6b06e5303125ca0a9226fb0429ab4e2016832ad8f6b6578bcbc1dbfe",
+    "development_deploy_vs_privileged_comparison.json": "33adc954b4f49d9394050aabc6d309453fa82652afd9651ccbe50798e8aa863d",
+    "development_metrics.csv": "5d7052f31685267283439991ba454cea801693aef5a67d8fbb3108d29ab949ac",
+    "development_plan_results.csv": "fce169e4b1a8f57e675421125ad63c918e88707999f866d02af5461887713e41",
+    "development_privileged_replay_audit.json": "f41766ac379dbfdda002b04353b23481299775e75b0ca682b0c48f45be86ac86",
+    "development_privileged_states.npz": "ba65a02e6e8e5b8357fe281cc9af3ac0ef48d6ca62764370ce71279cf243cddf",
+    "identifiability_analysis.csv": "3b4c78741f40da37aeae3db020e1d6c9ee68ff048a4b2d75bd6a007667a232e7",
+    "identifiability_summary.json": "b50c418f4e95ede50c233e758471558498d14acf61b5add94b26f60344e0ba09",
+    "metadata.json": "8fb635313416f52cf0fddc801dfb6fbe9662d72b4b77cf9cfb65b1f89b8f07a9",
+    "model_protocol.json": "ceab5a136b0dc7a8b888b5a1ec6db449d7bd906c265dfeeb5d1190d28dfbbb59",
+    "privileged_input_adapter.npz": "eec0a973ee1d0a1e634942974cbf27593e7c9ccfd99ead2c216bdb7c55d352d5",
+    "privileged_input_adapter_manifest.json": "4204afceb4a601fe97b59a30a63314a39c4bfd15ad4c958634e5dc6b2ed72001",
+    "privileged_state_audit.json": "25df1611a20790928d9cff018e97d569a60a657811f57859644d273ca9768746",
+    "privileged_state_definition.json": "8edafd550c06fe22848d7c647b3528de72163c2a73097272bbe03635119ffc7d",
+    "repeatability_protocol.json": "b65261f0e64e115bc6ad89f0ef8fe84e59dd1c75faf525693b9905508abf14df",
+    "repeatability_results.csv": "bab3a92caf8e054f7d952c765a38dd468c72bbf05722fa7fc8814056998b77a6",
+    "repeatability_summary.json": "6957a65c43319c84e6528f0f493e3e5312f15afd10263b7433e54b083aeb5610",
+    "state_ranking_metrics.csv": "15ba6566a8d8f32d1fc3f67b7c00fcb7a267abf5094d1e67cf3d6018c24f7062",
+    "temporal_category_metrics.csv": "19bfe256137ebbf5e595cbca7d3c12e22ee5882c85e7128730499ea67bfc1e6a",
+    "training_manifest.json": "ca11ed1cc4cff0575f5522bd8f057380567e8251b9758d5a910b604688c2944e",
+    "training_seed_robustness.json": "4bf63a3c1e7402dc74d8b86f74c0789ede4455e045a8e092dfc76f2dc893a719"
+  },
+  "fork": "nine exact frozen G9.5/G9.6-v2 planner candidates, first two actions open-loop true SOFA, no second-step replan",
+  "no_retraining_recalibration_or_threshold_change_on_confirmation": true,
+  "normalization_sha256": {
+    "M_DEPLOY": {
+      "260322": "ce1069132f547e2946e0e580252c3fd315d084eedf5d29e5bc92ca91090c3827",
+      "260323": "ce1069132f547e2946e0e580252c3fd315d084eedf5d29e5bc92ca91090c3827",
+      "260324": "ce1069132f547e2946e0e580252c3fd315d084eedf5d29e5bc92ca91090c3827"
+    },
+    "M_PRIV": {
+      "260322": "73c40289e44e4d7cec80d3e28ca84b34b7a023649cb81879663f8213a3831488",
+      "260323": "73c40289e44e4d7cec80d3e28ca84b34b7a023649cb81879663f8213a3831488",
+      "260324": "73c40289e44e4d7cec80d3e28ca84b34b7a023649cb81879663f8213a3831488"
+    }
+  },
+  "one_reused_scene_per_ordered_behavior_and_parent_fork_pass": true,
+  "optimized_mean_canonicalization": "componentwise clip first two optimized-mean actions to [-1,1]",
+  "optimized_mean_match_atol": 1e-06,
+  "optimized_mean_match_rtol": 0.0,
+  "ordered_confirmation_seeds": [
+    106000,
+    106001,
+    106002,
+    106003,
+    106004,
+    106005,
+    106006,
+    106007,
+    106008,
+    106009,
+    106010,
+    106011,
+    106012,
+    106013,
+    106014,
+    106015,
+    106016,
+    106017,
+    106018,
+    106019,
+    106020,
+    106021,
+    106022,
+    106023,
+    106024,
+    106025,
+    106026,
+    106027,
+    106028,
+    106029
+  ],
+  "planner_source_sha256": "b7ead501ad7607f2ce1b1a3a46c23d2f3e16827302a3d9f8c8862900e6b27ef5",
+  "privileged_adapter_sha256": "eec0a973ee1d0a1e634942974cbf27593e7c9ccfd99ead2c216bdb7c55d352d5",
+  "quantiles": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "same_model_parameter_count": 42372,
+  "sampled_eight_candidate_semantics_unchanged": true,
+  "source_sha256": {
+    "g97_collect.py": "9bb9e5f8d8815949fb61ccac9e21bba7c480f85936613fec80068ee10f934651",
+    "g97_confirmation.py": "ac508b6633aab767dec1a8c715c8110b10be84f42aeea6a178d9b9153ad22058",
+    "g97_eval.py": "05ba55446ce1da14d1c63b2a041dba24c95f7ddb4fe08d8ee7042141a99edcc8",
+    "g97_prepare.py": "1b1bc5d40b3c283d15ea3b8ca73f400ec7fb99de4c278eea48fd5a078dad9b71",
+    "g97_state.py": "836ffd3669c761e7bcb42ff2b6c5d16c56d05475946d1eb8f4a269fb40183ff2",
+    "g97_train.py": "237937087d664e4548d6545eb7b915a5cfc580f44472448f2b788f9c06ecea14"
+  },
+  "state_selection": "exact frozen G3 four-per-episode progress/prior-force rule; no candidate outcomes",
+  "status": "G97_SIX_MODELS_STATE_PROTOCOL_AND_METRICS_FROZEN_BEFORE_106000_CONFIRMATION",
+  "target": "R2=max(F1,F2)",
+  "validation_only_Q95_delta_N": {
+    "M_DEPLOY": {
+      "260322": 0.6927313804626465,
+      "260323": 0.6318721771240234,
+      "260324": 0.5835113525390625
+    },
+    "M_PRIV": {
+      "260322": 0.28988751769065857,
+      "260323": 0.3353307247161865,
+      "260324": 0.2136847972869873
+    }
+  }
+}

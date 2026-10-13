@@ -1,0 +1,91 @@
+{
+  "candidate_family_size": 138,
+  "candidates_attempted": 138,
+  "decision_index": 56,
+  "episode_seed": 101008,
+  "event_decision_index": 59,
+  "finite_search_exhausted": true,
+  "horizon_intervals": 4,
+  "lookback_steps": 3,
+  "minimum_observed_force_N": 6.903971519927628,
+  "plan_fork_labels": [
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        7.1332650202883645
+      ],
+      "horizon": 1,
+      "max_force_N": 7.1332650202883645,
+      "plan_actions": [
+        [
+          0.9896100759506226,
+          -0.5422611236572266
+        ]
+      ],
+      "status": "PASS",
+      "steps": 1,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        7.1332650202883645,
+        0.0
+      ],
+      "horizon": 2,
+      "max_force_N": 7.1332650202883645,
+      "plan_actions": [
+        [
+          0.9896100759506226,
+          -0.5422611236572266
+        ],
+        [
+          0.9937257766723633,
+          -0.5363829135894775
+        ]
+      ],
+      "status": "PASS",
+      "steps": 2,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        7.1332650202883645,
+        0.0,
+        5.623257535264347
+      ],
+      "horizon": 3,
+      "max_force_N": 7.1332650202883645,
+      "plan_actions": [
+        [
+          0.9896100759506226,
+          -0.5422611236572266
+        ],
+        [
+          0.9937257766723633,
+          -0.5363829135894775
+        ],
+        [
+          0.9645239114761353,
+          0.629493236541748
+        ]
+      ],
+      "status": "PASS",
+      "steps": 3,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    }
+  ],
+  "safe_trajectory_found": false,
+  "state_id": 35,
+  "witness": null
+}

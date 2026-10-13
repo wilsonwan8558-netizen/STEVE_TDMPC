@@ -1,0 +1,14 @@
+{
+  "checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "g2_step_force_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "g3_behavior_features_sha256": "116112721a51111298fde49cd26434f89dd2de3f978f395fe7207719bb263ef8",
+  "g3_candidate_protocol_sha256": "cc2613c806e34b1b09955a0e9573a9df625172cd684429c1e4b274c588e1c6a7",
+  "g3_confirmation_is_historical_not_untouched_for_g4": true,
+  "g3_data_manifest_sha256": "798efac05a4b98b1b5ec00549470b0f91997ccb7ebcc1c0cb449a18679b3ddfd",
+  "g3_split_sha256": "e55172e189f419b7033f2b8df1535dcc0c84bdc17aa9dc545a8bda5669c48e60",
+  "g3_state_selection_sha256": "4547101023cd78433454003f7d2ab2549b2c1580724dd0c08dadc91219542c7f",
+  "source_behavior_rows": 15500,
+  "source_candidate_labels": 16800,
+  "source_selected_states": 800,
+  "status": "FROZEN_G3_DEVELOPMENT_SOURCE_VERIFIED"
+}

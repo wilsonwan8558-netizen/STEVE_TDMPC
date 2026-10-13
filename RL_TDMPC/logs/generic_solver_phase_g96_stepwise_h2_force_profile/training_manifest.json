@@ -1,0 +1,61 @@
+{
+  "development_test_or_confirmation_used_for_selection": false,
+  "models": {
+    "260312": {
+      "best_validation_sum_step_pinball_N": 0.24583621323108673,
+      "checkpoint_sha256": "861223bd85d535d2f03faf7e26e04fcaec7e66e84431f27474f14ee593777030",
+      "selection_sha256": "fd9632208fb65488adcfb13baff13793902a50f8355663070d239717b76f4f17"
+    },
+    "260313": {
+      "best_validation_sum_step_pinball_N": 0.22676511108875275,
+      "checkpoint_sha256": "f092b2c9028ec1c1ebde404895bc6ee0f1ba8ad39b14c16df783d39bc2c8f5a6",
+      "selection_sha256": "f4b28765c075f5a99bec0f971df38db3a0c44e237e86e0c6bef0721b9db0f7f6"
+    },
+    "260314": {
+      "best_validation_sum_step_pinball_N": 0.23991985619068146,
+      "checkpoint_sha256": "5c3ca6823b52d9f0419f02a2d9733c87a913814e48f987042dfc569b8929ebe7",
+      "selection_sha256": "e782074ee52698edf9deb8ee02ad6e9499d89380594055a0187e4a00adb01fa3"
+    }
+  },
+  "no_best_seed_selection": true,
+  "seeds": [
+    260312,
+    260313,
+    260314
+  ],
+  "source_G95_fingerprint": {
+    "controller_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+    "g95_confirmation_dataset_sha256": "d351795d3d96a1710119363fe1c9ce49d7abe49db3c111e328b6bd9fc6d23dc7",
+    "g95_development_dataset_sha256": "81fb1fbf4e9eab0aa1c17704bbfaae506c5f45bdfcd92f113a2e70bcffda1ee3",
+    "g95_frozen_status": "G95_ALL_MODELS_AND_EVALUATION_RULES_FROZEN_BEFORE_103000_CONFIRMATION",
+    "g95_pre_confirmation_freeze_sha256": "f90ead4c6ff1b5432bc57d121fdd44b19eb06e0792696643f59976eeb3a40f21",
+    "g9_E1_estimated_state_sha256": "630c6e6259dfa13643679811cd0ef565c2efe52b0e44688929e1743cf056eb4f",
+    "g9_behavior_dataset_sha256": "cc45f18ecedc5497421d4899781f1b3b218bd676fc147d8a2b76ac3859f60ef0",
+    "g9_input_normalization_sha256": "697408d9f9acdbb63c4adfbaf0e3b39f4c3966d1212b86dcc566708969f94976",
+    "planner_source_sha256": "b7ead501ad7607f2ce1b1a3a46c23d2f3e16827302a3d9f8c8862900e6b27ef5",
+    "scalar_baseline": {
+      "260312": {
+        "Q95_delta_N": 0.2981063723564148,
+        "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260312.pt",
+        "checkpoint_sha256": "7f2ce7d27a01a0772bfbcb103042d419c8718b73ce3b63354e7b8e1d9b6b9b66",
+        "selection_sha256": "b45b1d1e6adc877ff4d76115cfa164f3febc84cb9fe579881ef93f8557a671a9"
+      },
+      "260313": {
+        "Q95_delta_N": 0.13973617553710938,
+        "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260313.pt",
+        "checkpoint_sha256": "decee08e203d53e828a95ccdf71f528492f11c07079a23779dc108bbc8ebaa20",
+        "selection_sha256": "2cb621d722e3ffe6be12d7f12aca8bc328008aac608b832eeac93d45e276695c"
+      },
+      "260314": {
+        "Q95_delta_N": 0.24504351615905762,
+        "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260314.pt",
+        "checkpoint_sha256": "6932c520d8421cda7f9454248d4b79d86919e8bed67c47c5c5a98d67eb3330f0",
+        "selection_sha256": "1532dc9ccd3016aae54c1b5e46cc8e58061fcb279fe1cadd07e24314f7268342"
+      }
+    }
+  },
+  "status": "THREE_FIXED_G96_REPLICAS_VALIDATION_SELECTED",
+  "train_rows": 15241,
+  "training_code_sha256": "fd3686f48c53cc097f420790f439d4a855dac4dce097203992418c75a8b46876",
+  "validation_rows": 3216
+}

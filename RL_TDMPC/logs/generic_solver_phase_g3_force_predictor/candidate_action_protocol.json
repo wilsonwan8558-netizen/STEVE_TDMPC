@@ -1,0 +1,29 @@
+{
+  "action_bounds": [
+    -1,
+    1
+  ],
+  "behavior_candidate_id": 0,
+  "broad_fill": "NumPy default_rng(260106 + group_offset + state_id).uniform(-1,1,size=2) until 21 unique float32 actions",
+  "candidate_count": 21,
+  "clipping": "componentwise [-1,1]",
+  "duplicate_handling": "exact float32 duplicate removal",
+  "frozen_before_counterfactual_force_outcomes": true,
+  "group_offsets": {
+    "confirmation": 400000,
+    "development_test": 100000,
+    "train": 200000,
+    "validation": 300000
+  },
+  "local_axis_offsets": [
+    -0.4,
+    -0.2,
+    0.2,
+    0.4
+  ],
+  "local_diagonal_magnitudes": [
+    0.2,
+    0.4
+  ],
+  "source_design": "LCP Phase 2C 21-action protocol; compatible with Generic normalized 2D action space"
+}

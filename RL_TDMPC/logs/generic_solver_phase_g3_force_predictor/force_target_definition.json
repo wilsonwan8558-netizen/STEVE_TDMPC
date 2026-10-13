@@ -1,0 +1,13 @@
+{
+  "decision_index": "zero-based step_index in G2",
+  "force_source": "G2 Generic constraintForces mapped by contact Jacobian and divided by 0.006 s",
+  "g2_force_reconstruction_sha256": "76c920ce5122cb8da97ba100851985267e734b2877fc41ab6726217cdb13fa26",
+  "g2_substep_monitor_sha256": "744759896f36d284c9ba039a537a9f5334a5e6f5d99752f036062ae55ced3534",
+  "generic_adapter_sha256": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67",
+  "g2_source_field": "distal_contact_force_max_N",
+  "input": "[z_d, a_d]",
+  "meaning": "maximum distal 3 mm vector-sum-before-norm contact force across all 22 SOFA substeps in env.step(a_d)",
+  "source_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "target_field": "force_next_max_N",
+  "units": "nominal simulation N"
+}

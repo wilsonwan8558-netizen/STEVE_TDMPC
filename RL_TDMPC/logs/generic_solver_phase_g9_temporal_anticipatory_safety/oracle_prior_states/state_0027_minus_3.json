@@ -1,0 +1,91 @@
+{
+  "candidate_family_size": 138,
+  "candidates_attempted": 138,
+  "decision_index": 30,
+  "episode_seed": 101006,
+  "event_decision_index": 33,
+  "finite_search_exhausted": true,
+  "horizon_intervals": 4,
+  "lookback_steps": 3,
+  "minimum_observed_force_N": 5.418937444189744,
+  "plan_fork_labels": [
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        11.831774806893561
+      ],
+      "horizon": 1,
+      "max_force_N": 11.831774806893561,
+      "plan_actions": [
+        [
+          0.7921134233474731,
+          0.21852779388427734
+        ]
+      ],
+      "status": "PASS",
+      "steps": 1,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        11.831774806893561,
+        2.87265121143415
+      ],
+      "horizon": 2,
+      "max_force_N": 11.831774806893561,
+      "plan_actions": [
+        [
+          0.7921134233474731,
+          0.21852779388427734
+        ],
+        [
+          0.44802260398864746,
+          0.33387893438339233
+        ]
+      ],
+      "status": "PASS",
+      "steps": 2,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        11.831774806893561,
+        2.87265121143415,
+        6.472064062093185
+      ],
+      "horizon": 3,
+      "max_force_N": 11.831774806893561,
+      "plan_actions": [
+        [
+          0.7921134233474731,
+          0.21852779388427734
+        ],
+        [
+          0.44802260398864746,
+          0.33387893438339233
+        ],
+        [
+          -0.23333542048931122,
+          0.5737940669059753
+        ]
+      ],
+      "status": "PASS",
+      "steps": 3,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    }
+  ],
+  "safe_trajectory_found": false,
+  "state_id": 27,
+  "witness": null
+}

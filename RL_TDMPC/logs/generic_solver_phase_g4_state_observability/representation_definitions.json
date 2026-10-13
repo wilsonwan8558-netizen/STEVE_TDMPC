@@ -1,0 +1,28 @@
+{
+  "H": {
+    "definition": "[o_(d-1), o_d, a_(d-1)] from same episode; exactly two observations; excludes d=0",
+    "input_dim": 32,
+    "state_dim": 30
+  },
+  "O": {
+    "definition": "exact G2/G3 pre-action policy observation o_d",
+    "input_dim": 16,
+    "state_dim": 14
+  },
+  "P": {
+    "definition": "diagnostic-only pre-action SOFA physical_features.extract()",
+    "input_dim": 40,
+    "state_dim": 38
+  },
+  "Z": {
+    "definition": "exact G3 frozen TD-MPC2 latent z_d",
+    "input_dim": 258,
+    "state_dim": 256
+  },
+  "action": "unchanged 2-D normalized G3 candidate action",
+  "common_decision_filter": "d>=1 for all representations and both supervision modes",
+  "no_future_inputs": true,
+  "same_candidate_states_actions_labels_for_all_representations": true,
+  "status": "FROZEN_BEFORE_G4_TRAINING",
+  "target": "force_next_max_N: G2/G3 max 3mm distal force across 22 SOFA substeps immediately after executing candidate a_d"
+}

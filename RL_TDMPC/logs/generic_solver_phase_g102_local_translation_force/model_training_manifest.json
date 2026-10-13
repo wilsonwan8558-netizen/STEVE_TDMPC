@@ -1,0 +1,35 @@
+{
+  "M_LOCAL_ABS_trained": false,
+  "best_seed_selection": false,
+  "dataset_arrays_sha256": "4081ef2178ec1746c439cbc9388f832336616e1951f1356dab713258c12a9f64",
+  "development_test_or_confirmation_used_for_training_selection": false,
+  "models": {
+    "261021": {
+      "best_validation_weighted_pinball_N": 0.08268753439188004,
+      "checkpoint_sha256": "b782226943bd6f49b55cd9a6048cd0f8786fd0c660b237fed241831f828cd211",
+      "selection_sha256": "f81067dcd66c881217dcac372c1424eedf643859500c33499e46eb7f830a6183",
+      "validation_only_Q95_delta_correction_N": 0.11559438705444336
+    },
+    "261022": {
+      "best_validation_weighted_pinball_N": 0.08470124751329422,
+      "checkpoint_sha256": "1297b8ba8efd4da945b8767a401bbc5c4b2cf58984864897ac2b8f1337789900",
+      "selection_sha256": "b1497c23400a609510711f803ad5caa6e0875f047acd5082ccecb8dadc4f9491",
+      "validation_only_Q95_delta_correction_N": 0.11004181206226349
+    },
+    "261023": {
+      "best_validation_weighted_pinball_N": 0.08071714639663696,
+      "checkpoint_sha256": "3d0d67e89539c0401204b69a944d363614e2d419145dbeda79766c72ff054b58",
+      "selection_sha256": "543ab8ae791a9434225e3db7844783e997b103afbc1aeb521d7e6030033b3fdf",
+      "validation_only_Q95_delta_correction_N": 0.15048691630363464
+    }
+  },
+  "normalization_sha256": "e1c1a2b49dabcf6454793955705376b4f6f7730436a722afc6a73169ee9a4d22",
+  "status": "THREE_FIXED_M_DELTA_REPLICAS_TRAINED_BEFORE_DEVELOPMENT_TEST",
+  "training_code_sha256": "ac5e722cd9164cb598f63bcfb5b61ef87264d74d5dbd1b05404cc4aaa58e24db",
+  "training_seeds": [
+    261021,
+    261022,
+    261023
+  ],
+  "validation_ensemble_rule_sha256": "8f8bf80dc19914d50b95b91e9ac6e691241a24c78ca69bfa7bab7f811fd9fe59"
+}

@@ -1,0 +1,48 @@
+{
+  "behavior_features": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g3_force_predictor/behavior_features.npz",
+  "behavior_features_sha256": "116112721a51111298fde49cd26434f89dd2de3f978f395fe7207719bb263ef8",
+  "behavior_rows": 15500,
+  "candidate_action_protocol_sha256": "cc2613c806e34b1b09955a0e9573a9df625172cd684429c1e4b274c588e1c6a7",
+  "confirmation_behavior_steps_sha256": "46e7b8febf6eb3eac45bb0aad74ab255043ee1682fdd1ce7450104760ce2cdda",
+  "confirmation_candidate_all_files_sha256": "985e506d9bbf0a19fd667bbab3475352d5aca9e74a560e2ee04fddb549f7df0a",
+  "confirmation_candidate_counts": {
+    "episodes": 30,
+    "labels": 2520,
+    "states": 120
+  },
+  "confirmation_candidate_results_sha256": "f7a9c7228fa0cb0b388d81d98da35d5528f130139f88043d38b514921cfd96f7",
+  "confirmation_labels_used_for_training_or_selection": false,
+  "confirmation_replay_audit_sha256": "62b79e3d6f16851dd9963472692a3387e4eb433aea329c6dab5c153a02be5f41",
+  "confirmation_seed_manifest_sha256": "c25bde3a5cfa0120478ee068070fa5ba6627dc6bdf76a4b419a164caab013ce0",
+  "confirmation_summary_sha256": "5d6a7a43d6187eb502b3e9f5d13d8c4c9c70076a35dd00692bf8247efa0e2456",
+  "counterfactual_restore_audit_sha256": "069d0048795bfb3c84f73db6b3fb84aea57bc0c2ea68b25e97ec2defb65ce260",
+  "development_candidate_all_files_sha256": "2602ca6c62577a320ee5661d76d5d47366935cf6bc46cbef76a790855e9b2500",
+  "development_candidate_counts": {
+    "development_test": {
+      "labels": 2520,
+      "states": 120
+    },
+    "train": {
+      "labels": 11760,
+      "states": 560
+    },
+    "validation": {
+      "labels": 2520,
+      "states": 120
+    }
+  },
+  "development_collection_status_sha256": "a9f0201df8f9d56a1e4ad1ccf9ae0fbd778171485e2f07d1cbedfd3f5a6d1db6",
+  "development_one_step_candidate_evaluations": 16800,
+  "development_state_selection_sha256": "4547101023cd78433454003f7d2ab2549b2c1580724dd0c08dadc91219542c7f",
+  "frozen_model_manifest_sha256": "1e3b00c8f6b68898be71bf7617a73cb0271270f8104b0a6eccc0949890bd114e",
+  "g2_row_alignment": "exact previous next_observation == current decision_observation within each episode",
+  "latent_extraction": "frozen checkpoint, float32 pre-action G2 observation, CUDA encode; passive offline extraction",
+  "parent_steps_compared_to_G2": 15500,
+  "split_episode_counts": {
+    "development_test": 30,
+    "train": 140,
+    "validation": 30
+  },
+  "test_or_confirmation_labels_used_for_training": false,
+  "total_counterfactual_one_step_evaluations": 19320
+}

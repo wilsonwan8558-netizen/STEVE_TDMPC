@@ -1,0 +1,10 @@
+{
+  "action": [
+    0.0,
+    0.0
+  ],
+  "not_assumed_safe": true,
+  "not_executed_online_until_offline_gate": true,
+  "semantics": "zero normalized translation and zero normalized rotation",
+  "use": "predeclared conservative candidate only if an offline GO permits online testing and separate true-SOFA fallback-force evaluation passes"
+}

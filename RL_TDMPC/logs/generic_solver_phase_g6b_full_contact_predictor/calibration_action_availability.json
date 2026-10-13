@@ -1,0 +1,61 @@
+{
+  "by_replica": {
+    "260206": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.875,
+      "fraction_states_with_zero_accepted": 0.125,
+      "mean_accepted_actions_per_state": 16.666666666666668,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 105,
+      "states_with_zero_accepted": 15
+    },
+    "260207": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.8333333333333334,
+      "fraction_states_with_zero_accepted": 0.16666666666666666,
+      "mean_accepted_actions_per_state": 16.658333333333335,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 100,
+      "states_with_zero_accepted": 20
+    },
+    "260208": {
+      "accepted_action_count_quantiles": {
+        "0": 0.0,
+        "0.1": 0.0,
+        "0.25": 21.0,
+        "0.5": 21.0,
+        "0.75": 21.0,
+        "0.9": 21.0,
+        "1": 21.0
+      },
+      "fraction_states_with_at_least_one_accepted": 0.825,
+      "fraction_states_with_zero_accepted": 0.175,
+      "mean_accepted_actions_per_state": 16.616666666666667,
+      "median_accepted_actions_per_state": 21.0,
+      "state_count": 120,
+      "states_with_at_least_one_accepted": 99,
+      "states_with_zero_accepted": 21
+    }
+  },
+  "selected_cutoff_N": 2.105934143066406,
+  "worst_replica_acceptance_rate": 0.7912698412698412,
+  "worst_replica_fraction_states_with_accepted_action": 0.825
+}

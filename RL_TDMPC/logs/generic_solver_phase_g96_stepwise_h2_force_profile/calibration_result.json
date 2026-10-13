@@ -1,0 +1,51 @@
+{
+  "calibration_definition_sha256": "281d29b93c16d5d9ba2d8cae83b01063e277e0e74df10f823d11579e442d94e0",
+  "corrected_Q95_coverage_by_seed_F1_F2": {
+    "260312": [
+      0.9430970149253731,
+      0.9533582089552238
+    ],
+    "260313": [
+      0.9490049751243781,
+      0.9449626865671642
+    ],
+    "260314": [
+      0.9580223880597015,
+      0.9518034825870647
+    ]
+  },
+  "correction_applied_F1_F2": [
+    true,
+    true
+  ],
+  "mean_raw_Q95_coverage_F1_F2": [
+    0.9016376451077943,
+    0.9405058043117744
+  ],
+  "no_development_test_or_confirmation_labels_used": true,
+  "raw_Q95_coverage_by_seed_F1_F2": {
+    "260312": [
+      0.8830845771144279,
+      0.943407960199005
+    ],
+    "260313": [
+      0.9036069651741293,
+      0.9350124378109452
+    ],
+    "260314": [
+      0.9182213930348259,
+      0.9430970149253731
+    ]
+  },
+  "seeds": [
+    260312,
+    260313,
+    260314
+  ],
+  "shared_delta1_N": 0.23204493522644043,
+  "shared_delta2_N": 0.05156862735748291,
+  "status": "VALIDATION_ONLY_SHARED_STEP_CORRECTION_FROZEN_BEFORE_DEVELOPMENT_TEST",
+  "training_manifest_sha256": "9980a3c6d32be83f3afa037bf01aed242286343cf1086cf8272562f374a0bdb6",
+  "validation_behavior_rows": 2136,
+  "validation_planner_rows": 1080
+}

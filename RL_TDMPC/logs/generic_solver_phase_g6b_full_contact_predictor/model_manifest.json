@@ -1,0 +1,27 @@
+{
+  "checkpoint_sha256": {
+    "260206": "43c5a5e3d64fc1c4a79a206040503f331f780cf449b940fe5213e96e96d3360d",
+    "260207": "598ebd07df2d9b757816d5376ca790a0dfa94b16517b3949732fd1b302db489f",
+    "260208": "914c103119b11840d8b38d2f2c1c304eed09ddc82f4e7042b759d0e4424f1e75"
+  },
+  "development_test_opened_before_training": false,
+  "feature_definition_sha256": "cce50d5bf2960047b07b03c530c2931521f43b1a30c04ff5c3fd30d09a7a88f1",
+  "loss": "ordinary raw force MSE",
+  "model_family": "308-64-ReLU-64-ReLU-1",
+  "new_calibration_or_confirmation_opened_before_training": false,
+  "normalization_sha256": "f3600a518002269df1756d45f4ee908d56ece9a8227dd37a3a035adcc9756ce3",
+  "selected_epoch": {
+    "260206": 27,
+    "260207": 26,
+    "260208": 33
+  },
+  "status": "THREE_BEHAVIOR_ONLY_REPLICAS_VALIDATION_SELECTED",
+  "train_behavior_rows": 10903,
+  "training_protocol": "exact G4/G5 g4_train.fit behavior-only",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ],
+  "validation_behavior_rows": 2286
+}

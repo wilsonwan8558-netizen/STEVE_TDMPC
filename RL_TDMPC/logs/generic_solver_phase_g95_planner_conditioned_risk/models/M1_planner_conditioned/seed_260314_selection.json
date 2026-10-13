@@ -1,0 +1,182 @@
+{
+  "behavior_train_rows": 10203,
+  "behavior_validation_rows": 2136,
+  "best_validation_pinball_N": 0.13332396745681763,
+  "checkpoint_sha256": "6932c520d8421cda7f9454248d4b79d86919e8bed67c47c5c5a98d67eb3330f0",
+  "history": [
+    {
+      "epoch": 0,
+      "validation_pinball_N": 0.2527076005935669
+    },
+    {
+      "epoch": 1,
+      "validation_pinball_N": 0.1933460533618927
+    },
+    {
+      "epoch": 2,
+      "validation_pinball_N": 0.1707976907491684
+    },
+    {
+      "epoch": 3,
+      "validation_pinball_N": 0.16207648813724518
+    },
+    {
+      "epoch": 4,
+      "validation_pinball_N": 0.15523023903369904
+    },
+    {
+      "epoch": 5,
+      "validation_pinball_N": 0.15440621972084045
+    },
+    {
+      "epoch": 6,
+      "validation_pinball_N": 0.15945996344089508
+    },
+    {
+      "epoch": 7,
+      "validation_pinball_N": 0.14863191545009613
+    },
+    {
+      "epoch": 8,
+      "validation_pinball_N": 0.15088091790676117
+    },
+    {
+      "epoch": 9,
+      "validation_pinball_N": 0.15397846698760986
+    },
+    {
+      "epoch": 10,
+      "validation_pinball_N": 0.15181583166122437
+    },
+    {
+      "epoch": 11,
+      "validation_pinball_N": 0.14848263561725616
+    },
+    {
+      "epoch": 12,
+      "validation_pinball_N": 0.15019594132900238
+    },
+    {
+      "epoch": 13,
+      "validation_pinball_N": 0.14415064454078674
+    },
+    {
+      "epoch": 14,
+      "validation_pinball_N": 0.15353895723819733
+    },
+    {
+      "epoch": 15,
+      "validation_pinball_N": 0.1436597853899002
+    },
+    {
+      "epoch": 16,
+      "validation_pinball_N": 0.14335495233535767
+    },
+    {
+      "epoch": 17,
+      "validation_pinball_N": 0.15135668218135834
+    },
+    {
+      "epoch": 18,
+      "validation_pinball_N": 0.14584825932979584
+    },
+    {
+      "epoch": 19,
+      "validation_pinball_N": 0.14570164680480957
+    },
+    {
+      "epoch": 20,
+      "validation_pinball_N": 0.14720140397548676
+    },
+    {
+      "epoch": 21,
+      "validation_pinball_N": 0.1458701342344284
+    },
+    {
+      "epoch": 22,
+      "validation_pinball_N": 0.1413913071155548
+    },
+    {
+      "epoch": 23,
+      "validation_pinball_N": 0.13985088467597961
+    },
+    {
+      "epoch": 24,
+      "validation_pinball_N": 0.14199748635292053
+    },
+    {
+      "epoch": 25,
+      "validation_pinball_N": 0.14521007239818573
+    },
+    {
+      "epoch": 26,
+      "validation_pinball_N": 0.1466846764087677
+    },
+    {
+      "epoch": 27,
+      "validation_pinball_N": 0.14189106225967407
+    },
+    {
+      "epoch": 28,
+      "validation_pinball_N": 0.1398298144340515
+    },
+    {
+      "epoch": 29,
+      "validation_pinball_N": 0.13941888511180878
+    },
+    {
+      "epoch": 30,
+      "validation_pinball_N": 0.14530760049819946
+    },
+    {
+      "epoch": 31,
+      "validation_pinball_N": 0.14261941611766815
+    },
+    {
+      "epoch": 32,
+      "validation_pinball_N": 0.13332396745681763
+    },
+    {
+      "epoch": 33,
+      "validation_pinball_N": 0.15251599252223969
+    },
+    {
+      "epoch": 34,
+      "validation_pinball_N": 0.13451500236988068
+    },
+    {
+      "epoch": 35,
+      "validation_pinball_N": 0.13772933185100555
+    },
+    {
+      "epoch": 36,
+      "validation_pinball_N": 0.14751774072647095
+    },
+    {
+      "epoch": 37,
+      "validation_pinball_N": 0.14313089847564697
+    },
+    {
+      "epoch": 38,
+      "validation_pinball_N": 0.14307308197021484
+    },
+    {
+      "epoch": 39,
+      "validation_pinball_N": 0.1445157825946808
+    },
+    {
+      "epoch": 40,
+      "validation_pinball_N": 0.13968251645565033
+    }
+  ],
+  "model": "M1_planner_conditioned",
+  "normalization": "exact frozen G9 E1/H2 behavior-TRAIN input mean/std",
+  "planner_train_rows": 5038,
+  "planner_validation_rows": 1080,
+  "train_rows": 15241,
+  "training_seed": 260314,
+  "validation_corrected_Q95_coverage": 0.9502487562189055,
+  "validation_only_Q95_delta_N": 0.24504351615905762,
+  "validation_raw_Q95_coverage": 0.9088930348258707,
+  "validation_rows": 3216
+}

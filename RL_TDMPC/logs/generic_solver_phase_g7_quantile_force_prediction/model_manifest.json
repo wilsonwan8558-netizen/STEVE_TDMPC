@@ -1,0 +1,27 @@
+{
+  "checkpoint_sha256": {
+    "260206": "f6200a931716fdf6b586510fb8bd7f0ffea2bdd2083c631697d118c23c89b3c3",
+    "260207": "ce94ede9d2ef3a2075bb4516f691039d05b892b59d575ab8afe2a0f5ae2d846c",
+    "260208": "fb0f44d4b2fb5c0a1b8d178005d8d09cef28e3d6ef2cc3763139a548ae60f5e0"
+  },
+  "development_or_new_seed_labels_opened_before_training": false,
+  "model_definition_sha256": "f8712648f5351ab25ef3613a15ad59a161040adce50981c9b8c036b09e7f797a",
+  "normalization_sha256": "f3600a518002269df1756d45f4ee908d56ece9a8227dd37a3a035adcc9756ce3",
+  "quantile_levels": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "selected_epoch": {
+    "260206": 36,
+    "260207": 30,
+    "260208": 52
+  },
+  "status": "THREE_INDEPENDENT_VALIDATION_SELECTED_QUANTILE_REPLICAS",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ]
+}

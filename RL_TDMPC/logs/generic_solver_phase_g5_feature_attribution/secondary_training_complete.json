@@ -1,0 +1,17 @@
+{
+  "P_min_groups": [
+    "K",
+    "D"
+  ],
+  "names": [
+    "Z1",
+    "P1",
+    "Pmin1"
+  ],
+  "status": "COMPLETE_3_SECONDARY_CELLS_THREE_SEEDS",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ]
+}

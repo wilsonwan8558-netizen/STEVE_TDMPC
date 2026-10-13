@@ -1,0 +1,73 @@
+{
+  "cases": [
+    {
+      "action_pair": [
+        [
+          1.0,
+          0.26381808519363403
+        ],
+        [
+          1.0,
+          0.8307377696037292
+        ]
+      ],
+      "archived_F1_N": 0.0,
+      "archived_F2_N": 0.0,
+      "archived_R2_N": 0.0,
+      "candidate_id": 0,
+      "category": "low_force",
+      "decision_index": 10,
+      "development_row": 36,
+      "seed": 90005,
+      "state_global_id": 4
+    },
+    {
+      "action_pair": [
+        [
+          0.9909141659736633,
+          0.8391704559326172
+        ],
+        [
+          0.977774977684021,
+          -1.0
+        ]
+      ],
+      "archived_F1_N": 3.6870226860046387,
+      "archived_F2_N": 3.6706931591033936,
+      "archived_R2_N": 3.6870226860046387,
+      "candidate_id": 0,
+      "category": "near_boundary",
+      "decision_index": 44,
+      "development_row": 6757,
+      "seed": 90120,
+      "state_global_id": 751
+    },
+    {
+      "action_pair": [
+        [
+          1.0,
+          -1.0
+        ],
+        [
+          0.9246582984924316,
+          -1.0
+        ]
+      ],
+      "archived_F1_N": 1.46213960647583,
+      "archived_F2_N": 15.555542945861816,
+      "archived_R2_N": 15.555542945861816,
+      "candidate_id": 6,
+      "category": "high_contact",
+      "decision_index": 29,
+      "development_row": 5413,
+      "seed": 90078,
+      "state_global_id": 601
+    }
+  ],
+  "claim_limit": "three representative development cases cannot prove global determinism or complete state restoration",
+  "method": "Linux fork copy-on-write of exact live parent Generic scene at pre-action decision; child executes exact archived two-action plan and returns F1/F2/R2 plus post-step privileged observable state; repeat independently from same parent memory snapshot",
+  "not_training_data": true,
+  "numeric_summary": "per case max and mean absolute deviation and population std of F1/F2/R2 and next-state vectors across 10 repeats",
+  "repetitions_per_case": 10,
+  "status": "THREE_DEVELOPMENT_STATE_ACTION_CASES_FROZEN_BEFORE_REPLAY"
+}

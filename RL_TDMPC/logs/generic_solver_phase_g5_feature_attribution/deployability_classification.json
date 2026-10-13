@@ -1,0 +1,149 @@
+{
+  "B_is_not_currently_measured_experimentally": true,
+  "P_deployable_dimension": 33,
+  "P_deployable_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    35,
+    36,
+    37
+  ],
+  "P_simulator_internal_dimension": 5,
+  "P_simulator_internal_indices": [
+    30,
+    31,
+    32,
+    33,
+    34
+  ],
+  "classes": {
+    "A": "already available from controller/tracking/command state, no Generic solver internals",
+    "B": "physically measurable/estimable in principle, not currently measured or available in the policy input",
+    "C": "exact G4 feature depends on Generic constraint multipliers/manifold internals; not directly deployable"
+  },
+  "per_feature": [
+    {
+      "class": "B",
+      "feature_name": "distal_tip_xyz",
+      "indices": [
+        0,
+        1,
+        2
+      ],
+      "rationale": "3D tip position; not present in 2D policy tracking, plausibly image-trackable in principle"
+    },
+    {
+      "class": "B",
+      "feature_name": "distal_relative_node_xyz",
+      "indices": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "rationale": "Four proximal-to-distal collision-node offsets; a 3D shape estimate would require sensing/imaging"
+    },
+    {
+      "class": "B",
+      "feature_name": "distal_node_velocity_xyz",
+      "indices": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "rationale": "Five distal velocities; plausibly estimable from tracked motion, not currently measured"
+    },
+    {
+      "class": "C",
+      "feature_name": "current_distal_force_vector",
+      "indices": [
+        30,
+        31,
+        32
+      ],
+      "rationale": "Exact G4 solver-reconstructed pre-action contact reaction; a physical force sensor would be a different, unvalidated surrogate"
+    },
+    {
+      "class": "C",
+      "feature_name": "current_distal_force_magnitude",
+      "indices": [
+        33
+      ],
+      "rationale": "Exact preceding-interval final-substep solver contact force; not the future target"
+    },
+    {
+      "class": "C",
+      "feature_name": "current_distal_contact_group_count",
+      "indices": [
+        34
+      ],
+      "rationale": "Constraint-manifold-derived contact count; no direct current controller measurement"
+    },
+    {
+      "class": "A",
+      "feature_name": "insertion_length",
+      "indices": [
+        35
+      ],
+      "rationale": "Current controller/device insertion state, before requested action"
+    },
+    {
+      "class": "A",
+      "feature_name": "rotation_sin_cos",
+      "indices": [
+        36,
+        37
+      ],
+      "rationale": "Already included in the 14-D policy observation; this is an exact duplicate channel"
+    }
+  ],
+  "status": "FROZEN_BEFORE_MODEL_PERFORMANCE"
+}

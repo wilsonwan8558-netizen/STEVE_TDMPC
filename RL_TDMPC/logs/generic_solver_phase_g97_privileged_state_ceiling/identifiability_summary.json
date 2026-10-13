@@ -1,0 +1,12 @@
+{
+  "action_pair_L2_max": 0.75,
+  "heldout_plans": 1075,
+  "interpretation_limit": "nearest-neighbor variance is descriptive and depends on train-only scaling/PCA; not a causal proof of aliasing or Markovity",
+  "mean_deploy_abs_query_neighbor_R2_difference_N": 0.9750193224114286,
+  "mean_deploy_local_R2_variance_N2": 0.7497131862351544,
+  "mean_priv_abs_query_neighbor_R2_difference_N": 1.0618322762445762,
+  "mean_priv_local_R2_variance_N2": 0.7757638796720253,
+  "neighbor_count": 5,
+  "queries_with_five_other_state_similar_action_neighbors": 1053,
+  "status": "DIAGNOSTIC_ONLY_NO_LABEL_FIT"
+}

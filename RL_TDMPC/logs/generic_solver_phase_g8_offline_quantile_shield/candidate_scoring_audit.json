@@ -1,0 +1,19 @@
+{
+  "G6B_checkpoint_sha256": {
+    "260206": "43c5a5e3d64fc1c4a79a206040503f331f780cf449b940fe5213e96e96d3360d",
+    "260207": "598ebd07df2d9b757816d5376ca790a0dfa94b16517b3949732fd1b302db489f",
+    "260208": "914c103119b11840d8b38d2f2c1c304eed09ddc82f4e7042b759d0e4424f1e75"
+  },
+  "G7_checkpoint_sha256": {
+    "260206": "f6200a931716fdf6b586510fb8bd7f0ffea2bdd2083c631697d118c23c89b3c3",
+    "260207": "ce94ede9d2ef3a2075bb4516f691039d05b892b59d575ab8afe2a0f5ae2d846c",
+    "260208": "fb0f44d4b2fb5c0a1b8d178005d8d09cef28e3d6ef2cc3763139a548ae60f5e0"
+  },
+  "Q95_true_high_force_candidates": 316,
+  "Q99_true_extreme_candidates": 26,
+  "candidate_results_sha256": "424c4fc3c5c96ca219a5200486ba07a9f2b8685311a28a66253d60f86ee05efe",
+  "candidate_rows": 2520,
+  "candidate_zero_exact_nominal_count": 120,
+  "states": 120,
+  "status": "PASS_G8_SAME_2520_LABELS_G7_G6B_ORACLE"
+}

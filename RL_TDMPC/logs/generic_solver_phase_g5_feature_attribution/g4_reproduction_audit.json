@@ -1,0 +1,25 @@
+{
+  "all_g4_alignment_max_abs_differences": {
+    "applied_action": 0.0,
+    "force_next_max_N": 0.0,
+    "insertion_length_mm": 0.0,
+    "observation": 0.0,
+    "prior_final_force_N": 0.0,
+    "reward": 0.0,
+    "tip_position_mm": 0.0
+  },
+  "g4_P_definition_sha256": "cdc7f37a03ffaa48e3774a56832b05715d6cae70177c81070a927b9dc03bdc97",
+  "g4_P_normalization_sha256": "e112886c971e68d41ce654300a49d546feb23d52faa7fb4c546979b071cbd07c",
+  "g4_alignment_sha256": "c530d75166f051a7706281d6823eaab5c889d1ffb1cef2ccc0634e8ce3b343a3",
+  "g4_frozen_file_count": 1121,
+  "g4_pre_confirmation_freeze_sha256": "003ad2f2756124d443ac646e888a51fca613f4dbfa9e945d6bda46e9a435b31a",
+  "reference_models_to_retrain_and_compare": [
+    "Z",
+    "P"
+  ],
+  "source_P_rows": 15300,
+  "source_candidate_labels": 16800,
+  "source_parent_steps": 15500,
+  "source_selected_states": 800,
+  "status": "G4_SOURCE_AND_ALIGNMENT_IDENTITIES_PASS_MODEL_REPRODUCTION_PENDING"
+}

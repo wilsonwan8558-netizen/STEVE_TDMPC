@@ -1,0 +1,17 @@
+{
+  "device": "cuda:0",
+  "encoder": "agent.model.encode(agent._tensor_observation(o_d))",
+  "format_version": 1,
+  "latent_dim": 256,
+  "observation_dtype": "float32",
+  "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+  "sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "single_observation_exact_samples": [
+    0,
+    1,
+    100,
+    1000,
+    15499
+  ],
+  "total_env_steps": 280000
+}

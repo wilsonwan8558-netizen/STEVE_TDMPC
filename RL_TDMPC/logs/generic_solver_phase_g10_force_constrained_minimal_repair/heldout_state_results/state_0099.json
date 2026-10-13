@@ -1,0 +1,87 @@
+{
+  "cohort": "heldout_development_unsafe_nominal",
+  "decision_index": 39,
+  "event_decision_index": null,
+  "fallback_zero_true": {
+    "F1_N": 0.0,
+    "F2_N": 0.0,
+    "R2_N": 0.0,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": true
+  },
+  "lookback_steps": null,
+  "nominal_pair": [
+    [
+      0.9909377098083496,
+      -0.957607626914978
+    ],
+    [
+      0.988068699836731,
+      -0.04603800177574158
+    ]
+  ],
+  "nominal_true": {
+    "F1_N": 0.0,
+    "F2_N": 4.3554930088230925,
+    "R2_N": 4.3554930088230925,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": false
+  },
+  "optimized_mean_numerical_semantics": {
+    "ambiguous_matches": 0,
+    "canonical_executable_mean_pair": [
+      [
+        0.9909377098083496,
+        -0.957607626914978
+      ],
+      [
+        0.988068699836731,
+        -0.04603800177574158
+      ]
+    ],
+    "changed_by_clipping": false,
+    "changed_by_tolerance_only": false,
+    "raw_optimized_mean_pair": [
+      [
+        0.9909377098083496,
+        -0.957607626914978
+      ],
+      [
+        0.988068699836731,
+        -0.04603800177574158
+      ]
+    ]
+  },
+  "parent_scene_unchanged_by_forks": true,
+  "proposal": {
+    "action": null,
+    "delta_rotation": null,
+    "delta_translation": null,
+    "distance": null,
+    "grid_predicted_safe_count": 0,
+    "max_corrected_Q95_N": null,
+    "nominal_action": [
+      0.9909377098083496,
+      -0.957607626914978
+    ],
+    "nominal_corrected_Q95_N": [
+      6.853550136089325,
+      7.251768589019775,
+      8.027385473251343
+    ],
+    "predictor_evaluations": 1682,
+    "refinement_predictor_evaluations": 0,
+    "repaired_corrected_Q95_N": null,
+    "second_action_fixed": [
+      0.988068699836731,
+      -0.04603800177574158
+    ],
+    "status": "INFEASIBLE_ON_PREDECLARED_SEARCH"
+  },
+  "repaired_action_executed_only_in_counterfactual_fork": true,
+  "repaired_true": null,
+  "seed": 90172,
+  "state_id": 99
+}

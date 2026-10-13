@@ -1,0 +1,1090 @@
+{
+  "candidate_forks": 1080,
+  "censored_one_step_terminal_rows": 4,
+  "complete_R2_rows": 1076,
+  "no_future_behavior_actions_as_candidate_input": true,
+  "state_summary": [
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 6,
+      "seed": 105000,
+      "state_id": 0,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 19,
+      "seed": 105000,
+      "state_id": 1,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 30,
+      "seed": 105000,
+      "state_id": 2,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 33,
+      "seed": 105000,
+      "state_id": 3,
+      "true_safe_plans": 2
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 42,
+      "seed": 105001,
+      "state_id": 4,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 101,
+      "seed": 105001,
+      "state_id": 5,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 167,
+      "seed": 105001,
+      "state_id": 6,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 53,
+      "seed": 105001,
+      "state_id": 7,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 33,
+      "seed": 105002,
+      "state_id": 8,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 77,
+      "seed": 105002,
+      "state_id": 9,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 175,
+      "seed": 105002,
+      "state_id": 10,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 166,
+      "seed": 105002,
+      "state_id": 11,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 7,
+      "seed": 105003,
+      "state_id": 12,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 20,
+      "seed": 105003,
+      "state_id": 13,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 28,
+      "seed": 105003,
+      "state_id": 14,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 31,
+      "seed": 105003,
+      "state_id": 15,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 5,
+      "seed": 105004,
+      "state_id": 16,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 15,
+      "seed": 105004,
+      "state_id": 17,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 22,
+      "seed": 105004,
+      "state_id": 18,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 28,
+      "seed": 105004,
+      "state_id": 19,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 4,
+      "seed": 105005,
+      "state_id": 20,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 30,
+      "seed": 105005,
+      "state_id": 21,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 51,
+      "seed": 105005,
+      "state_id": 22,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 47,
+      "seed": 105005,
+      "state_id": 23,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 9,
+      "seed": 105006,
+      "state_id": 24,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 28,
+      "seed": 105006,
+      "state_id": 25,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 42,
+      "seed": 105006,
+      "state_id": 26,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 34,
+      "seed": 105006,
+      "state_id": 27,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 6,
+      "seed": 105007,
+      "state_id": 28,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 20,
+      "seed": 105007,
+      "state_id": 29,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 30,
+      "seed": 105007,
+      "state_id": 30,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 36,
+      "seed": 105007,
+      "state_id": 31,
+      "true_safe_plans": 3
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 16,
+      "seed": 105008,
+      "state_id": 32,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 41,
+      "seed": 105008,
+      "state_id": 33,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 67,
+      "seed": 105008,
+      "state_id": 34,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 62,
+      "seed": 105008,
+      "state_id": 35,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 7,
+      "seed": 105009,
+      "state_id": 36,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 23,
+      "seed": 105009,
+      "state_id": 37,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 33,
+      "seed": 105009,
+      "state_id": 38,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 40,
+      "seed": 105009,
+      "state_id": 39,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 11,
+      "seed": 105010,
+      "state_id": 40,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 37,
+      "seed": 105010,
+      "state_id": 41,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 57,
+      "seed": 105010,
+      "state_id": 42,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 54,
+      "seed": 105010,
+      "state_id": 43,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 22,
+      "seed": 105011,
+      "state_id": 44,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 38,
+      "seed": 105011,
+      "state_id": 45,
+      "true_safe_plans": 2
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 62,
+      "seed": 105011,
+      "state_id": 46,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 52,
+      "seed": 105011,
+      "state_id": 47,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 9,
+      "seed": 105012,
+      "state_id": 48,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 27,
+      "seed": 105012,
+      "state_id": 49,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 44,
+      "seed": 105012,
+      "state_id": 50,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 47,
+      "seed": 105012,
+      "state_id": 51,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 3,
+      "seed": 105013,
+      "state_id": 52,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 15,
+      "seed": 105013,
+      "state_id": 53,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 21,
+      "seed": 105013,
+      "state_id": 54,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 4,
+      "seed": 105013,
+      "state_id": 55,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 5,
+      "seed": 105014,
+      "state_id": 56,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 97,
+      "seed": 105014,
+      "state_id": 57,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 136,
+      "seed": 105014,
+      "state_id": 58,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 108,
+      "seed": 105014,
+      "state_id": 59,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 7,
+      "seed": 105015,
+      "state_id": 60,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 20,
+      "seed": 105015,
+      "state_id": 61,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 31,
+      "seed": 105015,
+      "state_id": 62,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 32,
+      "seed": 105015,
+      "state_id": 63,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 20,
+      "seed": 105016,
+      "state_id": 64,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 31,
+      "seed": 105016,
+      "state_id": 65,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 54,
+      "seed": 105016,
+      "state_id": 66,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 36,
+      "seed": 105016,
+      "state_id": 67,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 4,
+      "seed": 105017,
+      "state_id": 68,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 21,
+      "seed": 105017,
+      "state_id": 69,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 36,
+      "seed": 105017,
+      "state_id": 70,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 35,
+      "seed": 105017,
+      "state_id": 71,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 8,
+      "seed": 105018,
+      "state_id": 72,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 25,
+      "seed": 105018,
+      "state_id": 73,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 39,
+      "seed": 105018,
+      "state_id": 74,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 47,
+      "seed": 105018,
+      "state_id": 75,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 12,
+      "seed": 105019,
+      "state_id": 76,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 31,
+      "seed": 105019,
+      "state_id": 77,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 60,
+      "seed": 105019,
+      "state_id": 78,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 47,
+      "seed": 105019,
+      "state_id": 79,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 5,
+      "seed": 105020,
+      "state_id": 80,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 27,
+      "seed": 105020,
+      "state_id": 81,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 39,
+      "seed": 105020,
+      "state_id": 82,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 43,
+      "seed": 105020,
+      "state_id": 83,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 28,
+      "seed": 105021,
+      "state_id": 84,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 92,
+      "seed": 105021,
+      "state_id": 85,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 197,
+      "seed": 105021,
+      "state_id": 86,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 189,
+      "seed": 105021,
+      "state_id": 87,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 30,
+      "seed": 105022,
+      "state_id": 88,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 130,
+      "seed": 105022,
+      "state_id": 89,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 188,
+      "seed": 105022,
+      "state_id": 90,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 175,
+      "seed": 105022,
+      "state_id": 91,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 4,
+      "seed": 105023,
+      "state_id": 92,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 29,
+      "seed": 105023,
+      "state_id": 93,
+      "true_safe_plans": 7
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 53,
+      "seed": 105023,
+      "state_id": 94,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 48,
+      "seed": 105023,
+      "state_id": 95,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 11,
+      "seed": 105024,
+      "state_id": 96,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 42,
+      "seed": 105024,
+      "state_id": 97,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 55,
+      "seed": 105024,
+      "state_id": 98,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 54,
+      "seed": 105024,
+      "state_id": 99,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 11,
+      "seed": 105025,
+      "state_id": 100,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 36,
+      "seed": 105025,
+      "state_id": 101,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 54,
+      "seed": 105025,
+      "state_id": 102,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 52,
+      "seed": 105025,
+      "state_id": 103,
+      "true_safe_plans": 0
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 26,
+      "seed": 105026,
+      "state_id": 104,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 100,
+      "seed": 105026,
+      "state_id": 105,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 162,
+      "seed": 105026,
+      "state_id": 106,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 2,
+      "complete_R2": 7,
+      "decision_index": 61,
+      "seed": 105026,
+      "state_id": 107,
+      "true_safe_plans": 7
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 6,
+      "seed": 105027,
+      "state_id": 108,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 15,
+      "seed": 105027,
+      "state_id": 109,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 24,
+      "seed": 105027,
+      "state_id": 110,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 27,
+      "seed": 105027,
+      "state_id": 111,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 24,
+      "seed": 105028,
+      "state_id": 112,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 89,
+      "seed": 105028,
+      "state_id": 113,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 132,
+      "seed": 105028,
+      "state_id": 114,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 2,
+      "complete_R2": 7,
+      "decision_index": 74,
+      "seed": 105028,
+      "state_id": 115,
+      "true_safe_plans": 7
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 15,
+      "seed": 105029,
+      "state_id": 116,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 28,
+      "seed": 105029,
+      "state_id": 117,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 52,
+      "seed": 105029,
+      "state_id": 118,
+      "true_safe_plans": 9
+    },
+    {
+      "candidate_forks": 9,
+      "censored": 0,
+      "complete_R2": 9,
+      "decision_index": 49,
+      "seed": 105029,
+      "state_id": 119,
+      "true_safe_plans": 0
+    }
+  ],
+  "states": 120,
+  "status": "UNTOUCHED_G96_PROSPECTIVE_PLANNER_PROFILES"
+}

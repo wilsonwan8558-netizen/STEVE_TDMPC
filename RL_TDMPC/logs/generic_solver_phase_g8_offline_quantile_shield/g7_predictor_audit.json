@@ -1,0 +1,26 @@
+{
+  "G6B_checkpoint_sha256": {
+    "260206": "43c5a5e3d64fc1c4a79a206040503f331f780cf449b940fe5213e96e96d3360d",
+    "260207": "598ebd07df2d9b757816d5376ca790a0dfa94b16517b3949732fd1b302db489f",
+    "260208": "914c103119b11840d8b38d2f2c1c304eed09ddc82f4e7042b759d0e4424f1e75"
+  },
+  "G6B_freeze_status": "G6B_THREE_REPLICAS_AND_SHARED_CUTOFF_FROZEN_BEFORE_CONFIRMATION",
+  "G6B_point_cutoff_N": 2.105934143066406,
+  "G6B_pre_confirmation_freeze_sha256": "c1258c0a147d809dd8d3a9ed9df5f1172974cea0062766ce86335617431ed501",
+  "G7_Q95_residual_N": 0.0,
+  "G7_checkpoint_sha256": {
+    "260206": "f6200a931716fdf6b586510fb8bd7f0ffea2bdd2083c631697d118c23c89b3c3",
+    "260207": "ce94ede9d2ef3a2075bb4516f691039d05b892b59d575ab8afe2a0f5ae2d846c",
+    "260208": "fb0f44d4b2fb5c0a1b8d178005d8d09cef28e3d6ef2cc3763139a548ae60f5e0"
+  },
+  "G7_freeze_status": "G7_QUANTILES_AND_SHARED_RESIDUAL_FROZEN_BEFORE_CONFIRMATION",
+  "G7_normalization_sha256": "f3600a518002269df1756d45f4ee908d56ece9a8227dd37a3a035adcc9756ce3",
+  "G7_pre_confirmation_freeze_sha256": "7d358165ae31290e7cc3c9c555b25112aef38c137d63d50ccf00c6fe4e03d5ed",
+  "G7_quantile_model_definition_sha256": "f8712648f5351ab25ef3613a15ad59a161040adce50981c9b8c036b09e7f797a",
+  "candidate_zero_exact_nominal_pass": true,
+  "exact_G6B_full_contact_state_dimension": 306,
+  "frozen_prior_candidate_states_audited": 120,
+  "model_input_dimension": 308,
+  "no_retraining_recalibration_seed_selection_or_ensemble": true,
+  "status": "FROZEN_G7_THREE_REPLICAS_AND_G6B_BASELINE_RECOVERED"
+}

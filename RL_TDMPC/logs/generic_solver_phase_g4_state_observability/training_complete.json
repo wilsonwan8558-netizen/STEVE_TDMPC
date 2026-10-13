@@ -1,0 +1,46 @@
+{
+  "cells": [
+    "Z0",
+    "Z1",
+    "O0",
+    "O1",
+    "H0",
+    "H1",
+    "P0",
+    "P1"
+  ],
+  "confirmation_opened_before_training": false,
+  "counts": {
+    "H": {
+      "input_dim": 32,
+      "train_behavior": 10903,
+      "train_candidates": 11760,
+      "validation_behavior": 2286
+    },
+    "O": {
+      "input_dim": 16,
+      "train_behavior": 10903,
+      "train_candidates": 11760,
+      "validation_behavior": 2286
+    },
+    "P": {
+      "input_dim": 40,
+      "train_behavior": 10903,
+      "train_candidates": 11760,
+      "validation_behavior": 2286
+    },
+    "Z": {
+      "input_dim": 258,
+      "train_behavior": 10903,
+      "train_candidates": 11760,
+      "validation_behavior": 2286
+    }
+  },
+  "development_test_opened_before_training": false,
+  "status": "COMPLETE_ALL_24_VALIDATION_SELECTED_CHECKPOINTS",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ]
+}

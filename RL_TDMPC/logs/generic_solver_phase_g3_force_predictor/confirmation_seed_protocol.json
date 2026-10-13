@@ -1,0 +1,17 @@
+{
+  "status": "PREDECLARED_BEFORE_TRAINING_AND_BEFORE_CONFIRMATION_OPEN",
+  "seeds": [
+    92000, 92001, 92002, 92003, 92004, 92005, 92006, 92007, 92008, 92009,
+    92010, 92011, 92012, 92013, 92014, 92015, 92016, 92017, 92018, 92019,
+    92020, 92021, 92022, 92023, 92024, 92025, 92026, 92027, 92028, 92029
+  ],
+  "scene_lifecycle": "one Generic scene reused across ordered 92000-92029 resets",
+  "states_per_episode": 4,
+  "candidate_actions_per_state": 21,
+  "expected_states": 120,
+  "expected_candidate_labels": 2520,
+  "state_selection": "same frozen development four-per-episode progress and prior-executed-force rule",
+  "candidate_generation": "same frozen 21-action protocol with disjoint confirmation RNG offset",
+  "opening_gate": "frozen_model_manifest.json and completed development-test analysis",
+  "post_open_rule": "no retraining, recalibration, hyperparameter or protocol changes"
+}

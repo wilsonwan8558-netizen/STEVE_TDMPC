@@ -1,0 +1,23 @@
+{
+  "candidate_forks": 16800,
+  "last_seed": 90199,
+  "max_abs_difference": {
+    "applied_action": 0.0,
+    "force_next_max_N": 0.0,
+    "insertion_length_mm": 0.0,
+    "observation": 0.0,
+    "prior_final_force_N": 0.0,
+    "reward": 0.0,
+    "tip_position_mm": 0.0
+  },
+  "parent_episodes": 200,
+  "parent_steps": 15500,
+  "physical_rows": 15300,
+  "resume": true,
+  "scene_lifecycle": "one reused scene, seeds 90000-90199, full historical replay on resume",
+  "selected_states": 800,
+  "source_g2_step_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "source_g3_behavior_sha256": "116112721a51111298fde49cd26434f89dd2de3f978f395fe7207719bb263ef8",
+  "status": "PASS_G3_G2_PARENT_CANDIDATE_AND_PREACTION_PHYSICAL_ALIGNMENT",
+  "tolerance": 1e-08
+}

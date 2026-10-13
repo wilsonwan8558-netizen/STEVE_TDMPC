@@ -1,0 +1,13 @@
+{
+  "phase": "G10.1",
+  "decision": "NO_GO_FOR_CURRENT_FROZEN_PREDICTOR_ONLINE_REPAIR",
+  "final_classification": "B_TRANSLATION_ONLY_PHYSICS_PROMISING_CURRENT_PREDICTOR_NOT_USABLE",
+  "reason": "True SOFA found a safe fixed-rotation translation in 27/40 finite-sweep states, including 9/11 t*-2 events, but the frozen predictor found a safe candidate in only 5/40, of which 2 were truly safe, 3 false-safe, and 22 recoverable states falsely infeasible.",
+  "finite_sweep_no_global_physical_recoverability_claim": true,
+  "fixed_rotation_translation_only_not_universally_sufficient": true,
+  "states_with_no_safe_tested_translation": 13,
+  "next_recommended_step": "Offline local translation-force response model with explicit abstention/other-control handling for states without a safe fixed-rotation translation; validate before considering online testing.",
+  "new_model_trained_in_G101": false,
+  "online_evaluation_performed": false,
+  "online_107000_107199_opened": false
+}

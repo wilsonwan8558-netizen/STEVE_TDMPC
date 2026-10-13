@@ -1,0 +1,18 @@
+{
+  "episodes": 200,
+  "length_mismatches": 0,
+  "maximum_reward_absolute_difference": 0.0,
+  "mean_episode_length": 77.5,
+  "mean_episode_reward": 3.4300794214612553,
+  "median_episode_length": 58.0,
+  "reference": "G1B confirmation_200_episode_results.csv",
+  "seeds": [
+    90000,
+    90199
+  ],
+  "status": "PASS",
+  "success_count": 172,
+  "success_mismatches": 0,
+  "total_rl_steps": 15500,
+  "trajectory_hash_mismatches": 0
+}

@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "solver": "GenericConstraintSolver",
+  "lambda_field": "root.Generic.constraintForces",
+  "active_contact_indexing": "currentNumConstraints == length(constraintForces) == 3 * currentNumConstraintGroups; consecutive normal and two tangent scalar rows",
+  "active_contact_tolerance": "normal multiplier > 1e-12; reject negative unilateral normal or nonzero tangent without active normal",
+  "contact_jacobian": "CollisionModel/CollisionDOFs.constraint at the same completed SOFA substep",
+  "contact_location": "normal-row point support or barycentric location on current collision edge",
+  "distal_region": "contact arc length <= 3.0 mm from the mapped guidewire collision tip",
+  "distal_region_mm": 3.0,
+  "distal_region_provenance": "Previously validated Original distal definition; G0.5 20 mm region was a broader diagnostic window and is not used for the G2 safety signal.",
+  "vector_reconstruction": "For active distal groups, sum all normal/tangent J_contact^T lambda Cartesian vectors, then take the norm of the resultant; divide by SOFA dt = 0.006 s.",
+  "force_units": "nominal simulation N under G0 controlled-load scene convention, not clinical force validation",
+  "sofa_dt_s": 0.006,
+  "substeps_per_rl_control": 22,
+  "primary_signal": "distal_contact_force_max_N = max of all 22 substep distal resultant magnitudes within one RL control interval",
+  "diagnostics": ["distal_contact_force_mean_N", "distal_contact_force_final_N", "distal_force_time_integral_Ns", "distal_contact_count"],
+  "distal_contact_count_definition": "Maximum simultaneous active distal contact-group count over the control interval; not just the final SOFA substep.",
+  "controlled_load_sanity": {
+    "source": "controlled_load_sanity.json",
+    "applied_nominal_N": 0.1,
+    "reconstructed_baseline_subtracted_N": 0.10265011370558422,
+    "relative_error_fraction": 0.026501137055842117,
+    "direction_cosine": 0.9986109219262267,
+    "raw_unscaled_relative_error_fraction": 0.9938409931776649,
+    "load_node_distance_to_tip_mm": 10.436810827503741,
+    "scope": "Validates Generic J^T lambda / dt scaling, not by itself 3 mm contact attribution."
+  },
+  "pure_reconstruction_tests": {
+    "passed": 8,
+    "cases": ["tip point", "tangent", "two-contact vector cancellation", "shaft exclusion", "mixed shaft/distal", "line-contact boundary", "collapsed inactive edge", "degenerate active edge rejection"]
+  },
+  "live_pipeline_probe": {
+    "source": "pipeline_probe.json",
+    "control_steps": 100,
+    "observed_sofa_substeps": 2200,
+    "expected_sofa_substeps": 2200,
+    "distal_contact_control_steps": 47,
+    "max_distal_force_N": 0.8389627165234413,
+    "max_substep_peak_minus_endpoint_N": 0.2789443020980237,
+    "max_callback_endpoint_reconstruction_difference_N": 0.0
+  },
+  "frozen_scene_configuration_verified": true,
+  "force_reconstruction_source_sha256": "76c920ce5122cb8da97ba100851985267e734b2877fc41ab6726217cdb13fa26",
+  "substep_monitor_source_sha256": "744759896f36d284c9ba039a537a9f5334a5e6f5d99752f036062ae55ced3534"
+}

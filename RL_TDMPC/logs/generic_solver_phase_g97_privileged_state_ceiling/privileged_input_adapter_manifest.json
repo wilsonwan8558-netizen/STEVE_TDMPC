@@ -1,0 +1,13 @@
+{
+  "PCA_components": 256,
+  "adapter_sha256": "eec0a973ee1d0a1e634942974cbf27593e7c9ccfd99ead2c216bdb7c55d352d5",
+  "development_privileged_states_sha256": "ba65a02e6e8e5b8357fe281cc9af3ac0ef48d6ca62764370ce71279cf243cddf",
+  "raw_dimension": 3582,
+  "sign_convention": "largest-absolute loading in each component is nonnegative",
+  "status": "TRAIN_STATES_ONLY_256D_PRIVILEGED_ADAPTER",
+  "train_explained_variance_fraction": 0.9952200761601891,
+  "train_parent_states": 560,
+  "training_labels_used": false,
+  "validation_or_development_test_states_used_to_fit": false,
+  "zero_variance_coordinates_std_fallback_1": 702
+}

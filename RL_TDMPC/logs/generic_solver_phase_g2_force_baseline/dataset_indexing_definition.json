@@ -1,0 +1,16 @@
+{
+  "status": "FROZEN_BEFORE_FULL_COLLECTION",
+  "row_identity": "seed, episode_index (zero-based in the ordered run), step_index (zero-based within episode)",
+  "decision_state_t": "decision_observation_json: exact 14-dimensional float32 policy observation before selecting action at step_index t",
+  "selected_action_a_t": "selected_action_json: exact 2-dimensional normalized float32 action returned by the frozen TD-MPC2 planner from decision_state_t",
+  "applied_action": "applied_action_json: 2-dimensional raw stEVE velocity action reported by the unchanged environment after normalized-action mapping",
+  "next_state": "next_observation_json: exact 14-dimensional float32 observation returned by env.step(a_t)",
+  "force_target": "distal_contact_force_max_N: maximum 3 mm distal resultant force over all SOFA substeps during the immediately following env.step(a_t) control interval",
+  "canonical_future_prediction_notation": "F_(t+1) = max-substep distal force generated after decision state s_t and selected action a_t; the same CSV row stores s_t, a_t, s_(t+1), and F_(t+1)",
+  "within_interval_diagnostics": ["distal_contact_force_mean_N", "distal_contact_force_final_N", "distal_force_time_integral_Ns", "distal_contact_count", "distal_contact_substeps"],
+  "distal_contact_count_definition": "Maximum number of simultaneously active distal normal-contact groups among the 22 SOFA substeps of the control interval.",
+  "distal_contact_substeps_definition": "Number of SOFA substeps in the control interval with at least one active distal normal-contact group.",
+  "reward_and_done_timing": "reward, terminated, truncated, success_step, tip position, and insertion length are returned/observed after the same env.step(a_t)",
+  "latent_state": "Not extracted in G2: obtaining an exact planner latent without introducing model hooks was not required for unambiguous observation/action/force alignment.",
+  "future_predictor_trained": false
+}

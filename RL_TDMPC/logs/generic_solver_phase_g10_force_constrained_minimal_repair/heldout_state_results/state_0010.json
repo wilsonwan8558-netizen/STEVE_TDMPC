@@ -1,0 +1,101 @@
+{
+  "cohort": "heldout_development_unsafe_nominal",
+  "decision_index": 37,
+  "event_decision_index": null,
+  "fallback_zero_true": {
+    "F1_N": 0.30150281195517586,
+    "F2_N": 1.3544680863770908,
+    "R2_N": 1.3544680863770908,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": true
+  },
+  "lookback_steps": null,
+  "nominal_pair": [
+    [
+      0.9869018197059631,
+      -0.7009050846099854
+    ],
+    [
+      0.8091679215431213,
+      0.4024016857147217
+    ]
+  ],
+  "nominal_true": {
+    "F1_N": 1.979640095933562,
+    "F2_N": 3.6966745451058327,
+    "R2_N": 3.6966745451058327,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": false
+  },
+  "optimized_mean_numerical_semantics": {
+    "ambiguous_matches": 0,
+    "canonical_executable_mean_pair": [
+      [
+        0.9869018197059631,
+        -0.7009050846099854
+      ],
+      [
+        0.8091679215431213,
+        0.4024016857147217
+      ]
+    ],
+    "changed_by_clipping": false,
+    "changed_by_tolerance_only": false,
+    "raw_optimized_mean_pair": [
+      [
+        0.9869018197059631,
+        -0.7009050846099854
+      ],
+      [
+        0.8091679215431213,
+        0.4024016857147217
+      ]
+    ]
+  },
+  "parent_scene_unchanged_by_forks": true,
+  "proposal": {
+    "action": [
+      0.3434999883174896,
+      -0.06199999898672104
+    ],
+    "delta_rotation": 0.6389050856232643,
+    "delta_translation": -0.6434018313884735,
+    "distance": 0.9067334917545025,
+    "grid_predicted_safe_count": 1184,
+    "max_corrected_Q95_N": 3.6852874159812927,
+    "nominal_action": [
+      0.9869018197059631,
+      -0.7009050846099854
+    ],
+    "nominal_corrected_Q95_N": [
+      3.9071494936943054,
+      3.3520891666412354,
+      2.405099391937256
+    ],
+    "predictor_evaluations": 1754,
+    "refinement_predictor_evaluations": 72,
+    "repaired_corrected_Q95_N": [
+      3.6852874159812927,
+      3.2907450199127197,
+      2.4973111152648926
+    ],
+    "second_action_fixed": [
+      0.8091679215431213,
+      0.4024016857147217
+    ],
+    "status": "PREDICTED_SAFE_REPAIR"
+  },
+  "repaired_action_executed_only_in_counterfactual_fork": true,
+  "repaired_true": {
+    "F1_N": 0.29970676907561133,
+    "F2_N": 1.4788665417196116,
+    "R2_N": 1.4788665417196116,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": true
+  },
+  "seed": 90007,
+  "state_id": 10
+}

@@ -1,0 +1,7 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "no_ensemble_or_best_replica": true,
+  "otherwise": "largest float64 cutoff <=F_lim with worst of three calibration FSR <=5%; exact-event sweep",
+  "raw_first": "if every replica empirical Q95 false-safe rate <=5%, c_star=F_lim",
+  "selection_dataset": "97000-97029 only"
+}

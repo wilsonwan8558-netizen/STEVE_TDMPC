@@ -1,0 +1,29 @@
+{
+  "G3_behavior_features_sha256": "116112721a51111298fde49cd26434f89dd2de3f978f395fe7207719bb263ef8",
+  "G3_candidate_all_files_sha256": "2602ca6c62577a320ee5661d76d5d47366935cf6bc46cbef76a790855e9b2500",
+  "G3_split_sha256": "e55172e189f419b7033f2b8df1535dcc0c84bdc17aa9dc545a8bda5669c48e60",
+  "G4_confirmation_93000_93029_is_historical_for_G5": true,
+  "G4_physical_alignment_sha256": "c530d75166f051a7706281d6823eaab5c889d1ffb1cef2ccc0634e8ce3b343a3",
+  "G4_pre_confirmation_freeze_sha256": "003ad2f2756124d443ac646e888a51fca613f4dbfa9e945d6bda46e9a435b31a",
+  "behavior_rows_d_ge_1": {
+    "development_test": 2111,
+    "train": 10903,
+    "validation": 2286
+  },
+  "candidate_labels": {
+    "development_test": 2520,
+    "train": 11760,
+    "validation": 2520
+  },
+  "candidate_states": {
+    "development_test": 120,
+    "train": 560,
+    "validation": 120
+  },
+  "split_episode_counts": {
+    "development_test": 30,
+    "train": 140,
+    "validation": 30
+  },
+  "status": "FROZEN_G4_DEVELOPMENT_DATA"
+}

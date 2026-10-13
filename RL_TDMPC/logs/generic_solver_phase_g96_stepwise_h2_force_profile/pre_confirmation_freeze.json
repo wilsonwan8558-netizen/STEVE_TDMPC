@@ -1,0 +1,104 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "G95_candidate_protocol_sha256": "f6de34ecd814fb9e4f98b9c01dfb335c028470c5a2d7259d557626add7ba14a8",
+  "G95_dataset_sha256": "81fb1fbf4e9eab0aa1c17704bbfaae506c5f45bdfcd92f113a2e70bcffda1ee3",
+  "G95_scalar_baseline": {
+    "260312": {
+      "Q95_delta_N": 0.2981063723564148,
+      "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260312.pt",
+      "checkpoint_sha256": "7f2ce7d27a01a0772bfbcb103042d419c8718b73ce3b63354e7b8e1d9b6b9b66",
+      "selection_sha256": "b45b1d1e6adc877ff4d76115cfa164f3febc84cb9fe579881ef93f8557a671a9"
+    },
+    "260313": {
+      "Q95_delta_N": 0.13973617553710938,
+      "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260313.pt",
+      "checkpoint_sha256": "decee08e203d53e828a95ccdf71f528492f11c07079a23779dc108bbc8ebaa20",
+      "selection_sha256": "2cb621d722e3ffe6be12d7f12aca8bc328008aac608b832eeac93d45e276695c"
+    },
+    "260314": {
+      "Q95_delta_N": 0.24504351615905762,
+      "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260314.pt",
+      "checkpoint_sha256": "6932c520d8421cda7f9454248d4b79d86919e8bed67c47c5c5a98d67eb3330f0",
+      "selection_sha256": "1532dc9ccd3016aae54c1b5e46cc8e58061fcb279fe1cadd07e24314f7268342"
+    }
+  },
+  "G96_stepwise_checkpoint_sha256": {
+    "260312": "861223bd85d535d2f03faf7e26e04fcaec7e66e84431f27474f14ee593777030",
+    "260313": "f092b2c9028ec1c1ebde404895bc6ee0f1ba8ad39b14c16df783d39bc2c8f5a6",
+    "260314": "5c3ca6823b52d9f0419f02a2d9733c87a913814e48f987042dfc569b8929ebe7"
+  },
+  "G9_input_normalization_sha256": "697408d9f9acdbb63c4adfbaf0e3b39f4c3966d1212b86dcc566708969f94976",
+  "H": 2,
+  "candidate_selection": "exact frozen G9.5 final-population score/diversity plus optimized mean nine-plan protocol",
+  "confirmation_seeds_ordered": [
+    104000,
+    104001,
+    104002,
+    104003,
+    104004,
+    104005,
+    104006,
+    104007,
+    104008,
+    104009,
+    104010,
+    104011,
+    104012,
+    104013,
+    104014,
+    104015,
+    104016,
+    104017,
+    104018,
+    104019,
+    104020,
+    104021,
+    104022,
+    104023,
+    104024,
+    104025,
+    104026,
+    104027,
+    104028,
+    104029
+  ],
+  "controller_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "development_artifact_sha256": {
+    "calibration_definition.json": "281d29b93c16d5d9ba2d8cae83b01063e277e0e74df10f823d11579e442d94e0",
+    "calibration_result.json": "483a013082c4f7f13738a1eaf15b655c00227dd26c86516c5dd14a7360ed9a73",
+    "development_plan_metrics.csv": "317daac651e70f1a8d0d42c7f329ed28c273d9a5c8ca1b1e2f6066010ae7f6ef",
+    "development_plan_results.csv": "0e076e3a975353e359b9e8b64ea2b8c8e75dab04c4234e4df90e6404310abef8",
+    "development_stepwise_coverage.csv": "775ee40c6be536b5946bdc06c31eaed5a4fcd1530b22e57c38a35030c81a9e0a",
+    "g95_data_audit.json": "9d86c900e91998c663f43dd7d65d1c37bea3a736d2f1c33deed5345d9652e20a",
+    "metadata.json": "b0fc7d7fa0ec203086c5abe520ddd2c6f05ac1d49d0ece432bd757cac7119886",
+    "model_definition.json": "bf9e4def986384118ec6f5878c694d4bf6a9d4bf265974195a16a9f7a61e1b60",
+    "state_ranking_metrics.csv": "956263fb5b1df068358e616c56afbdd814faa19d2e53e4196ca470e82943ee1b",
+    "temporal_event_metrics.csv": "b0afe03a6df1082b9be36023704781c8b08bfb4f469f1bb100a6b19f03a6d4cc",
+    "training_manifest.json": "9980a3c6d32be83f3afa037bf01aed242286343cf1086cf8272562f374a0bdb6",
+    "training_seed_robustness.json": "9a2e1d1745570e053ff27c3cf96b185b585e3757fae70e99729c32bd2f3afcda"
+  },
+  "fork": "original planner first two actions executed open-loop true SOFA; no second-step replan",
+  "no_retrain_recalibration_threshold_change_on_confirmation": true,
+  "one_reused_scene_per_ordered_pass": true,
+  "planner_source_sha256": "b7ead501ad7607f2ce1b1a3a46c23d2f3e16827302a3d9f8c8862900e6b27ef5",
+  "quantiles": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "scalar_decision": "frozen G9.5 M1 corrected Q95(R2) <= F_lim",
+  "scalar_manifest_sha256": "b744cd4b592cbe74c29b14bdea5618ff142a14095c373371b2af90f11bbbdd2a",
+  "shared_delta1_N": 0.23204493522644043,
+  "shared_delta2_N": 0.05156862735748291,
+  "source_sha256": {
+    "g96_common.py": "2980d14623b9c13e024fd607d0bf0e9cf3ddfa59cdb99b85e382098c92240cda",
+    "g96_confirmation.py": "f95249f56cf632137de6ea05d632270aef67fd6287878721086d82b4078e3e45",
+    "g96_eval.py": "fff4550d1be24663e07317a12330a9415fcfdb94fbba24b58cd663cb9c44fa81",
+    "g96_prepare.py": "4c2e7348e96f7e3f38276b3bd57954b9c12fa3f492526196215d5e4c9f6c3242",
+    "g96_train.py": "fd3686f48c53cc097f420790f439d4a855dac4dce097203992418c75a8b46876"
+  },
+  "state_selection": "frozen G3 progress/prior-force four per episode, no candidate force outcomes",
+  "status": "G96_PROFILE_SCALAR_AND_EVALUATION_FROZEN_BEFORE_104000_CONFIRMATION",
+  "stepwise_decision": "both separately corrected Q95(F1) and Q95(F2) <= F_lim"
+}

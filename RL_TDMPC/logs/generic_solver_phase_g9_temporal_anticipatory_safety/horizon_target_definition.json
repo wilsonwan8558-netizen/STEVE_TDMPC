@@ -1,0 +1,17 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "H1_exact_G2_next_interval_force": true,
+  "R_H": "max future_force_sequence[0:H] within the same behavior episode",
+  "action_sequence_input": "realized same-episode behavior actions d:d+H used as an offline conditional training sequence; future actions are never included in the current-state estimator",
+  "at_decision_d": "F_(t+k) is G2 distal_contact_force_max_N from behavior decision d+k-1",
+  "common_complete_case_cohort": "d>=2 and d+5<=episode length; no cross-episode extension or terminal padding",
+  "force_units": "nominal N",
+  "future_force_sequence_retained": true,
+  "horizons": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "prospective_evaluation_requirement": "a TD-MPC2 candidate plan requires its own matched true-SOFA counterfactual rollout label; behavior target cannot be paired with an unexecuted plan"
+}

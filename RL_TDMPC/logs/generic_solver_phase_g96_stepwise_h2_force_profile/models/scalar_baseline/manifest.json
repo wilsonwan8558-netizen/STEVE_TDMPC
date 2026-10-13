@@ -1,0 +1,23 @@
+{
+  "replicas": {
+    "260312": {
+      "Q95_delta_N": 0.2981063723564148,
+      "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260312.pt",
+      "checkpoint_sha256": "7f2ce7d27a01a0772bfbcb103042d419c8718b73ce3b63354e7b8e1d9b6b9b66",
+      "selection_sha256": "b45b1d1e6adc877ff4d76115cfa164f3febc84cb9fe579881ef93f8557a671a9"
+    },
+    "260313": {
+      "Q95_delta_N": 0.13973617553710938,
+      "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260313.pt",
+      "checkpoint_sha256": "decee08e203d53e828a95ccdf71f528492f11c07079a23779dc108bbc8ebaa20",
+      "selection_sha256": "2cb621d722e3ffe6be12d7f12aca8bc328008aac608b832eeac93d45e276695c"
+    },
+    "260314": {
+      "Q95_delta_N": 0.24504351615905762,
+      "checkpoint_path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g95_planner_conditioned_risk/models/M1_planner_conditioned/seed_260314.pt",
+      "checkpoint_sha256": "6932c520d8421cda7f9454248d4b79d86919e8bed67c47c5c5a98d67eb3330f0",
+      "selection_sha256": "1532dc9ccd3016aae54c1b5e46cc8e58061fcb279fe1cadd07e24314f7268342"
+    }
+  },
+  "status": "FROZEN_G95_M1_SCALAR_BASELINE_NO_RETRAIN"
+}

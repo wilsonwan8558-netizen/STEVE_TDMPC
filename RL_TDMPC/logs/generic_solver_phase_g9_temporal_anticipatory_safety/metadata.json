@@ -1,0 +1,14 @@
+{
+  "G2_step_level_force_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "G3_behavior_features_sha256": "116112721a51111298fde49cd26434f89dd2de3f978f395fe7207719bb263ef8",
+  "G3_split_sha256": "e55172e189f419b7033f2b8df1535dcc0c84bdc17aa9dc545a8bda5669c48e60",
+  "G4_physical_alignment_audit_sha256": "c530d75166f051a7706281d6823eaab5c889d1ffb1cef2ccc0634e8ce3b343a3",
+  "G85_summary_sha256": "68048da2f0481caa929da81067614023f91ff2260f2d8abb936099f513e19b5f",
+  "branch": "feature/generic-contact-force-safety",
+  "confirmation_unopened": true,
+  "dataset_builder_sha256": "b2d7b85002007c416635b786dace497b66ea173eddebd31bb394358c519710db",
+  "development_rows": 14300,
+  "phase": "G9",
+  "study": "direct multi-horizon true-force risk; no recursive predicted-state rollout",
+  "temporal_dataset_sha256": "cc45f18ecedc5497421d4899781f1b3b218bd676fc147d8a2b76ac3859f60ef0"
+}

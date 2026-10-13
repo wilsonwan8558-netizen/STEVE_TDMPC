@@ -1,0 +1,19 @@
+{
+  "count": 11,
+  "not_model_selection_data": true,
+  "source": "G8.5 finite-search no-safe-found states",
+  "source_summary_sha256": "68048da2f0481caa929da81067614023f91ff2260f2d8abb936099f513e19b5f",
+  "state_ids": [
+    3,
+    27,
+    35,
+    39,
+    47,
+    55,
+    67,
+    75,
+    83,
+    91,
+    99
+  ]
+}

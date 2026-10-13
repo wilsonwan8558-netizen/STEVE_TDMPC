@@ -1,0 +1,38 @@
+{
+  "H5_limitation": "TD-MPC2 planner horizon is 3; H5 behavior-sequence diagnostics are not a deployable current-plan score",
+  "Q95_calibration": "nonnegative global additive correction from VALIDATION 95th percentile of residual y-Q95 with higher order statistic; applied only to decision score, not raw quantile output",
+  "action_input": "explicit Hx2 candidate sequence; development training uses realized frozen-policy behavior sequences",
+  "checkpoint_selection": "minimum VALIDATION four-quantile pinball, strictly before development-test evaluation",
+  "estimators": [
+    "E0",
+    "E1",
+    "E2"
+  ],
+  "horizons": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "input_dimension_by_horizon": {
+    "1": 296,
+    "2": 298,
+    "3": 300,
+    "5": 304
+  },
+  "loss": "equal-weight pinball across four quantiles",
+  "model": "Linear(input,64)-ReLU-Linear(64,64)-ReLU-Linear(64,4), softplus increments cumulatively summed to Q50/Q90/Q95/Q99",
+  "no_future_state_or_force_input": true,
+  "no_recursive_predicted_state_rollout": true,
+  "normalization": "TRAIN input mean/std only, std<1e-6 becomes 1; no target scaling",
+  "optimizer": "Adam lr=0.001 batch=512 max_epochs=60 patience=8",
+  "quantiles": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "state_input": "frozen 256D TD-MPC2 current-observation latent + E0/E1/E2 estimated current 38D privileged-physical target",
+  "status": "G9_DIRECT_RISK_PREDECLARED_BEFORE_MODEL_TRAINING",
+  "target": "R_H=max true G2 max-substep distal force over next H complete same-episode intervals"
+}

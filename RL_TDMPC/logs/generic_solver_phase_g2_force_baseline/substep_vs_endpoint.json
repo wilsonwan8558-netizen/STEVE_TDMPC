@@ -1,0 +1,51 @@
+{
+  "difference_max_minus_final_N": {
+    "count": 15500,
+    "max": 17.651148613937398,
+    "mean": 0.36677561150739135,
+    "median": 0.0009829920433233608,
+    "q50": 0.0009829920433233608,
+    "q90": 1.0178498319520741,
+    "q95": 1.8011075787751498
+  },
+  "endpoint_missed_events": {
+    "q90": {
+      "endpoint_missed_steps": 999,
+      "fraction_of_all_steps_missed": 0.0644516129032258,
+      "fraction_of_max_events_missed": 0.6445161290322581,
+      "max_substep_event_steps": 1550,
+      "threshold_N": 2.1265156799878246
+    },
+    "q95": {
+      "endpoint_missed_steps": 448,
+      "fraction_of_all_steps_missed": 0.02890322580645161,
+      "fraction_of_max_events_missed": 0.5780645161290323,
+      "max_substep_event_steps": 775,
+      "threshold_N": 3.685331040756903
+    },
+    "q99": {
+      "endpoint_missed_steps": 131,
+      "fraction_of_all_steps_missed": 0.008451612903225806,
+      "fraction_of_max_events_missed": 0.8451612903225807,
+      "max_substep_event_steps": 155,
+      "threshold_N": 7.466568793559142
+    }
+  },
+  "interpretation": "Endpoint-only sampling can miss within-interval peaks; Generic-derived quantile levels are statistical references, not clinical safety thresholds.",
+  "positive_peak_near_zero_endpoint_fraction_of_contact_steps": 0.1408211018932142,
+  "positive_peak_near_zero_endpoint_steps": 1324,
+  "ratio_eligible_steps": 8078,
+  "ratio_excluded_steps_due_to_small_endpoint": 7422,
+  "ratio_max_over_final_when_final_gt_1e_minus_9_N": {
+    "count": 8078,
+    "max": 6444.346525227164,
+    "mean": 3.1191127314477574,
+    "median": 1.1868173218144495,
+    "q50": 1.1868173218144495,
+    "q90": 3.6299519228799157,
+    "q95": 5.994953614193002,
+    "q99": 17.68159288114948
+  },
+  "status": "COMPLETE",
+  "steps": 15500
+}

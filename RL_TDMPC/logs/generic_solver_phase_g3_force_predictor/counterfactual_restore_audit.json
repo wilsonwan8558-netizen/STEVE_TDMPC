@@ -1,0 +1,83 @@
+{
+  "g2_force_source_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "max_abs_difference": {
+    "applied_action": 0.0,
+    "force_next_max_N": 0.0,
+    "insertion_length_mm": 0.0,
+    "observation": 0.0,
+    "reward": 0.0,
+    "tip_position_mm": 0.0
+  },
+  "method": "Linux fork copy-on-write of live Generic SOFA scene; child executes exactly one env.step and exits",
+  "seeds": [
+    90000,
+    90001,
+    90002,
+    90003
+  ],
+  "state_count": 12,
+  "states": [
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 5,
+      "seed": 90000
+    },
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 15,
+      "seed": 90000
+    },
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 29,
+      "seed": 90000
+    },
+    {
+      "behavior_force_next_max_N": 0.5635634053859137,
+      "decision_index": 5,
+      "seed": 90001
+    },
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 15,
+      "seed": 90001
+    },
+    {
+      "behavior_force_next_max_N": 1.3794323835696356,
+      "decision_index": 100,
+      "seed": 90001
+    },
+    {
+      "behavior_force_next_max_N": 0.7776569396535271,
+      "decision_index": 5,
+      "seed": 90002
+    },
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 15,
+      "seed": 90002
+    },
+    {
+      "behavior_force_next_max_N": 2.0019476591645615,
+      "decision_index": 31,
+      "seed": 90002
+    },
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 5,
+      "seed": 90003
+    },
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 15,
+      "seed": 90003
+    },
+    {
+      "behavior_force_next_max_N": 0.0,
+      "decision_index": 27,
+      "seed": 90003
+    }
+  ],
+  "status": "PASS_GENERIC_FORK_RESTORE_PARENT_AND_G2_FORCE",
+  "tolerance": 1e-08
+}

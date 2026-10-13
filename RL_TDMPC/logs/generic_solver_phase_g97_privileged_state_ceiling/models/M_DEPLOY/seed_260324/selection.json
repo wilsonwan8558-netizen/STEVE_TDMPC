@@ -1,0 +1,89 @@
+{
+  "best_validation_pinball_N": 0.22042784094810486,
+  "checkpoint_sha256": "8d71dfee7fd1d916e7ea5df0241ef9096110c4b81e8f40eafd83286f6ceeba88",
+  "family": "M_DEPLOY",
+  "hidden_depth": 2,
+  "hidden_width": 64,
+  "history": [
+    {
+      "epoch": 0,
+      "validation_pinball_N": 0.6163891553878784
+    },
+    {
+      "epoch": 1,
+      "validation_pinball_N": 0.32598403096199036
+    },
+    {
+      "epoch": 2,
+      "validation_pinball_N": 0.2771550118923187
+    },
+    {
+      "epoch": 3,
+      "validation_pinball_N": 0.26110121607780457
+    },
+    {
+      "epoch": 4,
+      "validation_pinball_N": 0.25112107396125793
+    },
+    {
+      "epoch": 5,
+      "validation_pinball_N": 0.2379220724105835
+    },
+    {
+      "epoch": 6,
+      "validation_pinball_N": 0.2302129566669464
+    },
+    {
+      "epoch": 7,
+      "validation_pinball_N": 0.2258482575416565
+    },
+    {
+      "epoch": 8,
+      "validation_pinball_N": 0.22082507610321045
+    },
+    {
+      "epoch": 9,
+      "validation_pinball_N": 0.22042784094810486
+    },
+    {
+      "epoch": 10,
+      "validation_pinball_N": 0.2306714653968811
+    },
+    {
+      "epoch": 11,
+      "validation_pinball_N": 0.22904087603092194
+    },
+    {
+      "epoch": 12,
+      "validation_pinball_N": 0.23961450159549713
+    },
+    {
+      "epoch": 13,
+      "validation_pinball_N": 0.2347930669784546
+    },
+    {
+      "epoch": 14,
+      "validation_pinball_N": 0.23454847931861877
+    },
+    {
+      "epoch": 15,
+      "validation_pinball_N": 0.23765981197357178
+    },
+    {
+      "epoch": 16,
+      "validation_pinball_N": 0.24345843493938446
+    },
+    {
+      "epoch": 17,
+      "validation_pinball_N": 0.24419958889484406
+    }
+  ],
+  "normalization_sha256": "ce1069132f547e2946e0e580252c3fd315d084eedf5d29e5bc92ca91090c3827",
+  "parameter_count": 42372,
+  "train_planner_rows": 5038,
+  "training_seed": 260324,
+  "validation_corrected_Q95_coverage": 0.950925925925926,
+  "validation_only_Q95_delta_N": 0.5835113525390625,
+  "validation_planner_rows": 1080,
+  "validation_raw_Q95_coverage": 0.9138888888888889
+}

@@ -1,0 +1,10 @@
+{
+  "status": "RECORDED_AFTER_FIRST_UNSAVED_STATE_STOP_BEFORE_ANY_CURVE_RESULT",
+  "issue": "The identical frozen G10 predictor and nominal input gave slightly different CUDA float32 output when evaluated alone versus inside a 208-action sweep batch.",
+  "observed_state": "first held-out state, state_id 3, seed 90003, decision 48",
+  "observed_max_abs_batch_single_difference_N": 1.9073486328125e-6,
+  "cause": "CUDA float32 batch-size-dependent rounding; the archived G10 nominal prediction used a single-action call.",
+  "rule": "Evaluate the exact nominal plan separately with the archived G10 single-action call, verify it against the archived nominal corrected-Q95 vector at 1e-7 N absolute tolerance, and use that vector for the nominal point of the predicted curve. Other sweep points retain batched evaluation. Stop if batch-versus-single nominal difference exceeds 1e-4 N.",
+  "data_collected_before_amendment": "No state curve JSON was saved; 106 diagnostic true-SOFA forks completed in the stopped process and were discarded.",
+  "model_weights_normalization_threshold_states_or_true_force_protocol_changed": false
+}

@@ -1,0 +1,58 @@
+{
+  "coverage_claim": "privileged observable simulator state; NOT proven complete transition/Markov state",
+  "exposed_preaction_solver_fields": [
+    "Generic.constraintForces",
+    "currentNumConstraints",
+    "currentNumConstraintGroups",
+    "currentIterations",
+    "currentError",
+    "CollisionDOFs.constraint sparse Jacobian",
+    "DOFs.free_position",
+    "DOFs.free_velocity"
+  ],
+  "included": [
+    "exact_G4_physical",
+    "guidewire_rigid_position",
+    "guidewire_rigid_velocity",
+    "guidewire_free_position",
+    "guidewire_free_velocity",
+    "guidewire_force",
+    "collision_position",
+    "collision_velocity",
+    "collision_free_position",
+    "contact_node_normal_force",
+    "contact_node_tangent_force",
+    "contact_node_indicator",
+    "nearest_vessel_vertex_displacement",
+    "nearest_vessel_vertex_distance",
+    "solver_summary",
+    "device_controller_state"
+  ],
+  "no_future_force_or_post_candidate_solver_field": true,
+  "not_accessed_or_not_demonstrated": [
+    "projected-Gauss-Seidel warm-start vector/history internal to GenericConstraintSolver",
+    "contact manifold cache and collision-pipeline/BVH temporal cache",
+    "constraint ordering and internal resolution objects beyond exposed Jacobian row IDs",
+    "implicit-integrator scratch buffers or any unexposed beam/material internal history",
+    "exact triangle-surface signed wall distance (nearest-vertex proxy only)"
+  ],
+  "probe_development_seeds": [
+    90000,
+    90001
+  ],
+  "probe_fixed_collision_DOF_shape": [
+    76,
+    3
+  ],
+  "probe_fixed_parent_DOF_shape": [
+    63,
+    7
+  ],
+  "probe_fixed_vessel_vertex_shape": [
+    636,
+    3
+  ],
+  "probe_parent_steps_exact_G2": 259,
+  "static_scene_parameters": "frozen solver, vessel mesh, wire material/rest shape shared across observations; not per-state variable inputs",
+  "status": "PRECOLLECTION_COVERAGE_AUDIT_NOT_A_FULL_MARKOV_STATE"
+}

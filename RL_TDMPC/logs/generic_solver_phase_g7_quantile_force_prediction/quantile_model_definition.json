@@ -1,0 +1,18 @@
+{
+  "architecture_code_sha256": "dd8cf036456fab169d78283b3f942e474bf115321926ced48ff0738d28f16b76",
+  "checkpoint_selection": "minimum validation behavior mean four-quantile pinball only",
+  "input_dimension": 308,
+  "loss": "equal-weight mean of standard pinball loss over four quantiles and batch",
+  "noncrossing": "Q50=softplus(raw0); Q90=Q50+softplus(raw1); Q95=Q90+softplus(raw2); Q99=Q95+softplus(raw3)",
+  "nonnegative_Q50": true,
+  "output_units": "nominal N",
+  "quantile_levels": [
+    0.5,
+    0.9,
+    0.95,
+    0.99
+  ],
+  "raw_head": "Linear(64,4)",
+  "status": "PREDECLARED_BEFORE_MODEL_EVALUATION",
+  "trunk": "Linear(308,64)-ReLU-Linear(64,64)-ReLU"
+}

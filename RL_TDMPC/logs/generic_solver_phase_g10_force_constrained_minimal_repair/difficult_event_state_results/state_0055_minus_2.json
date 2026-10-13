@@ -1,0 +1,87 @@
+{
+  "cohort": "difficult_event_early_intervention",
+  "decision_index": 43,
+  "event_decision_index": 45,
+  "fallback_zero_true": {
+    "F1_N": 0.9649119240441062,
+    "F2_N": 1.9576519158489492,
+    "R2_N": 1.9576519158489492,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": true
+  },
+  "lookback_steps": 2,
+  "nominal_pair": [
+    [
+      0.9977900981903076,
+      0.9824635982513428
+    ],
+    [
+      0.9965701699256897,
+      0.9979676008224487
+    ]
+  ],
+  "nominal_true": {
+    "F1_N": 1.944266257394112,
+    "F2_N": 4.208265185045772,
+    "R2_N": 4.208265185045772,
+    "censor_reason": null,
+    "complete_two_intervals": true,
+    "true_safe": false
+  },
+  "optimized_mean_numerical_semantics": {
+    "ambiguous_matches": 0,
+    "canonical_executable_mean_pair": [
+      [
+        0.9977900981903076,
+        0.9824635982513428
+      ],
+      [
+        0.9965701699256897,
+        0.9979676008224487
+      ]
+    ],
+    "changed_by_clipping": false,
+    "changed_by_tolerance_only": false,
+    "raw_optimized_mean_pair": [
+      [
+        0.9977900981903076,
+        0.9824635982513428
+      ],
+      [
+        0.9965701699256897,
+        0.9979676008224487
+      ]
+    ]
+  },
+  "parent_scene_unchanged_by_forks": true,
+  "proposal": {
+    "action": null,
+    "delta_rotation": null,
+    "delta_translation": null,
+    "distance": null,
+    "grid_predicted_safe_count": 0,
+    "max_corrected_Q95_N": null,
+    "nominal_action": [
+      0.9977900981903076,
+      0.9824635982513428
+    ],
+    "nominal_corrected_Q95_N": [
+      5.483411490917206,
+      6.044714450836182,
+      5.625354528427124
+    ],
+    "predictor_evaluations": 1682,
+    "refinement_predictor_evaluations": 0,
+    "repaired_corrected_Q95_N": null,
+    "second_action_fixed": [
+      0.9965701699256897,
+      0.9979676008224487
+    ],
+    "status": "INFEASIBLE_ON_PREDECLARED_SEARCH"
+  },
+  "repaired_action_executed_only_in_counterfactual_fork": true,
+  "repaired_true": null,
+  "seed": 101013,
+  "state_id": 55
+}

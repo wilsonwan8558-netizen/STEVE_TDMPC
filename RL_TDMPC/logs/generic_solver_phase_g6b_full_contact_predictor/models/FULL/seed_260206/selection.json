@@ -1,0 +1,11 @@
+{
+  "name": "FULL",
+  "optimizer_steps_per_round": 22,
+  "samples_per_validation_round": 10903,
+  "selected_epoch": 27,
+  "selected_validation_behavior_MSE_N2": 0.43897873163223267,
+  "train_rows": 10903,
+  "train_wall_seconds": 1.8496737689711154,
+  "training_seed": 260206,
+  "validation_rows": 2286
+}

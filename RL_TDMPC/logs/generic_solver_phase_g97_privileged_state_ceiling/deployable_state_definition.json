@@ -1,0 +1,37 @@
+{
+  "candidate_action": {
+    "dimension": 4,
+    "name": "frozen_planner_action_pair",
+    "source": "G9.5 exact first two frozen planner candidate actions"
+  },
+  "capacity_matching_only": "M_DEPLOY appends 294 all-zero non-informative channels before the identical final 4 action components; its nonzero information is exactly the frozen 298D G9.5 input",
+  "features": [
+    {
+      "deployable": true,
+      "dimension": 256,
+      "indices": [
+        0,
+        256
+      ],
+      "name": "frozen_TD_MPC2_current_observation_latent",
+      "pre_action": true,
+      "source": "G9.5 development_states.current_latent; frozen step_280000 TD-MPC2 encoder of 14D current observation"
+    },
+    {
+      "deployable": true,
+      "dimension": 38,
+      "indices": [
+        256,
+        294
+      ],
+      "name": "frozen_E1_estimated_current_physical",
+      "pre_action": true,
+      "source": "G9.5 development_states.E1_current_physical_estimate; G9 E1 mapper using three 14D observations and two preceding 2D actions"
+    }
+  ],
+  "future_or_post_action_information": false,
+  "name": "X_DEPLOY",
+  "original_G95_G96_model_input_dimension": 298,
+  "same_model_input_dimension_as_M_PRIV": 592,
+  "state_dimension": 294
+}

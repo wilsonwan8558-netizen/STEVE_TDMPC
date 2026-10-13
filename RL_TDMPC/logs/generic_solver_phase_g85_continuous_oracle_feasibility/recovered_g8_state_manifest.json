@@ -1,0 +1,215 @@
+{
+  "count": 16,
+  "old21_infeasible_count": 12,
+  "state_recovery": "ordered reused-scene replay; archived files are observations/features and fork outcomes, not standalone SOFA snapshots",
+  "states": [
+    {
+      "archived_state_sha256": "e307a531ed9bfe2054f2ff953f9d1756fe11c676c0029e77df694ed051049dc5",
+      "decision_index": 51,
+      "episode_seed": 101000,
+      "nominal_F_true_N": 7.878890976057153,
+      "nominal_action": [
+        0.994714617729187,
+        0.9372206330299377
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 3
+    },
+    {
+      "archived_state_sha256": "5f7e276ceabed60cc2aca740d5fa18c5e4b08868176cfd08867c951c0a7a8376",
+      "decision_index": 78,
+      "episode_seed": 101003,
+      "nominal_F_true_N": 5.118026336291489,
+      "nominal_action": [
+        0.9961854815483093,
+        0.008428546600043774
+      ],
+      "old21_infeasible": false,
+      "old21_true_safe_count": 4,
+      "state_id": 14
+    },
+    {
+      "archived_state_sha256": "8d8fb4fba71c3db79cb99743e7ac61ac1e454e5b12722a642a9548cbd2f43061",
+      "decision_index": 51,
+      "episode_seed": 101003,
+      "nominal_F_true_N": 4.091368571125747,
+      "nominal_action": [
+        0.500787615776062,
+        0.4877914488315582
+      ],
+      "old21_infeasible": false,
+      "old21_true_safe_count": 2,
+      "state_id": 15
+    },
+    {
+      "archived_state_sha256": "bb054608b8daa5837f1c84e8496943116358a1ee778c64df5762b7f1c79d54ef",
+      "decision_index": 33,
+      "episode_seed": 101006,
+      "nominal_F_true_N": 5.952894560954182,
+      "nominal_action": [
+        0.7847765684127808,
+        0.686465859413147
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 27
+    },
+    {
+      "archived_state_sha256": "b5a4af93d0716dc4121287156a0414634aa2d430ded836665a34a8a427c5b6b9",
+      "decision_index": 59,
+      "episode_seed": 101008,
+      "nominal_F_true_N": 7.011034653115191,
+      "nominal_action": [
+        0.9948983192443848,
+        0.0004858271568082273
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 35
+    },
+    {
+      "archived_state_sha256": "7f967ec11e6492bf8e5cbeed57e5b9f50762f1cbba5d225e7c0a59624cb982f1",
+      "decision_index": 46,
+      "episode_seed": 101009,
+      "nominal_F_true_N": 6.587393891519682,
+      "nominal_action": [
+        0.9988795518875122,
+        -0.45958614349365234
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 39
+    },
+    {
+      "archived_state_sha256": "971be1bb8de371625a3603f1786156e8c67d1cde0c57148a4f7405d1aa680e1e",
+      "decision_index": 70,
+      "episode_seed": 101011,
+      "nominal_F_true_N": 6.544908130159464,
+      "nominal_action": [
+        -0.9727572798728943,
+        0.9965442419052124
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 47
+    },
+    {
+      "archived_state_sha256": "614eac93e02d05ebdc9d6766515fe5e19e261adf10d65e8318ec6d2c295ab5bf",
+      "decision_index": 45,
+      "episode_seed": 101013,
+      "nominal_F_true_N": 7.027841576977037,
+      "nominal_action": [
+        0.9291285872459412,
+        0.9603444337844849
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 55
+    },
+    {
+      "archived_state_sha256": "94ec214144fdc96c215eafb75d8682cb776b6a5e6c223bb6ef24702b49b99a4f",
+      "decision_index": 45,
+      "episode_seed": 101016,
+      "nominal_F_true_N": 6.852988838116018,
+      "nominal_action": [
+        0.7925735712051392,
+        0.9983479976654053
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 67
+    },
+    {
+      "archived_state_sha256": "eac7fff80ed0b7d3350c847f70c85d198a29d79f406499c239c359deb106a968",
+      "decision_index": 44,
+      "episode_seed": 101018,
+      "nominal_F_true_N": 7.137893200004232,
+      "nominal_action": [
+        0.9621697664260864,
+        0.28931301832199097
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 75
+    },
+    {
+      "archived_state_sha256": "4fcf03032bb9457d1d4ae0ff5e74959d09d20b4276877067553fa02b27d3768f",
+      "decision_index": 30,
+      "episode_seed": 101020,
+      "nominal_F_true_N": 3.7971877679774657,
+      "nominal_action": [
+        0.9965338706970215,
+        -0.965742290019989
+      ],
+      "old21_infeasible": false,
+      "old21_true_safe_count": 10,
+      "state_id": 81
+    },
+    {
+      "archived_state_sha256": "e6d447effe94141479ec3a95de68e96bcdbfb1c52b49d622bdfe4e326153f309",
+      "decision_index": 48,
+      "episode_seed": 101020,
+      "nominal_F_true_N": 5.367074415687862,
+      "nominal_action": [
+        -0.30539873242378235,
+        0.9962632656097412
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 83
+    },
+    {
+      "archived_state_sha256": "83cd2372bf42b2d31fd47124b0f02bab6bc14c010338a0a7c4b74beba8f6d6cd",
+      "decision_index": 60,
+      "episode_seed": 101022,
+      "nominal_F_true_N": 6.720503452690341,
+      "nominal_action": [
+        0.4656117558479309,
+        0.9498075246810913
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 91
+    },
+    {
+      "archived_state_sha256": "390f2cbce24d5de2e8b9ec224874597b88575fc9fd44dde357a7cfb27fe114e4",
+      "decision_index": 49,
+      "episode_seed": 101024,
+      "nominal_F_true_N": 6.17774313795185,
+      "nominal_action": [
+        0.041194308549165726,
+        0.9928184747695923
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 99
+    },
+    {
+      "archived_state_sha256": "292e268e23a1c35690e999de3ae90c7e83f0bcfff59974e36521d1247ad98b72",
+      "decision_index": 31,
+      "episode_seed": 101026,
+      "nominal_F_true_N": 4.875988075012983,
+      "nominal_action": [
+        0.9699146747589111,
+        0.8151389360427856
+      ],
+      "old21_infeasible": false,
+      "old21_true_safe_count": 9,
+      "state_id": 107
+    },
+    {
+      "archived_state_sha256": "517d20e3118b3603024dfadb5a0be214003e5e565a2d3aa8bc658d50deb19c15",
+      "decision_index": 32,
+      "episode_seed": 101027,
+      "nominal_F_true_N": 4.293218501951473,
+      "nominal_action": [
+        -0.5164585113525391,
+        -0.2160826325416565
+      ],
+      "old21_infeasible": true,
+      "old21_true_safe_count": 0,
+      "state_id": 110
+    }
+  ]
+}

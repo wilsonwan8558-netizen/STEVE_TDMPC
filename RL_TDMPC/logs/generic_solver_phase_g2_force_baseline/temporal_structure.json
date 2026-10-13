@@ -1,0 +1,121 @@
+{
+  "contact_run_lengths": {
+    "max_length": 175,
+    "median_length": 5.0,
+    "q95_length": 24.0,
+    "run_count": 863,
+    "total_steps": 9402
+  },
+  "episode_progress_thirds": {
+    "early": {
+      "contact_fraction": 0.3856259659969088,
+      "mean_force_N": 0.3484841540283907,
+      "q95_exceedance_fraction": 0.013717156105100464,
+      "steps": 5176
+    },
+    "late": {
+      "contact_fraction": 0.8125965996908809,
+      "mean_force_N": 1.5319141932635207,
+      "q95_exceedance_fraction": 0.12094281298299846,
+      "steps": 5176
+    },
+    "middle": {
+      "contact_fraction": 0.6216006216006216,
+      "mean_force_N": 0.6421698835552836,
+      "q95_exceedance_fraction": 0.015151515151515152,
+      "steps": 5148
+    }
+  },
+  "high_force_event_precursors": {
+    "q95": {
+      "event_steps": 775,
+      "prior_lags": {
+        "1": {
+          "eligible_events": 775,
+          "prior_elevated_q75_fraction": 0.7896774193548387,
+          "prior_nonzero_force_fraction": 0.8580645161290322,
+          "prior_tail_q90_fraction": 0.6012903225806452
+        },
+        "2": {
+          "eligible_events": 775,
+          "prior_elevated_q75_fraction": 0.6735483870967742,
+          "prior_nonzero_force_fraction": 0.8619354838709677,
+          "prior_tail_q90_fraction": 0.43870967741935485
+        },
+        "3": {
+          "eligible_events": 775,
+          "prior_elevated_q75_fraction": 0.6283870967741936,
+          "prior_nonzero_force_fraction": 0.8412903225806452,
+          "prior_tail_q90_fraction": 0.3432258064516129
+        }
+      },
+      "threshold_N": 3.685331040756903
+    },
+    "q99": {
+      "event_steps": 155,
+      "prior_lags": {
+        "1": {
+          "eligible_events": 155,
+          "prior_elevated_q75_fraction": 0.8774193548387097,
+          "prior_nonzero_force_fraction": 0.8903225806451613,
+          "prior_tail_q90_fraction": 0.7677419354838709
+        },
+        "2": {
+          "eligible_events": 155,
+          "prior_elevated_q75_fraction": 0.7677419354838709,
+          "prior_nonzero_force_fraction": 0.8193548387096774,
+          "prior_tail_q90_fraction": 0.6387096774193548
+        },
+        "3": {
+          "eligible_events": 155,
+          "prior_elevated_q75_fraction": 0.6838709677419355,
+          "prior_nonzero_force_fraction": 0.8774193548387097,
+          "prior_tail_q90_fraction": 0.4064516129032258
+        }
+      },
+      "threshold_N": 7.466568793559142
+    }
+  },
+  "high_force_exceedance_runs": {
+    "q90": {
+      "comparison": ">=",
+      "episodes_with_any": 188,
+      "max_length": 11,
+      "median_length": 1.0,
+      "q95_length": 5.0,
+      "run_count": 829,
+      "threshold_N": 2.1265156799878246,
+      "total_steps": 1550
+    },
+    "q95": {
+      "comparison": ">=",
+      "episodes_with_any": 156,
+      "max_length": 9,
+      "median_length": 1.0,
+      "q95_length": 4.0,
+      "run_count": 422,
+      "threshold_N": 3.685331040756903,
+      "total_steps": 775
+    },
+    "q97.5": {
+      "comparison": ">=",
+      "episodes_with_any": 135,
+      "max_length": 5,
+      "median_length": 2.0,
+      "q95_length": 4.0,
+      "run_count": 218,
+      "threshold_N": 5.926250464744108,
+      "total_steps": 388
+    }
+  },
+  "precursor_interpretation": "Retrospective description only; repeated adjacent event steps are retained, and this is not prospective prediction evidence.",
+  "status": "COMPLETE",
+  "threshold_source": "G2 Generic all-step F_t distribution",
+  "thresholds_nominal_N": {
+    "q75": 1.0855235286650953,
+    "q90": 2.1265156799878246,
+    "q95": 3.685331040756903,
+    "q97.5": 5.926250464744108,
+    "q99": 7.466568793559142
+  }
+}

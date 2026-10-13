@@ -1,0 +1,38 @@
+{
+  "P_min_groups": [
+    "K",
+    "D"
+  ],
+  "confirmation_opened_before_development_freeze": false,
+  "development_behavior_rows": 2111,
+  "development_candidate_labels": 2520,
+  "development_candidate_states": 120,
+  "models": [
+    "Z",
+    "P",
+    "ZP",
+    "ZK",
+    "ZD",
+    "ZC",
+    "ZP_noK",
+    "ZP_noD",
+    "ZP_noC",
+    "PK",
+    "PD",
+    "PKD",
+    "Z1",
+    "P1",
+    "Pmin1",
+    "Pmin",
+    "ZPmin"
+  ],
+  "preaction_contact_states": 61,
+  "preaction_no_contact_states": 59,
+  "quantiles_nominal_N": {
+    "q90": 2.1265156799878246,
+    "q95": 3.685331040756903,
+    "q97.5": 5.926250464744108,
+    "q99": 7.466568793559142
+  },
+  "status": "COMPLETE_G5_ALL_PRIMARY_SECONDARY_AND_ALIASES"
+}

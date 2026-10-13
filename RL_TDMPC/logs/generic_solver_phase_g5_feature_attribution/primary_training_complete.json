@@ -1,0 +1,23 @@
+{
+  "names": [
+    "Z",
+    "P",
+    "ZP",
+    "ZK",
+    "ZD",
+    "ZC",
+    "ZP_noK",
+    "ZP_noD",
+    "ZP_noC",
+    "PK",
+    "PD",
+    "PKD"
+  ],
+  "status": "COMPLETE_12_PRIMARY_CELLS_THREE_SEEDS",
+  "supervision": "behavior-only",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ]
+}

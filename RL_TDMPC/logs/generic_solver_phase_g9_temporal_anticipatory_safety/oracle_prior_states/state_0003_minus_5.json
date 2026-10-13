@@ -1,0 +1,91 @@
+{
+  "candidate_family_size": 138,
+  "candidates_attempted": 138,
+  "decision_index": 46,
+  "episode_seed": 101000,
+  "event_decision_index": 51,
+  "finite_search_exhausted": true,
+  "horizon_intervals": 6,
+  "lookback_steps": 5,
+  "minimum_observed_force_N": 4.337417829478434,
+  "plan_fork_labels": [
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        6.210119235061955
+      ],
+      "horizon": 1,
+      "max_force_N": 6.210119235061955,
+      "plan_actions": [
+        [
+          0.523093581199646,
+          0.9735638499259949
+        ]
+      ],
+      "status": "PASS",
+      "steps": 1,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        6.210119235061955,
+        6.657645031604865
+      ],
+      "horizon": 2,
+      "max_force_N": 6.657645031604865,
+      "plan_actions": [
+        [
+          0.523093581199646,
+          0.9735638499259949
+        ],
+        [
+          -0.1515933722257614,
+          0.9822832942008972
+        ]
+      ],
+      "status": "PASS",
+      "steps": 2,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        6.210119235061955,
+        6.657645031604865,
+        6.159298328509311
+      ],
+      "horizon": 3,
+      "max_force_N": 6.657645031604865,
+      "plan_actions": [
+        [
+          0.523093581199646,
+          0.9735638499259949
+        ],
+        [
+          -0.1515933722257614,
+          0.9822832942008972
+        ],
+        [
+          0.017665604129433632,
+          0.9852904081344604
+        ]
+      ],
+      "status": "PASS",
+      "steps": 3,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    }
+  ],
+  "safe_trajectory_found": false,
+  "state_id": 3,
+  "witness": null
+}

@@ -1,0 +1,1297 @@
+{
+  "comparisons": [
+    {
+      "applied_direction": [
+        -0.08701119214941555,
+        -0.018689098313776183,
+        0.04560449588533455
+      ],
+      "applied_force_nominal_N": 0.1,
+      "direction_cosine_against_opposing_applied": 0.9986109219262267,
+      "divided_by_dt_relative_error": 0.026501137055842117,
+      "final_constraint_dimension": 15,
+      "node_distance_to_tip_mm": 10.436810827503741,
+      "raw_relative_error": 0.9938409931776649,
+      "reaction_divided_by_dt_norm": 0.10265011370558422,
+      "reaction_impulse_delta": [
+        0.0005214560759017881,
+        0.00010863046149188046,
+        -0.0003092193947941605
+      ],
+      "reaction_raw_norm": 0.0006159006822335053
+    }
+  ],
+  "dt": 0.006,
+  "hold_steps": 20,
+  "load_node": 53,
+  "rows": [
+    {
+      "applied_magnitude_nominal_N": 0.0,
+      "applied_vector_nominal_N": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "initial_constraint_dimension": 21,
+      "initial_contact_normal_from_J": [
+        0.8701119214941554,
+        0.1868909831377618,
+        -0.45604495885334545
+      ],
+      "initial_reaction_impulse_all": [
+        0.0015795525957502242,
+        7.433397867026892e-05,
+        -0.0008208303560681982
+      ],
+      "mean_last3_reaction_impulse_all": [
+        0.0015352292506070483,
+        5.224600021871961e-05,
+        -0.0008441249876035118
+      ],
+      "mean_last3_reaction_impulse_node": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "node_distance_to_tip_at_load_mm": 10.436811041068088,
+      "node_index": 53,
+      "samples": [
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0014287577314041114,
+            0.00014501163500145415,
+            -0.0008110664331649373
+          ],
+          "hold_step": 1,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            16.35466773300997,
+            -1.5970059660929412,
+            76.07455079994699
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 4.2207194182936195e-07,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            24.160266502711618,
+            -6.47667153516044,
+            80.99167576026018
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0014792244482829675,
+            0.00015008636317499096,
+            -0.0008397043880059905
+          ],
+          "hold_step": 2,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            17.573596436723182,
+            -0.9496735157415139,
+            78.3028001255765
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 6.364135955477932e-07,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            25.46983189792558,
+            -5.748478664242913,
+            83.15518802562195
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.0015228048459305409,
+            3.3616245975838085e-05,
+            -0.000834413366184726
+          ],
+          "hold_step": 3,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.21388246633513,
+            -0.6940194923692288,
+            79.45378172062249
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0017492771998225299,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.15011833237463,
+            -5.468350035602624,
+            84.26514299501336
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.0015291166171654427,
+            3.7815701302895926e-05,
+            -0.0008388803289482047
+          ],
+          "hold_step": 4,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.546675672943085,
+            -0.5643711584458675,
+            80.05173605825547
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0016957238642700701,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.502800134738106,
+            -5.3291945459530865,
+            84.83967896452502
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.0015323154751256032,
+            3.7089759700031666e-05,
+            -0.0008404350926526533
+          ],
+          "hold_step": 5,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.720035550910975,
+            -0.49747727565096245,
+            80.36285479622981
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0017101667566154183,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.68609558196694,
+            -5.258818340569717,
+            85.13771968375235
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015332543737806407,
+            5.452510993168867e-05,
+            -0.0008452762718330988
+          ],
+          "hold_step": 6,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.810339990405623,
+            -0.46336762215442995,
+            80.52488331394959
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014639178483678295,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.78131932007138,
+            -5.223737555390111,
+            85.29248075419707
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015348791437639247,
+            3.7212120607542815e-05,
+            -0.0008418565784757952
+          ],
+          "hold_step": 7,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.8574605558059,
+            -0.4455629288712232,
+            80.60929704524439
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.001442896525475394,
+          "solver_iterations": 9,
+          "terminated": false,
+          "tip_position_mm": [
+            26.83088918765236,
+            -5.205774633987663,
+            85.37293534761403
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015349769729641484,
+            4.1402973680771475e-05,
+            -0.0008429496441064813
+          ],
+          "hold_step": 8,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.882028310580502,
+            -0.4364187352493559,
+            80.65329199124675
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0013933239343310068,
+          "solver_iterations": 9,
+          "terminated": false,
+          "tip_position_mm": [
+            26.85665253937868,
+            -5.196770911601988,
+            85.41477301716125
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015345681595746966,
+            5.535083473183285e-05,
+            -0.0008461695429339334
+          ],
+          "hold_step": 9,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.89486891684232,
+            -0.4315703632578184,
+            80.67621094081743
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014521423131686126,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.87008209303652,
+            -5.192105482875938,
+            85.43651192747923
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.001534864804611543,
+            5.258399672158067e-05,
+            -0.0008455574694883574
+          ],
+          "hold_step": 10,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.90156899121379,
+            -0.4290521273776932,
+            80.68815665185342
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014887413194630968,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.87707238674463,
+            -5.189731066232308,
+            85.44782076363516
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015348896582310487,
+            5.2443696036538314e-05,
+            -0.0008453888616224301
+          ],
+          "hold_step": 11,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.905058698730794,
+            -0.42778121196828783,
+            80.69438641723845
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014868172445481496,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.88069919369734,
+            -5.188569551620528,
+            85.45370726543091
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015349710359492171,
+            5.2319088426153307e-05,
+            -0.0008450907982048237
+          ],
+          "hold_step": 12,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.906879478470394,
+            -0.4271342049887268,
+            80.69763218355337
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014828375147676064,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.882588857406855,
+            -5.187997568762227,
+            85.45676002829178
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015350547929894435,
+            5.2257765682341937e-05,
+            -0.0008447685183110175
+          ],
+          "hold_step": 13,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.907830018446067,
+            -0.42680399121496443,
+            80.6993239617608
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014798581233654567,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.883574348559648,
+            -5.187715295749919,
+            85.45834377987741
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015351201257109632,
+            5.224474613692106e-05,
+            -0.0008445066731099197
+          ],
+          "hold_step": 14,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.908326659741018,
+            -0.4266341641603614,
+            80.70020676758024
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014781028130286286,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.88408798792404,
+            -5.187575183844637,
+            85.45916749818586
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015351667266858145,
+            5.224673689812664e-05,
+            -0.0008443304885675693
+          ],
+          "hold_step": 15,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.908586360007007,
+            -0.42654498695492093,
+            80.700668395345
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014773023699219132,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.884355064121767,
+            -5.187503660824885,
+            85.45959859943612
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.001535196980176633,
+            5.224760103013876e-05,
+            -0.0008442266663314819
+          ],
+          "hold_step": 16,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.908722175243557,
+            -0.4264970864335585,
+            80.70091029984962
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014770376019551607,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.884493284400765,
+            -5.18746598097766,
+            85.45982596133
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015352147863518786,
+            5.224710920384328e-05,
+            -0.0008441694083110939
+          ],
+          "hold_step": 17,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.908793170304303,
+            -0.4264710392675527,
+            80.7010372518991
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014769694129745138,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.884564457307437,
+            -5.187445806241098,
+            85.4599465782311
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015352247053057387,
+            5.2246436358918455e-05,
+            -0.0008441387000883
+          ],
+          "hold_step": 18,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.908830264507323,
+            -0.4264568096330558,
+            80.70110393204922
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014769572998152086,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.88460095890788,
+            -5.187434949850011,
+            85.4600107857326
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015352300840455247,
+            5.224593810145821e-05,
+            -0.0008441224228007034
+          ],
+          "hold_step": 19,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.908849639472916,
+            -0.4264490271347202,
+            80.70113897002616
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014769581702936867,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.884619621529737,
+            -5.187429107279081,
+            85.46004502579441
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0015352329624698819,
+            5.2245626195782156e-05,
+            -0.0008441138399215319
+          ],
+          "hold_step": 20,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.908859757109116,
+            -0.42644477220092014,
+            80.70115738508663
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014769608139335473,
+          "solver_iterations": 8,
+          "terminated": false,
+          "tip_position_mm": [
+            26.88462913899157,
+            -5.18742596912509,
+            85.46006330100055
+          ],
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "applied_magnitude_nominal_N": 0.1,
+      "applied_vector_nominal_N": [
+        -0.08701119214941555,
+        -0.018689098313776183,
+        0.04560449588533455
+      ],
+      "initial_constraint_dimension": 21,
+      "initial_contact_normal_from_J": [
+        0.8701119214941554,
+        0.1868909831377618,
+        -0.45604495885334545
+      ],
+      "initial_reaction_impulse_all": [
+        0.0015795525957502242,
+        7.433397867026892e-05,
+        -0.0008208303560681982
+      ],
+      "mean_last3_reaction_impulse_all": [
+        0.0020566853265088364,
+        0.00016087646171060007,
+        -0.0011533443823976723
+      ],
+      "mean_last3_reaction_impulse_node": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "node_distance_to_tip_at_load_mm": 10.436810827503741,
+      "node_index": 53,
+      "samples": [
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0019600041741042445,
+            0.00019901574117393763,
+            -0.0011126562617915976
+          ],
+          "hold_step": 1,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            16.356815690683014,
+            -1.6284342043983324,
+            76.07401766719437
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0002336824121362931,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            24.15613788476309,
+            -6.516573805470769,
+            80.99269131187883
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.00201376331635301,
+            0.0002039777258687211,
+            -0.0011430297236973783
+          ],
+          "hold_step": 2,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            17.574937869547295,
+            -0.9745916119219975,
+            78.30264561346694
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0007550432415244704,
+          "solver_iterations": 10,
+          "terminated": false,
+          "tip_position_mm": [
+            25.463688039139715,
+            -5.783058243938621,
+            83.15758408008682
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.0020442287597268478,
+            0.00014920146192989587,
+            -0.0011459772167615205
+          ],
+          "hold_step": 3,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.212365970322953,
+            -0.6910611224362714,
+            79.45558592949124
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.001242548008564898,
+          "solver_iterations": 6,
+          "terminated": false,
+          "tip_position_mm": [
+            26.137918229172374,
+            -5.474444480806224,
+            84.27555447357277
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.002050213677007042,
+            0.00015376164853095456,
+            -0.0011503563034735201
+          ],
+          "hold_step": 4,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.545000984921995,
+            -0.5612145555777798,
+            80.0536781985019
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0011627509542705004,
+          "solver_iterations": 6,
+          "terminated": false,
+          "tip_position_mm": [
+            26.48917385749277,
+            -5.3364411785584345,
+            84.85109004463278
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.0020532133920547826,
+            0.00015752837661512688,
+            -0.001152919588962088
+          ],
+          "hold_step": 5,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.718348871178204,
+            -0.49382802330293296,
+            80.36484609692504
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014168909269552487,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.67182064683519,
+            -5.2662282201108495,
+            85.14964315515371
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.002055179168972072,
+            0.00014833172346846127,
+            -0.001151701319041438
+          ],
+          "hold_step": 6,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.808758659586385,
+            -0.458762807460799,
+            80.52687828125244
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0017209698697772018,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.766853086200772,
+            -5.230411171586548,
+            85.30471419251921
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 18,
+          "full_contact_reaction_impulse": [
+            0.0020551189287153714,
+            0.00016584145647453294,
+            -0.0011560183144017884
+          ],
+          "hold_step": 7,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.855856298926263,
+            -0.4409606705134648,
+            80.61130636946721
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0016867647266918004,
+          "solver_iterations": 4,
+          "terminated": false,
+          "tip_position_mm": [
+            26.816206122006843,
+            -5.2126802947720945,
+            85.38529267338149
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.002055813476435007,
+            0.00015952330341531158,
+            -0.0011548254645835155
+          ],
+          "hold_step": 8,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.880349101546923,
+            -0.43217531133764536,
+            80.65532611134383
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014010758583714918,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.84178226447607,
+            -5.204185491943997,
+            85.42720002935884
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020554218043613735,
+            0.00017196933257288487,
+            -0.0011576690683814453
+          ],
+          "hold_step": 9,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.893176592767883,
+            -0.4273598999312475,
+            80.67825173345337
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014335172464532964,
+          "solver_iterations": 4,
+          "terminated": false,
+          "tip_position_mm": [
+            26.855149498909316,
+            -5.199606722275816,
+            85.44897790126895
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.002056423782227388,
+            0.00015638625509181145,
+            -0.0011542861158090414
+          ],
+          "hold_step": 10,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.89987666309105,
+            -0.4248235690778993,
+            80.69019786646346
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014806619018033942,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.86212009399443,
+            -5.197235002655032,
+            85.46030110677636
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020561949729002277,
+            0.0001590972345583208,
+            -0.0011548201901978845
+          ],
+          "hold_step": 11,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.903345333013203,
+            -0.4236683242007776,
+            80.69643410317923
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.001406730305390293,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.865709554292962,
+            -5.196216767828021,
+            85.46619467258601
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.002056225466764804,
+            0.00015905275141747265,
+            -0.0011546395753799154
+          ],
+          "hold_step": 12,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.905166070893742,
+            -0.4230311446491465,
+            80.69967832261274
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014007946785561177,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.867599189506898,
+            -5.195661845958237,
+            85.4692390951769
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020560684380371494,
+            0.00016934757027452896,
+            -0.001155874853146857
+          ],
+          "hold_step": 13,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.906142926667645,
+            -0.4225847053657329,
+            80.70135637000355
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014816241305536226,
+          "solver_iterations": 4,
+          "terminated": false,
+          "tip_position_mm": [
+            26.8686238092358,
+            -5.19526169142147,
+            85.47078938141536
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020567721460054414,
+            0.00015581118685771447,
+            -0.001152872281081287
+          ],
+          "hold_step": 14,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.90663564359478,
+            -0.4224357695515655,
+            80.70224103238273
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.001463790616024505,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.869137591257655,
+            -5.195136904918599,
+            85.47161389662986
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020567213475881528,
+            0.0001573792314795795,
+            -0.001152938481413892
+          ],
+          "hold_step": 15,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.906884334390682,
+            -0.42240611796657396,
+            80.70270792359747
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014215986816251529,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.869389072252844,
+            -5.195130516694108,
+            85.47205246909331
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020562094834581024,
+            0.00016937466460748094,
+            -0.0011553330235125636
+          ],
+          "hold_step": 16,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.907035942569095,
+            -0.4222846491027326,
+            80.70294215954517
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.001476901104314603,
+          "solver_iterations": 4,
+          "terminated": false,
+          "tip_position_mm": [
+            26.86954646915659,
+            -5.195021986948391,
+            85.47226363109691
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.002056958807500082,
+            0.00015592038952349482,
+            -0.0011523576008093362
+          ],
+          "hold_step": 17,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.907103087065053,
+            -0.42226972412370617,
+            80.70307197458959
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.001462872290904858,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.86961423834969,
+            -5.195006157627999,
+            85.4723932014666
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020568122766235703,
+            0.00015733563624434463,
+            -0.0011525413097107707
+          ],
+          "hold_step": 18,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.907128463154496,
+            -0.42231435763222963,
+            80.7031444109854
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014218650974113303,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.8696330516011,
+            -5.195059433023196,
+            85.47246797723771
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.0020562422396607017,
+            0.0001693659597965347,
+            -0.001155244235802274
+          ],
+          "hold_step": 19,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.907163345982774,
+            -0.42223425244183316,
+            80.70317167395316
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014772806858034746,
+          "solver_iterations": 4,
+          "terminated": false,
+          "tip_position_mm": [
+            26.86967072296017,
+            -5.194983747584988,
+            85.4724859363986
+          ],
+          "truncated": false
+        },
+        {
+          "constraint_dimension": 15,
+          "full_contact_reaction_impulse": [
+            0.002057001463242237,
+            0.00015592778909092087,
+            -0.001152247601679972
+          ],
+          "hold_step": 20,
+          "loaded_node_contact_reaction_impulse": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "loaded_node_position_mm": [
+            18.907169682161417,
+            -0.42224199176393173,
+            80.70319265603948
+          ],
+          "observation_finite": true,
+          "simulation_error": false,
+          "solver_error": 0.0014629234475349866,
+          "solver_iterations": 5,
+          "terminated": false,
+          "tip_position_mm": [
+            26.86967752252111,
+            -5.194985509163706,
+            85.47251215240671
+          ],
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "seed": 90008,
+  "status": "COMPLETE"
+}

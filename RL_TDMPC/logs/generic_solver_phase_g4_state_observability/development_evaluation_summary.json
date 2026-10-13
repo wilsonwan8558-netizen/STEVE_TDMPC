@@ -1,0 +1,29 @@
+{
+  "behavior_metrics_sha256": "5f92b7ba91f327a438b774c19f12dae2b09522605c0461bf944a88cd527496fc",
+  "boundary_metrics_sha256": "39e379068eb55df64b8a11eac2d51b60c3184b79f3a2c9ab892a0d4531b7a708",
+  "candidate_metrics_sha256": "627b5c57965c29237cffbdea96770b794c024a9f8288f9bfc3571475ec575945",
+  "comparison_rule": "descriptive paired representations and supervision modes; no post-hoc threshold tuning",
+  "counts": {
+    "H": {
+      "behavior": 2111,
+      "candidates": 2520,
+      "states": 120
+    },
+    "O": {
+      "behavior": 2111,
+      "candidates": 2520,
+      "states": 120
+    },
+    "P": {
+      "behavior": 2111,
+      "candidates": 2520,
+      "states": 120
+    },
+    "Z": {
+      "behavior": 2111,
+      "candidates": 2520,
+      "states": 120
+    }
+  },
+  "status": "COMPLETE_ALL_EIGHT_CELLS_THREE_SEEDS"
+}

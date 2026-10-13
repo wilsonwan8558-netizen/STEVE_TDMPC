@@ -1,0 +1,22 @@
+{
+  "G6B_matrix_builder_sha256": "e1cbd17a158b1eb694fe077d574b6a01cf180bce04438322a7c46b5fbd1ecab9",
+  "G6B_normalization_exact_array_equal": true,
+  "G6B_normalization_sha256": "f3600a518002269df1756d45f4ee908d56ece9a8227dd37a3a035adcc9756ce3",
+  "behavior_only": true,
+  "candidate_action_last_two_coordinates": true,
+  "counterfactual_training_rows": 0,
+  "normalization_source": "TRAIN behavior rows only, x mean/std with <1e-8 fallback 1; target unnormalized",
+  "source": "frozen G3 behavior NPZ and G4 P keyed by (episode seed,decision index), same G6B matrices() function",
+  "status": "EXACT_G6B_BEHAVIOR_ONLY_TRAIN_VALIDATION_RECOVERED",
+  "target": "maximum distal contact-force magnitude over next 22 SOFA substeps, nominal N",
+  "train_episodes": 140,
+  "train_keys_sha256": "06acd4f7f8d8db66ca9b37a944f0a5e979fc3f203f80e6e877d3f8aac504b432",
+  "train_rows": 10903,
+  "train_x_sha256": "6f302fcf2eba6430d32c6165d8fd3d8e28abef3fc5b373a1d854ae395441f2ce",
+  "train_y_sha256": "e44c05fd85c5cbdb9668b69d1912d735a4fcb86762ec4e9efeaeb659d3422463",
+  "validation_episodes": 30,
+  "validation_keys_sha256": "f88715a38be7d213fac5ffff0eb628e6bbb5972a0f266ad867c54c2925c572c3",
+  "validation_rows": 2286,
+  "validation_x_sha256": "a2307b7607b36867afff832c9713756cfdf9c9b6dcc823bb6ba3da06a70524ce",
+  "validation_y_sha256": "efd4005da1306074b79400939bff89a2c14a7603f4026e05b2308f75f731393b"
+}

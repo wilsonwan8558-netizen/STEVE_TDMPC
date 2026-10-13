@@ -1,0 +1,19 @@
+{
+  "checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "cuda_device": "NVIDIA GeForce RTX 5090",
+  "cuda_visible_index": 0,
+  "g2_step_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "phase": "G3",
+  "physical_cuda_index": 0,
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "quantiles_nominal_N": {
+    "q90": 2.1265156799878246,
+    "q95": 3.685331040756903,
+    "q97.5": 5.926250464744108,
+    "q99": 7.466568793559142
+  },
+  "status": "G3_COMPLETE_PREDICTOR_NOT_READY",
+  "final_classification": "C. PREDICTOR NOT READY",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

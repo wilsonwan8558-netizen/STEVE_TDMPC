@@ -1,0 +1,8 @@
+{
+  "innovation_norm_mean": 0.045512561541935406,
+  "innovation_norm_q90": 0.09778705385976094,
+  "maximum_posterior_diagonal_variance": 0.01765422926232473,
+  "minimum_pre_projection_covariance_eigenvalue": 6.945479193622775e-05,
+  "nonfinite_count": 0,
+  "steps": 15300
+}

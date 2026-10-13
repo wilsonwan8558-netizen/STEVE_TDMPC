@@ -1,0 +1,202 @@
+[
+  {
+    "epoch": 1,
+    "validation_behavior_MSE_N2": 1.664852261543274
+  },
+  {
+    "epoch": 2,
+    "validation_behavior_MSE_N2": 1.34165358543396
+  },
+  {
+    "epoch": 3,
+    "validation_behavior_MSE_N2": 1.2057570219039917
+  },
+  {
+    "epoch": 4,
+    "validation_behavior_MSE_N2": 1.0891139507293701
+  },
+  {
+    "epoch": 5,
+    "validation_behavior_MSE_N2": 1.0028152465820312
+  },
+  {
+    "epoch": 6,
+    "validation_behavior_MSE_N2": 0.9470447897911072
+  },
+  {
+    "epoch": 7,
+    "validation_behavior_MSE_N2": 0.899455726146698
+  },
+  {
+    "epoch": 8,
+    "validation_behavior_MSE_N2": 0.8975244164466858
+  },
+  {
+    "epoch": 9,
+    "validation_behavior_MSE_N2": 0.9410271048545837
+  },
+  {
+    "epoch": 10,
+    "validation_behavior_MSE_N2": 0.9843176603317261
+  },
+  {
+    "epoch": 11,
+    "validation_behavior_MSE_N2": 0.9489941596984863
+  },
+  {
+    "epoch": 12,
+    "validation_behavior_MSE_N2": 0.935994029045105
+  },
+  {
+    "epoch": 13,
+    "validation_behavior_MSE_N2": 0.9923893809318542
+  },
+  {
+    "epoch": 14,
+    "validation_behavior_MSE_N2": 0.9739473462104797
+  },
+  {
+    "epoch": 15,
+    "validation_behavior_MSE_N2": 0.8797739744186401
+  },
+  {
+    "epoch": 16,
+    "validation_behavior_MSE_N2": 0.9421064257621765
+  },
+  {
+    "epoch": 17,
+    "validation_behavior_MSE_N2": 0.8329433798789978
+  },
+  {
+    "epoch": 18,
+    "validation_behavior_MSE_N2": 0.8973485827445984
+  },
+  {
+    "epoch": 19,
+    "validation_behavior_MSE_N2": 0.8079318404197693
+  },
+  {
+    "epoch": 20,
+    "validation_behavior_MSE_N2": 0.8441805243492126
+  },
+  {
+    "epoch": 21,
+    "validation_behavior_MSE_N2": 0.7845434546470642
+  },
+  {
+    "epoch": 22,
+    "validation_behavior_MSE_N2": 0.7498674392700195
+  },
+  {
+    "epoch": 23,
+    "validation_behavior_MSE_N2": 0.732196569442749
+  },
+  {
+    "epoch": 24,
+    "validation_behavior_MSE_N2": 0.7844324111938477
+  },
+  {
+    "epoch": 25,
+    "validation_behavior_MSE_N2": 0.8052359223365784
+  },
+  {
+    "epoch": 26,
+    "validation_behavior_MSE_N2": 0.7208510041236877
+  },
+  {
+    "epoch": 27,
+    "validation_behavior_MSE_N2": 0.6971193552017212
+  },
+  {
+    "epoch": 28,
+    "validation_behavior_MSE_N2": 0.7547382116317749
+  },
+  {
+    "epoch": 29,
+    "validation_behavior_MSE_N2": 0.6932761073112488
+  },
+  {
+    "epoch": 30,
+    "validation_behavior_MSE_N2": 0.6952118277549744
+  },
+  {
+    "epoch": 31,
+    "validation_behavior_MSE_N2": 0.7350842356681824
+  },
+  {
+    "epoch": 32,
+    "validation_behavior_MSE_N2": 0.7213308811187744
+  },
+  {
+    "epoch": 33,
+    "validation_behavior_MSE_N2": 0.6918725967407227
+  },
+  {
+    "epoch": 34,
+    "validation_behavior_MSE_N2": 0.6390389800071716
+  },
+  {
+    "epoch": 35,
+    "validation_behavior_MSE_N2": 0.685443103313446
+  },
+  {
+    "epoch": 36,
+    "validation_behavior_MSE_N2": 0.6690186858177185
+  },
+  {
+    "epoch": 37,
+    "validation_behavior_MSE_N2": 0.6310778856277466
+  },
+  {
+    "epoch": 38,
+    "validation_behavior_MSE_N2": 0.6820816993713379
+  },
+  {
+    "epoch": 39,
+    "validation_behavior_MSE_N2": 0.6579908132553101
+  },
+  {
+    "epoch": 40,
+    "validation_behavior_MSE_N2": 0.6809052228927612
+  },
+  {
+    "epoch": 41,
+    "validation_behavior_MSE_N2": 0.6369821429252625
+  },
+  {
+    "epoch": 42,
+    "validation_behavior_MSE_N2": 0.605729877948761
+  },
+  {
+    "epoch": 43,
+    "validation_behavior_MSE_N2": 0.6312904953956604
+  },
+  {
+    "epoch": 44,
+    "validation_behavior_MSE_N2": 0.6461359858512878
+  },
+  {
+    "epoch": 45,
+    "validation_behavior_MSE_N2": 0.6081894636154175
+  },
+  {
+    "epoch": 46,
+    "validation_behavior_MSE_N2": 0.6285240054130554
+  },
+  {
+    "epoch": 47,
+    "validation_behavior_MSE_N2": 0.64426589012146
+  },
+  {
+    "epoch": 48,
+    "validation_behavior_MSE_N2": 0.6235530972480774
+  },
+  {
+    "epoch": 49,
+    "validation_behavior_MSE_N2": 0.6174325346946716
+  },
+  {
+    "epoch": 50,
+    "validation_behavior_MSE_N2": 0.7047215104103088
+  }
+]

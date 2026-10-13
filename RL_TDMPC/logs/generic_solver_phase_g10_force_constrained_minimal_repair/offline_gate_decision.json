@@ -1,0 +1,17 @@
+{
+  "closest_action_oracle_not_run_reason": "Explicit stop on clear offline true-SOFA failure; only fixed-second zero-action true-safe witnesses are reported as recoverability lower bounds, not closest oracle solutions.",
+  "decision": "NO_GO_OFFLINE_STOP",
+  "final_classification": "C_FORCE_CONSTRAINED_REPAIR_FAILS",
+  "future_online_behavior_metrics": "NOT_MEASURED; online seeds unopened",
+  "no_G10_online_or_G11_automatic_launch": true,
+  "online_closed_loop_justified": false,
+  "online_confirmation_107000_107199_opened": false,
+  "physical_infeasibility_not_proven": true,
+  "reasons": [
+    "Only one of 18 held-out truly unsafe nominals received a predicted-safe repair; 15 had no predicted-safe action on the predeclared 41x41 grid and 2 unsafe nominals were predicted safe without intervention.",
+    "Five of those 15 held-out model-infeasible cases had a true-safe zero-action witness with the same fixed second action.",
+    "At t*-2 only one of 11 difficult events received a true-safe repair; at t*-1 the sole proposed repair was false-safe. Five model-infeasible difficult-event states had a true-safe zero-action witness.",
+    "Zero action itself was not universally true-safe; no automatic fallback or online deployment is justified.",
+    "No arbitrary numeric pass threshold is used: the combined failure modes directly undermine reliable minimal force-constrained repair."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "behavior_train_samples": 11043,
+  "behavior_validation_samples": 2316,
+  "counterfactual_train_labels": 11760,
+  "counterfactual_train_states": 560,
+  "development_test_opened_before_training": false,
+  "matched_budget": "same behavior-train-sized samples and same optimizer-step count per validation round",
+  "normalization": "train behavior only; identical M0/M1",
+  "validation_metric": "behavior MSE"
+}

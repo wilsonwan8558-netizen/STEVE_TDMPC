@@ -1,0 +1,79 @@
+{
+  "G2_force_step_csv_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "P_min_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    35,
+    36,
+    37
+  ],
+  "architecture": "291-64-ReLU-64-ReLU-1",
+  "audited_candidates_per_replica": 63,
+  "audited_states": 3,
+  "differences": {
+    "260206": {
+      "Q95_truth_mismatch_count": 0,
+      "max_label_abs_difference_N": 0.0,
+      "max_prediction_abs_difference_N": 0.0
+    },
+    "260207": {
+      "Q95_truth_mismatch_count": 0,
+      "max_label_abs_difference_N": 0.0,
+      "max_prediction_abs_difference_N": 0.0
+    },
+    "260208": {
+      "Q95_truth_mismatch_count": 0,
+      "max_label_abs_difference_N": 0.0,
+      "max_prediction_abs_difference_N": 0.0
+    }
+  },
+  "force_target": "next 22 SOFA-substep maximum distal contact force nominal N",
+  "g5_pre_confirmation_freeze_sha256": "d593f48ebcffa2c0c1bdb0af13a3b5482d75a06b30796e1eea75b797eb77d665",
+  "input_dimension": 291,
+  "input_order": "G5 latent[256], sorted K+D P indices[33], candidate action[2]",
+  "model_checkpoint_sha256": {
+    "260206": "05efea349196c83e088fc0a8337539977c883ad89ef4899e07eb72cafac596a5",
+    "260207": "40f54351b98c19c2ee7a4662eb61156c0b8a2bb6c7b3b17967c3a41444ecb148",
+    "260208": "77f75420b6b31339fdb462b7d14fe5e8d306a567e5f4db6d657510ea0ee9f4aa"
+  },
+  "model_name": "ZP_noC",
+  "navigation_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "normalization_sha256": "1cd651d19d6d93c48a638c2824586a7a0313872b4b0edb5d931f1c16fb09f399",
+  "physical_dimension": 33,
+  "source": "G5 untouched confirmation read-only audit; not used for cutoff selection",
+  "status": "PASS_EXACT_G5_THREE_REPLICA_SEMANTICS",
+  "supervision": "behavior-only G5 primary ablation",
+  "training_seeds": [
+    260206,
+    260207,
+    260208
+  ]
+}

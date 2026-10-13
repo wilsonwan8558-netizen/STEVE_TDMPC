@@ -1,0 +1,15 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "H": 2,
+  "action_bounds": [
+    -1.0,
+    1.0
+  ],
+  "action_dimension": 2,
+  "constraint": "all three frozen corrected Q95(R2 | x_t,a,a_nom(t+1)) <= F_lim",
+  "deviation_report": "Euclidean normalized-action distance and separate translation/rotation changes",
+  "no_safe_found": "explicit INFEASIBLE; no risky substitute is silently returned",
+  "objective": "minimize squared Euclidean distance ||a-a_nom||_2^2 in normalized action space",
+  "only_current_action_repaired": true,
+  "second_action": "frozen clipped executable TD-MPC2 optimized-mean second action; not optimized or replanned inside fork"
+}

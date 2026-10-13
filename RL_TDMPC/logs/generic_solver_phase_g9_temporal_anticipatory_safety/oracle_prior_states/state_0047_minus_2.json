@@ -1,0 +1,120 @@
+{
+  "candidate_family_size": 135,
+  "candidates_attempted": 3,
+  "decision_index": 68,
+  "episode_seed": 101011,
+  "event_decision_index": 70,
+  "finite_search_exhausted": false,
+  "horizon_intervals": 3,
+  "lookback_steps": 2,
+  "minimum_observed_force_N": 1.1747607898008423,
+  "plan_fork_labels": [
+    {
+      "complete_or_success": true,
+      "force_safe": true,
+      "forces_N": [
+        3.4139912194730244
+      ],
+      "horizon": 1,
+      "max_force_N": 3.4139912194730244,
+      "plan_actions": [
+        [
+          0.9956356287002563,
+          0.9895974397659302
+        ]
+      ],
+      "status": "PASS",
+      "steps": 1,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        3.4139912194730244,
+        5.173285132270555
+      ],
+      "horizon": 2,
+      "max_force_N": 5.173285132270555,
+      "plan_actions": [
+        [
+          0.9956356287002563,
+          0.9895974397659302
+        ],
+        [
+          0.47686684131622314,
+          0.9988320469856262
+        ]
+      ],
+      "status": "PASS",
+      "steps": 2,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": false,
+      "forces_N": [
+        3.4139912194730244,
+        5.173285132270555,
+        7.0328287839516195
+      ],
+      "horizon": 3,
+      "max_force_N": 7.0328287839516195,
+      "plan_actions": [
+        [
+          0.9956356287002563,
+          0.9895974397659302
+        ],
+        [
+          0.47686684131622314,
+          0.9988320469856262
+        ],
+        [
+          0.19510188698768616,
+          0.998904824256897
+        ]
+      ],
+      "status": "PASS",
+      "steps": 3,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    }
+  ],
+  "safe_trajectory_found": true,
+  "state_id": 47,
+  "witness": {
+    "actions": [
+      [
+        -1.0,
+        -1.0
+      ],
+      [
+        -1.0,
+        -1.0
+      ],
+      [
+        -1.0,
+        -1.0
+      ]
+    ],
+    "complete_or_success": true,
+    "force_safe": true,
+    "forces_N": [
+      1.1747607898008423,
+      0.6864250384271217,
+      1.079243976849274
+    ],
+    "kind": "constant_withdrawal",
+    "max_force_N": 1.1747607898008423,
+    "status": "PASS",
+    "steps": 3,
+    "success": false,
+    "terminated": false,
+    "truncated": false
+  }
+}

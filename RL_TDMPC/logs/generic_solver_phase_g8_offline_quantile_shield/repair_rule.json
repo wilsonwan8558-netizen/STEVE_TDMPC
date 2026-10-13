@@ -1,0 +1,23 @@
+{
+  "G6B_predicted_safe": "frozen point prediction <= 2.105934143066406 nominal N",
+  "G7_predicted_safe": "frozen Q95 <= exact G2 Q95 F_lim, delta_cal=0",
+  "action_space": "normalized 2D translation/rotation in [-1,1]^2",
+  "candidate_count": 21,
+  "distance": "ordinary Euclidean L2 on stored float32 normalized action pairs evaluated as float64",
+  "failure_taxonomy_priority": [
+    "CANDIDATE_SET_INFEASIBLE",
+    "PREDICTED_INFEASIBLE",
+    "UNSAFE_PASS_THROUGH",
+    "WRONG_REPAIR",
+    "OTHER_AMBIGUOUS"
+  ],
+  "no_online_execution_or_subsequent_state_change": true,
+  "nominal_candidate_id": 0,
+  "oracle": "offline discrete true-force reference only, never deployable",
+  "predicted_infeasible_fallback": "none; do not select minimum predicted force",
+  "repair_code_sha256": "ef14a3f4e351ebb370889f75d16ee72285b643cd88db813d220ebd63cc43249b",
+  "selection": "candidate 0 if predicted/true safe; else nearest safe candidate; else None/infeasible",
+  "status": "FROZEN_BEFORE_TEST_LABELS",
+  "tie_break": "smallest candidate_id after minimum distance",
+  "true_safe": "true next-interval distal maximum <= exact G2 Q95 F_lim"
+}

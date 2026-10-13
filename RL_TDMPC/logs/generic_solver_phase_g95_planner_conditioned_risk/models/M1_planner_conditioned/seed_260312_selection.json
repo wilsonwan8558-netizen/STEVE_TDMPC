@@ -1,0 +1,162 @@
+{
+  "behavior_train_rows": 10203,
+  "behavior_validation_rows": 2136,
+  "best_validation_pinball_N": 0.1370173543691635,
+  "checkpoint_sha256": "7f2ce7d27a01a0772bfbcb103042d419c8718b73ce3b63354e7b8e1d9b6b9b66",
+  "history": [
+    {
+      "epoch": 0,
+      "validation_pinball_N": 0.23688077926635742
+    },
+    {
+      "epoch": 1,
+      "validation_pinball_N": 0.19524167478084564
+    },
+    {
+      "epoch": 2,
+      "validation_pinball_N": 0.1773144155740738
+    },
+    {
+      "epoch": 3,
+      "validation_pinball_N": 0.16440123319625854
+    },
+    {
+      "epoch": 4,
+      "validation_pinball_N": 0.15937399864196777
+    },
+    {
+      "epoch": 5,
+      "validation_pinball_N": 0.15496672689914703
+    },
+    {
+      "epoch": 6,
+      "validation_pinball_N": 0.15072225034236908
+    },
+    {
+      "epoch": 7,
+      "validation_pinball_N": 0.147661954164505
+    },
+    {
+      "epoch": 8,
+      "validation_pinball_N": 0.14461171627044678
+    },
+    {
+      "epoch": 9,
+      "validation_pinball_N": 0.14630477130413055
+    },
+    {
+      "epoch": 10,
+      "validation_pinball_N": 0.14796173572540283
+    },
+    {
+      "epoch": 11,
+      "validation_pinball_N": 0.14413747191429138
+    },
+    {
+      "epoch": 12,
+      "validation_pinball_N": 0.14327368140220642
+    },
+    {
+      "epoch": 13,
+      "validation_pinball_N": 0.1397051364183426
+    },
+    {
+      "epoch": 14,
+      "validation_pinball_N": 0.13891133666038513
+    },
+    {
+      "epoch": 15,
+      "validation_pinball_N": 0.1418386846780777
+    },
+    {
+      "epoch": 16,
+      "validation_pinball_N": 0.14439265429973602
+    },
+    {
+      "epoch": 17,
+      "validation_pinball_N": 0.14238587021827698
+    },
+    {
+      "epoch": 18,
+      "validation_pinball_N": 0.14095063507556915
+    },
+    {
+      "epoch": 19,
+      "validation_pinball_N": 0.13852202892303467
+    },
+    {
+      "epoch": 20,
+      "validation_pinball_N": 0.14449885487556458
+    },
+    {
+      "epoch": 21,
+      "validation_pinball_N": 0.1374029517173767
+    },
+    {
+      "epoch": 22,
+      "validation_pinball_N": 0.14155349135398865
+    },
+    {
+      "epoch": 23,
+      "validation_pinball_N": 0.14020907878875732
+    },
+    {
+      "epoch": 24,
+      "validation_pinball_N": 0.1401667445898056
+    },
+    {
+      "epoch": 25,
+      "validation_pinball_N": 0.14027376472949982
+    },
+    {
+      "epoch": 26,
+      "validation_pinball_N": 0.1416412740945816
+    },
+    {
+      "epoch": 27,
+      "validation_pinball_N": 0.1370173543691635
+    },
+    {
+      "epoch": 28,
+      "validation_pinball_N": 0.14137086272239685
+    },
+    {
+      "epoch": 29,
+      "validation_pinball_N": 0.13965827226638794
+    },
+    {
+      "epoch": 30,
+      "validation_pinball_N": 0.13963185250759125
+    },
+    {
+      "epoch": 31,
+      "validation_pinball_N": 0.1384306699037552
+    },
+    {
+      "epoch": 32,
+      "validation_pinball_N": 0.1466275453567505
+    },
+    {
+      "epoch": 33,
+      "validation_pinball_N": 0.14631016552448273
+    },
+    {
+      "epoch": 34,
+      "validation_pinball_N": 0.13987401127815247
+    },
+    {
+      "epoch": 35,
+      "validation_pinball_N": 0.13841061294078827
+    }
+  ],
+  "model": "M1_planner_conditioned",
+  "normalization": "exact frozen G9 E1/H2 behavior-TRAIN input mean/std",
+  "planner_train_rows": 5038,
+  "planner_validation_rows": 1080,
+  "train_rows": 15241,
+  "training_seed": 260312,
+  "validation_corrected_Q95_coverage": 0.9502487562189055,
+  "validation_only_Q95_delta_N": 0.2981063723564148,
+  "validation_raw_Q95_coverage": 0.9123134328358209,
+  "validation_rows": 3216
+}

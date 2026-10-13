@@ -1,0 +1,10 @@
+{
+  "CUDA_VISIBLE_DEVICES": "0",
+  "cuda_available": true,
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "model_device_index": 0,
+  "sys_executable": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "torch_cuda_version": "12.8",
+  "torch_version": "2.7.1+cu128",
+  "visible_cuda_device_count": 1
+}

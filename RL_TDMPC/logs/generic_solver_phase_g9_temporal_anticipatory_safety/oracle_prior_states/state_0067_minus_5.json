@@ -1,0 +1,135 @@
+{
+  "candidate_family_size": 135,
+  "candidates_attempted": 2,
+  "decision_index": 40,
+  "episode_seed": 101016,
+  "event_decision_index": 45,
+  "finite_search_exhausted": false,
+  "horizon_intervals": 6,
+  "lookback_steps": 5,
+  "minimum_observed_force_N": 1.9847145458824644,
+  "plan_fork_labels": [
+    {
+      "complete_or_success": true,
+      "force_safe": true,
+      "forces_N": [
+        1.2771960366908237
+      ],
+      "horizon": 1,
+      "max_force_N": 1.2771960366908237,
+      "plan_actions": [
+        [
+          -0.8997162580490112,
+          -0.9712846279144287
+        ]
+      ],
+      "status": "PASS",
+      "steps": 1,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": true,
+      "forces_N": [
+        1.2771960366908237,
+        1.9847145458824644
+      ],
+      "horizon": 2,
+      "max_force_N": 1.9847145458824644,
+      "plan_actions": [
+        [
+          -0.8997162580490112,
+          -0.9712846279144287
+        ],
+        [
+          -0.9907203912734985,
+          0.12265288084745407
+        ]
+      ],
+      "status": "PASS",
+      "steps": 2,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    },
+    {
+      "complete_or_success": true,
+      "force_safe": true,
+      "forces_N": [
+        1.2771960366908237,
+        1.9847145458824644,
+        0.8331827892450407
+      ],
+      "horizon": 3,
+      "max_force_N": 1.9847145458824644,
+      "plan_actions": [
+        [
+          -0.8997162580490112,
+          -0.9712846279144287
+        ],
+        [
+          -0.9907203912734985,
+          0.12265288084745407
+        ],
+        [
+          -0.9843882322311401,
+          -0.3493782877922058
+        ]
+      ],
+      "status": "PASS",
+      "steps": 3,
+      "success": false,
+      "terminated": false,
+      "truncated": false
+    }
+  ],
+  "safe_trajectory_found": true,
+  "state_id": 67,
+  "witness": {
+    "actions": [
+      [
+        -0.8997162580490112,
+        -0.9712846279144287
+      ],
+      [
+        -0.9907203912734985,
+        0.12265288084745407
+      ],
+      [
+        -0.9843882322311401,
+        -0.3493782877922058
+      ],
+      [
+        0.9981154203414917,
+        0.9681176543235779
+      ],
+      [
+        0.9945774674415588,
+        0.9968981742858887
+      ],
+      [
+        0.7925735712051392,
+        0.9983479976654053
+      ]
+    ],
+    "complete_or_success": true,
+    "force_safe": true,
+    "forces_N": [
+      1.2771960366908237,
+      1.9847145458824644,
+      0.8331827892450407,
+      0.15190638654902544,
+      1.0862075217523988,
+      1.201134652226187
+    ],
+    "kind": "current_TDMPC2_plan_then_archived_suffix",
+    "max_force_N": 1.9847145458824644,
+    "status": "PASS",
+    "steps": 6,
+    "success": false,
+    "terminated": false,
+    "truncated": false
+  }
+}

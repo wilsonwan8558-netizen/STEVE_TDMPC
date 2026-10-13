@@ -1,0 +1,76 @@
+{
+  "P_min_behavior_only_model": "PKD",
+  "P_min_dimension": 33,
+  "P_min_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    35,
+    36,
+    37
+  ],
+  "confirmation_opened_before_selection": false,
+  "development_test_opened_before_selection": false,
+  "included_groups": [
+    "K",
+    "D"
+  ],
+  "limitation": "Class-B shape and velocity features remain unmeasured in the deployed controller even if selected",
+  "selection_metric_order": [
+    "mean_validation_Q95_false_safe_rate",
+    "mean_validation_candidate_RMSE_N",
+    "negative_mean_validation_pairwise_accuracy",
+    "mean_validation_safe_choice_regret_N",
+    "group_count",
+    "dimension"
+  ],
+  "selection_model": "ZP_noC",
+  "status": "FROZEN_VALIDATION_ONLY_P_MIN_SELECTED",
+  "validation_three_seed_means": {
+    "D": {
+      "Q95_false_safe_rate": 0.3055555555555556,
+      "candidate_RMSE_N": 1.1572179948050285,
+      "mean_pairwise_accuracy": 0.6498580829807447,
+      "mean_safe_choice_regret_N": 0.17114968672307543
+    },
+    "K": {
+      "Q95_false_safe_rate": 0.20726495726495728,
+      "candidate_RMSE_N": 1.0542868207714748,
+      "mean_pairwise_accuracy": 0.6385120184919869,
+      "mean_safe_choice_regret_N": 0.14366788917614257
+    },
+    "KD": {
+      "Q95_false_safe_rate": 0.1891025641025641,
+      "candidate_RMSE_N": 0.9924936219060689,
+      "mean_pairwise_accuracy": 0.6579013662048985,
+      "mean_safe_choice_regret_N": 0.13575982509038043
+    }
+  }
+}

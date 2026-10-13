@@ -1,0 +1,99 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "calibrated_by_replica": {
+    "260206": {
+      "accepted_high_force_count": 0,
+      "all_no_contact_accepted_count": 1218,
+      "all_no_contact_rejected_count": 84,
+      "false_safe_CI95_exact": [
+        0.0,
+        0.061621008903919826
+      ],
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "no_contact_to_Q95_high_force_count": 58,
+      "no_current_contact_candidate_count": 1302,
+      "no_current_contact_states": 62,
+      "rejected_high_force_count": 58
+    },
+    "260207": {
+      "accepted_high_force_count": 11,
+      "all_no_contact_accepted_count": 1234,
+      "all_no_contact_rejected_count": 68,
+      "false_safe_CI95_exact": [
+        0.09866381684208682,
+        0.3140508615938413
+      ],
+      "false_safe_count": 11,
+      "false_safe_rate": 0.1896551724137931,
+      "no_contact_to_Q95_high_force_count": 58,
+      "no_current_contact_candidate_count": 1302,
+      "no_current_contact_states": 62,
+      "rejected_high_force_count": 47
+    },
+    "260208": {
+      "accepted_high_force_count": 14,
+      "all_no_contact_accepted_count": 1239,
+      "all_no_contact_rejected_count": 63,
+      "false_safe_CI95_exact": [
+        0.13870119999212294,
+        0.371689716191558
+      ],
+      "false_safe_count": 14,
+      "false_safe_rate": 0.2413793103448276,
+      "no_contact_to_Q95_high_force_count": 58,
+      "no_current_contact_candidate_count": 1302,
+      "no_current_contact_states": 62,
+      "rejected_high_force_count": 44
+    }
+  },
+  "raw_by_replica": {
+    "260206": {
+      "accepted_high_force_count": 0,
+      "all_no_contact_accepted_count": 1218,
+      "all_no_contact_rejected_count": 84,
+      "false_safe_CI95_exact": [
+        0.0,
+        0.061621008903919826
+      ],
+      "false_safe_count": 0,
+      "false_safe_rate": 0.0,
+      "no_contact_to_Q95_high_force_count": 58,
+      "no_current_contact_candidate_count": 1302,
+      "no_current_contact_states": 62,
+      "rejected_high_force_count": 58
+    },
+    "260207": {
+      "accepted_high_force_count": 25,
+      "all_no_contact_accepted_count": 1259,
+      "all_no_contact_rejected_count": 43,
+      "false_safe_CI95_exact": [
+        0.30162454229220026,
+        0.5677301833191022
+      ],
+      "false_safe_count": 25,
+      "false_safe_rate": 0.43103448275862066,
+      "no_contact_to_Q95_high_force_count": 58,
+      "no_current_contact_candidate_count": 1302,
+      "no_current_contact_states": 62,
+      "rejected_high_force_count": 33
+    },
+    "260208": {
+      "accepted_high_force_count": 25,
+      "all_no_contact_accepted_count": 1259,
+      "all_no_contact_rejected_count": 43,
+      "false_safe_CI95_exact": [
+        0.30162454229220026,
+        0.5677301833191022
+      ],
+      "false_safe_count": 25,
+      "false_safe_rate": 0.43103448275862066,
+      "no_contact_to_Q95_high_force_count": 58,
+      "no_current_contact_candidate_count": 1302,
+      "no_current_contact_states": 62,
+      "rejected_high_force_count": 33
+    }
+  },
+  "raw_cutoff_N": 3.685331040756903,
+  "shared_calibrated_cutoff_N": 2.976577758789062
+}

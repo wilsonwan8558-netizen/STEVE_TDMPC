@@ -1,0 +1,138 @@
+{
+  "G101_comparison_sha256": "a81df826a31885b7ab133c863373d8655230dcda8c70ecc121a644fd7f133212",
+  "G101_counts": {
+    "combined_descriptive_nonexchangeable": {
+      "any_negative_translation_true_safe": 27,
+      "censored_one_interval_forks": 0,
+      "false_infeasible": 22,
+      "false_safe_predicted_repair": 3,
+      "no_safe_translation_on_finite_sweep": 13,
+      "predicted_repair_true_safe": 2,
+      "predicted_safe_translation_found": 5,
+      "states": 40,
+      "translation_recoverable": 27,
+      "true_forks": 4241,
+      "withdrawal_minus_0_5_true_safe": 22,
+      "withdrawal_minus_1_true_safe": 26,
+      "zero_translation_true_safe": 16
+    },
+    "heldout": {
+      "any_negative_translation_true_safe": 11,
+      "censored_one_interval_forks": 0,
+      "false_infeasible": 8,
+      "false_safe_predicted_repair": 2,
+      "no_safe_translation_on_finite_sweep": 7,
+      "predicted_repair_true_safe": 1,
+      "predicted_safe_translation_found": 3,
+      "states": 18,
+      "translation_recoverable": 11,
+      "true_forks": 1907,
+      "withdrawal_minus_0_5_true_safe": 10,
+      "withdrawal_minus_1_true_safe": 11,
+      "zero_translation_true_safe": 8
+    },
+    "t_star_minus_1": {
+      "any_negative_translation_true_safe": 7,
+      "censored_one_interval_forks": 0,
+      "false_infeasible": 6,
+      "false_safe_predicted_repair": 1,
+      "no_safe_translation_on_finite_sweep": 4,
+      "predicted_repair_true_safe": 0,
+      "predicted_safe_translation_found": 1,
+      "states": 11,
+      "translation_recoverable": 7,
+      "true_forks": 1165,
+      "withdrawal_minus_0_5_true_safe": 4,
+      "withdrawal_minus_1_true_safe": 6,
+      "zero_translation_true_safe": 1
+    },
+    "t_star_minus_2": {
+      "any_negative_translation_true_safe": 9,
+      "censored_one_interval_forks": 0,
+      "false_infeasible": 8,
+      "false_safe_predicted_repair": 0,
+      "no_safe_translation_on_finite_sweep": 2,
+      "predicted_repair_true_safe": 1,
+      "predicted_safe_translation_found": 1,
+      "states": 11,
+      "translation_recoverable": 9,
+      "true_forks": 1169,
+      "withdrawal_minus_0_5_true_safe": 8,
+      "withdrawal_minus_1_true_safe": 9,
+      "zero_translation_true_safe": 7
+    }
+  },
+  "G101_false_infeasible_22_revisit": {
+    "G102_abstain": 22,
+    "G102_false_safe": 0,
+    "G102_predicted_repair_found": 0,
+    "G102_true_safe_repair": 0,
+    "states": 22
+  },
+  "G102_development_counts": {
+    "combined_descriptive_not_exchangeable": {
+      "abstain": 38,
+      "abstention_rate": 0.95,
+      "false_infeasible": 25,
+      "false_infeasible_rate_among_recoverable": 0.9259259259259259,
+      "false_safe_rate_among_proposed": 1.0,
+      "false_safe_repair": 2,
+      "no_safe_found_on_finite_search_grid": 13,
+      "predicted_repair_found": 2,
+      "recoverable_state_rescue_rate": 0.0,
+      "states": 40,
+      "true_recoverable": 27,
+      "true_safe_repair": 0
+    },
+    "heldout": {
+      "abstain": 16,
+      "abstention_rate": 0.8888888888888888,
+      "false_infeasible": 9,
+      "false_infeasible_rate_among_recoverable": 0.8181818181818182,
+      "false_safe_rate_among_proposed": 1.0,
+      "false_safe_repair": 2,
+      "no_safe_found_on_finite_search_grid": 7,
+      "predicted_repair_found": 2,
+      "recoverable_state_rescue_rate": 0.0,
+      "states": 18,
+      "true_recoverable": 11,
+      "true_safe_repair": 0
+    },
+    "t_star_minus_1": {
+      "abstain": 11,
+      "abstention_rate": 1.0,
+      "false_infeasible": 7,
+      "false_infeasible_rate_among_recoverable": 1.0,
+      "false_safe_rate_among_proposed": null,
+      "false_safe_repair": 0,
+      "no_safe_found_on_finite_search_grid": 4,
+      "predicted_repair_found": 0,
+      "recoverable_state_rescue_rate": 0.0,
+      "states": 11,
+      "true_recoverable": 7,
+      "true_safe_repair": 0
+    },
+    "t_star_minus_2": {
+      "abstain": 11,
+      "abstention_rate": 1.0,
+      "false_infeasible": 9,
+      "false_infeasible_rate_among_recoverable": 1.0,
+      "false_safe_rate_among_proposed": null,
+      "false_safe_repair": 0,
+      "no_safe_found_on_finite_search_grid": 2,
+      "predicted_repair_found": 0,
+      "recoverable_state_rescue_rate": 0.0,
+      "states": 11,
+      "true_recoverable": 9,
+      "true_safe_repair": 0
+    }
+  },
+  "candidate_truth_reuses_exact_G101_SOFA_forks": true,
+  "confirmation_108000_108029_opened": false,
+  "development_previously_inspected_not_untouched": true,
+  "diagnostic_only_true_future_nominal_baseline_NOT_DEPLOYABLE": {
+    "false_safe_repair": 0,
+    "predicted_repair_found": 1,
+    "true_safe_repair": 1
+  }
+}
