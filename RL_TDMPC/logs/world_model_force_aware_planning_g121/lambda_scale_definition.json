@@ -1,0 +1,30 @@
+{
+  "F_lim_N_nominal": 3.685331040756903,
+  "H_force": 1,
+  "J_task": "exact original _estimate_value scalar; larger is better; reward plus terminal Q, verified by G12 audit",
+  "S_force": 0.03031464414257279,
+  "S_force_definition": "median across force-active development states of Q90(c_force)-Q10(c_force)",
+  "S_task": 0.013568128645420091,
+  "S_task_definition": "median across all development states of Q90(J_task)-Q10(J_task)",
+  "candidate_set": "512 original frozen TD-MPC2 candidates per state at final of six CUDA MPPI iterations; no force-aware planner run",
+  "cost": "c_force=max(F_hat_raw_first+delta_F-F_lim,0)^2, nominal N^2",
+  "delta_F_N_nominal": 2.1008816303183657,
+  "fixed_lambda_set": [
+    0.0,
+    0.04475767085243631,
+    0.13427301255730892,
+    0.44757670852436304
+  ],
+  "force_active_state_count": 3,
+  "force_active_state_spreads": [
+    1.1427144230985178,
+    0.03031464414257279,
+    0.01027501216208293
+  ],
+  "lambda_base": 0.44757670852436304,
+  "lambda_set_status": "PROPOSED_UNRUN",
+  "rounding_floor_for_S_force": 2.782818652575762e-07,
+  "state_source": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/world_model_force_aware_planning_g12/planner_candidate_diagnostics_expanded_final.csv",
+  "state_source_semantics": "16 G12 expanded validation states, used as development-only planner states; no held-out/test/confirmation state or label used for lambda scale",
+  "status": "DEFINED_FROM_DEVELOPMENT_PLANNER_STATES"
+}

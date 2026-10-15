@@ -1,0 +1,16 @@
+{
+  "architecture": "258-64-64-1, ReLU hidden layers, Softplus scalar output",
+  "best_epoch": 6,
+  "encoder_and_dynamics": "frozen; no TD-MPC2 parameters updated",
+  "force_head_checkpoint": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/world_model_force_aware_planning_g12/force_head.pt",
+  "force_head_checkpoint_sha256": "b1d8f66b943efdab47c134f7126db0cb361270cabcc1e3e6899914219cd0d7e6",
+  "input": "concat(pre-transition TD-MPC2 planner latent z_t[256], normalized action a_t[2])",
+  "input_normalization": "featurewise train-episode-only mean/std; std floor 1e-4; stored as checkpoint buffers",
+  "model_selection": "minimum validation MSE only; held-out test rows unseen during fitting/selection",
+  "optimizer": "Adam lr=0.001, batch=512, maximum 120 epochs, validation MSE early stop patience 15",
+  "output": "nonnegative predicted next-interval maximum distal contact force, nominal simulation N",
+  "status": "TRAINED_HEAD_ONLY_ON_FROZEN_WORLD_MODEL_LATENTS",
+  "target_normalization": "none; direct nominal-N MSE",
+  "training_seed": 20261014,
+  "validation_mse_N2": 1.0360451936721802
+}

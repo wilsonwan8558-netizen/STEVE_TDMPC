@@ -1,0 +1,1 @@
+{"category": "episodes", "episode": 1, "episode_above_F_lim_steps": 0, "episode_length": 10, "episode_peak_force_N": 0.0, "episode_reward": 0.03930793391602379, "replay_size": 10, "simulation_error": false, "success": false, "success_rate": 0.0, "terminated": false, "total_env_steps": 10, "truncated": true}

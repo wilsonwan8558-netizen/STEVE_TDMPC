@@ -1,0 +1,56 @@
+{
+  "direction_valid_states": 682,
+  "force_column_usage": "diagnostic only for representative-state interpretation; no force input enters geometry features",
+  "max_repeat_query_difference": 0.0,
+  "max_tracking_alignment_error_mm": 1.9073486328125e-06,
+  "normalized_geometry_step_L2_change_q50_q95_q99_max": [
+    0.186464324593544,
+    1.028678113222122,
+    1.6239665567874995,
+    2.182976722717285
+  ],
+  "representatives": {
+    "aligned": {
+      "decision_index": 43,
+      "seed": 90003
+    },
+    "bent_distal": {
+      "decision_index": 54,
+      "seed": 90005
+    },
+    "center_lumen": {
+      "decision_index": 24,
+      "seed": 90009
+    },
+    "direction_degenerate": {
+      "decision_index": 0,
+      "seed": 90000
+    },
+    "near_wall": {
+      "decision_index": 5,
+      "seed": 90006
+    },
+    "wall_directed": {
+      "decision_index": 58,
+      "seed": 90002
+    }
+  },
+  "seeds": [
+    90000,
+    90001,
+    90002,
+    90003,
+    90004,
+    90005,
+    90006,
+    90007,
+    90008,
+    90009
+  ],
+  "states": 692,
+  "status": "PASS_FINITE_DETERMINISTIC_NO_FUTURE_READ_AND_EXACT_G2_PARENT_REPLAY",
+  "tip_clearance_mm_range": [
+    -34.95267868041992,
+    7.222136497497559
+  ]
+}

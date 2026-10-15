@@ -1,0 +1,15 @@
+{
+  "CUDA_VISIBLE_DEVICES": "0",
+  "CUDA_device_index": 0,
+  "CUDA_device_name": "NVIDIA GeForce RTX 5090",
+  "baseline_reproduction_tolerance": {
+    "atol": 1e-06,
+    "rtol": 0
+  },
+  "branch": "feature/world-model-force-aware-planning",
+  "phase": "G12.3",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "status": "STOPPED_AT_TRUE_SOFA_FORK_GATE; NO_CLOSED_LOOP_DEVELOPMENT",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

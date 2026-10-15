@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "csv_with_seed_column": 511,
+    "json": 5277,
+    "seed_named_paths": 551
+  },
+  "inspected_roots": [
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC",
+    "/home/bizon/Desktop/stEVE_data/experiments"
+  ],
+  "overlaps": [],
+  "phase": "G12.1",
+  "proposed_seed_range": [
+    112000,
+    112029
+  ],
+  "purpose": "pre-rollout freshness check for proposed development episode seeds",
+  "scope": "structured JSON seed fields, CSV seed columns, and seed-named paths in branch RL_TDMPC/logs and prior stEVE_data/experiments; training-step counters are not episode seeds",
+  "status": "PASS_UNUSED_IN_SCANNED_ARTIFACTS"
+}

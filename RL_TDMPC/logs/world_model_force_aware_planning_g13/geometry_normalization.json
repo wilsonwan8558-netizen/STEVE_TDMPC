@@ -1,0 +1,11 @@
+{
+  "status": "FROZEN_PHYSICAL_SCALING_BEFORE_BROADER_GEOMETRY_VALIDATION_OR_TRAINING",
+  "clearance": "d_norm=tanh(d_signed_mm/20 mm), range (-1,1), positive inside and negative outside centerline-radius lumen proxy",
+  "radius": "r_norm=tanh(r_local_mm/20 mm), range (0,1)",
+  "angle": "sin(delta_theta), cos(delta_theta) already in [-1,1]",
+  "bend": "kappa_norm=bend_angle_rad/pi, range [0,1]",
+  "direction_valid": "0 or 1 without scaling",
+  "original_14_dimensions": "unchanged episode-normalized and clipped stEVE observation",
+  "scale_selection": "Fixed physically interpretable 20 mm length scale, chosen before training and independent of confirmation data; no fitted means/std or confirmation data used",
+  "output_dtype": "float32"
+}

@@ -1,0 +1,100 @@
+{
+  "candidate_steps": [
+    240000,
+    260000,
+    280000,
+    300000
+  ],
+  "checkpoint_selection_not_based_on_force_planning": true,
+  "checkpoints": [
+    {
+      "force_head_parameter_keys": [
+        "force_head.0.0.bias",
+        "force_head.0.0.norm.bias",
+        "force_head.0.0.norm.weight",
+        "force_head.0.0.weight",
+        "force_head.0.1.bias",
+        "force_head.0.1.norm.bias",
+        "force_head.0.1.norm.weight",
+        "force_head.0.1.weight",
+        "force_head.0.2.bias",
+        "force_head.0.2.weight"
+      ],
+      "format_version": 2,
+      "model_tensor_count": 162,
+      "nonfinite_model_tensors": 0,
+      "observation_dim": 22,
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_240000.pt",
+      "sha256": "6b708b8e1eabae0f42ca79cd9d60630dc58ae1fd60d54775b7e08d58f980204e",
+      "step": 240000,
+      "update_count": 240000
+    },
+    {
+      "force_head_parameter_keys": [
+        "force_head.0.0.bias",
+        "force_head.0.0.norm.bias",
+        "force_head.0.0.norm.weight",
+        "force_head.0.0.weight",
+        "force_head.0.1.bias",
+        "force_head.0.1.norm.bias",
+        "force_head.0.1.norm.weight",
+        "force_head.0.1.weight",
+        "force_head.0.2.bias",
+        "force_head.0.2.weight"
+      ],
+      "format_version": 2,
+      "model_tensor_count": 162,
+      "nonfinite_model_tensors": 0,
+      "observation_dim": 22,
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_260000.pt",
+      "sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+      "step": 260000,
+      "update_count": 260000
+    },
+    {
+      "force_head_parameter_keys": [
+        "force_head.0.0.bias",
+        "force_head.0.0.norm.bias",
+        "force_head.0.0.norm.weight",
+        "force_head.0.0.weight",
+        "force_head.0.1.bias",
+        "force_head.0.1.norm.bias",
+        "force_head.0.1.norm.weight",
+        "force_head.0.1.weight",
+        "force_head.0.2.bias",
+        "force_head.0.2.weight"
+      ],
+      "format_version": 2,
+      "model_tensor_count": 162,
+      "nonfinite_model_tensors": 0,
+      "observation_dim": 22,
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_280000.pt",
+      "sha256": "615b211bb59379a867e437590228b3b77ac9f434c1e2eef1f9d139c2dd5884e4",
+      "step": 280000,
+      "update_count": 280000
+    },
+    {
+      "force_head_parameter_keys": [
+        "force_head.0.0.bias",
+        "force_head.0.0.norm.bias",
+        "force_head.0.0.norm.weight",
+        "force_head.0.0.weight",
+        "force_head.0.1.bias",
+        "force_head.0.1.norm.bias",
+        "force_head.0.1.norm.weight",
+        "force_head.0.1.weight",
+        "force_head.0.2.bias",
+        "force_head.0.2.weight"
+      ],
+      "format_version": 2,
+      "model_tensor_count": 162,
+      "nonfinite_model_tensors": 0,
+      "observation_dim": 22,
+      "path": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_300000.pt",
+      "sha256": "4abb31ca61dc42915ab5fce6042943bc3a420cdd092b24e797c488e43cc42341",
+      "step": 300000,
+      "update_count": 300000
+    }
+  ],
+  "status": "PASS_FROZEN_PREDECLARED_G13_CHECKPOINTS_FINITE_AND_FORMAT_MATCHED"
+}

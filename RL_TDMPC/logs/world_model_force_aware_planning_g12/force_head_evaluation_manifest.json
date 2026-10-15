@@ -1,0 +1,12 @@
+{
+  "force_head_checkpoint_sha256": "b1d8f66b943efdab47c134f7126db0cb361270cabcc1e3e6899914219cd0d7e6",
+  "future_action_source": "actual held-out behavior action sequence; no future observation re-encoding",
+  "heldout_episode_count": 30,
+  "heldout_step_count": 2141,
+  "multi_step_prediction": "head(z_hat_(t+k),a_(t+k)); z_hat_(t+k+1)=frozen WorldModel.next(z_hat_(t+k),a_(t+k))",
+  "one_step_prediction": "head(z_t,a_t) on cached single-observation CUDA latents",
+  "region_boundaries": "no contact F=0; low 0<F<0.5 F_lim; near 0.5 F_lim<=F<=F_lim; above F>F_lim",
+  "status": "HELDOUT_ONE_STEP_AND_FROZEN_WORLD_MODEL_ROLLOUT_EVALUATED",
+  "tdmpc2_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "three_step_window_count": 2081
+}

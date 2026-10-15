@@ -1,0 +1,14 @@
+{
+  "G2_step_csv_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "max_abs_selected_state_difference": {
+    "applied_action": 0.0,
+    "force_next_max_N": 0.0,
+    "insertion_length_mm": 0.0,
+    "observation": 0.0,
+    "reward": 0.0,
+    "tip_position_mm": 0.0
+  },
+  "parent_steps_replayed": 15441,
+  "selected_parent_states": 22,
+  "status": "PASS_EXACT_REUSED_SCENE_PARENT_AND_FORK"
+}

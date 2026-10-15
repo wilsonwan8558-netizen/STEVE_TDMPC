@@ -1,0 +1,17 @@
+{
+  "G2_source_sha256": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+  "archived_parent_steps_replayed": 15239,
+  "candidate_sampling": "normal G13 first-step cold-start MPPI distribution: 16 final elites and 16 final nonelites by frozen task-rank spread, plus G13 weighted mean and archived G2 behavior anchor",
+  "interpretation": "true-force-enriched off-policy diagnostic; not combined with on-policy prevalence or success rates",
+  "max_abs_anchor_vs_G2_difference": {
+    "applied_action": 0.0,
+    "force_next_max_N": 0.0,
+    "insertion_length_mm": 0.0,
+    "observation": 0.0,
+    "reward": 0.0,
+    "tip_position_mm": 0.0
+  },
+  "selected_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "selected_parents": 40,
+  "status": "PASS_EXACT_G2_REUSED_SCENE_PARENT_AND_SAME_PARENT_FORKS"
+}

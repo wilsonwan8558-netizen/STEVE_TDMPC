@@ -1,0 +1,11 @@
+{
+  "status": "PASS_EXACT_FLOAT32_CAST_ALIGNMENT",
+  "G12_source_dtype": "float64",
+  "G13_geometry_cache_dtype": "float32",
+  "heldout_rows": 2141,
+  "nonzero_float64_minus_float32_rows": 1258,
+  "max_absolute_storage_rounding_difference_N": 4.702421776414667e-07,
+  "G13_cache_equals_G12_source_cast_to_float32_exactly": true,
+  "metric_truth_source": "G12 archived float64 nominal-N force labels for both prediction arms",
+  "force_physics_or_label_semantics_changed": false
+}

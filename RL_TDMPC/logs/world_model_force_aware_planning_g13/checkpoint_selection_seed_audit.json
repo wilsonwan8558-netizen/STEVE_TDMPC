@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "csv_with_seed_columns": 523,
+    "json": 5426,
+    "seed_named_paths": 671
+  },
+  "inspected_roots": [
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs",
+    "/home/bizon/Desktop/stEVE_data/experiments"
+  ],
+  "overlaps": [],
+  "phase": "G13",
+  "proposed_seed_range": [
+    350000,
+    350029
+  ],
+  "purpose": "fresh development cohort for navigation checkpoint selection only",
+  "scope": "structured JSON seed fields, CSV seed columns, seed-named paths in branch logs and archived experiments",
+  "status": "PASS_UNUSED_IN_SCANNED_ARTIFACTS"
+}

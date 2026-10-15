@@ -1,0 +1,47 @@
+{
+  "F_lim_N_nominal": 3.685331040756903,
+  "cuda_device": "NVIDIA GeForce RTX 5090",
+  "episodes": 200,
+  "exact_cached_encoder_samples_checked": [
+    0,
+    1,
+    100,
+    1000,
+    15499
+  ],
+  "exact_source_row_alignment_checked": 15500,
+  "fields": [
+    "seed",
+    "decision_index",
+    "observation",
+    "latent",
+    "action",
+    "next_observation",
+    "force_next_max_N",
+    "reward",
+    "terminated",
+    "truncated"
+  ],
+  "force_target": "true max-substep distal 3 mm contact force during this same transition, nominal simulation N",
+  "force_target_field": "force_next_max_N",
+  "high_force_rows": 775,
+  "joined_dataset": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/world_model_force_aware_planning_g12/force_transitions.npz",
+  "joined_dataset_sha256": "6b81dbd7e26a64f93430d7ef8e35178601464ef7c5e1418d2485b39e861ce55e",
+  "pre_action_input": "float32 observation and frozen checkpoint encoder latent z_t; normalized float32 selected action a_t",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "rows": 15500,
+  "source_sha256": {
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/experiments/generic_solver_g2/force_reconstruction.py": "76c920ce5122cb8da97ba100851985267e734b2877fc41ab6726217cdb13fa26",
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/experiments/generic_solver_g2/substep_monitor.py": "744759896f36d284c9ba039a537a9f5334a5e6f5d99752f036062ae55ced3534",
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g2_force_baseline/step_level_force.csv": "cc15380d976e75ed262b372445e1fabeaf04f4ecd6592c6e027a8e7acf1af737",
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g3_force_predictor/behavior_features.npz": "116112721a51111298fde49cd26434f89dd2de3f978f395fe7207719bb263ef8",
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/generic_solver_phase_g3_force_predictor/development_split.json": "e55172e189f419b7033f2b8df1535dcc0c84bdc17aa9dc545a8bda5669c48e60",
+    "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+    "/tmp/stEVE_safety_head_1e1be81/eve/intervention/simulation/sofabeamadapter.py": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67"
+  },
+  "status": "VALIDATED_EXISTING_GENERIC_SOFA_TRANSITIONS",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8",
+  "transition": "one RL env.step(a_t), 22 SOFA substeps, next_observation and reward",
+  "zero_force_rows": 6098
+}

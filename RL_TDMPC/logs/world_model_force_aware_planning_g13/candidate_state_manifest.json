@@ -1,0 +1,255 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "analysis_caveat": "true-force-enriched parent selection; candidate-level results are conditional, not population prevalence",
+  "candidate_fork_sampling": "predeclared deterministic rank-spread of final planner candidates, including elites and nonelites; archived behavior action separately as positive/high or control anchor",
+  "normal_planner_candidate_count_per_state": 512,
+  "planned_true_sofa_forks_per_state": 32,
+  "selection": "one maximal above-limit behavior transition from each of the 20 highest-peak distinct held-out seeds, plus one matched low-force control from each seed",
+  "source": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/world_model_force_aware_planning_g12/force_transitions.npz",
+  "source_sha256": "6b81dbd7e26a64f93430d7ef8e35178601464ef7c5e1418d2485b39e861ce55e",
+  "split_sha256": "91b00d0b4e9f10016f6bb215470c8dd8903fa70d8c9073db2bece8e552da2a88",
+  "state_count": 40,
+  "states": [
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 29,
+      "seed": 90003,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 9.472162157778692,
+      "decision_index": 40,
+      "seed": 90003,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 1.0628302457016987,
+      "decision_index": 36,
+      "seed": 90006,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 8.995317074424229,
+      "decision_index": 46,
+      "seed": 90006,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 22,
+      "seed": 90007,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 14.05881456713094,
+      "decision_index": 32,
+      "seed": 90007,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 41,
+      "seed": 90017,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 8.035683880076618,
+      "decision_index": 51,
+      "seed": 90017,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.5706418528950644,
+      "decision_index": 31,
+      "seed": 90018,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 9.836247865764378,
+      "decision_index": 41,
+      "seed": 90018,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 37,
+      "seed": 90033,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 7.141651782875622,
+      "decision_index": 47,
+      "seed": 90033,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.9976251187896733,
+      "decision_index": 45,
+      "seed": 90039,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 8.121490516819234,
+      "decision_index": 55,
+      "seed": 90039,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 38,
+      "seed": 90073,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 7.67050709192188,
+      "decision_index": 48,
+      "seed": 90073,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 1.3159568314067696,
+      "decision_index": 39,
+      "seed": 90095,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 8.668324823012991,
+      "decision_index": 49,
+      "seed": 90095,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 1.157141584542367,
+      "decision_index": 37,
+      "seed": 90103,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 7.470199583091356,
+      "decision_index": 47,
+      "seed": 90103,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 21,
+      "seed": 90104,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 7.024596520781187,
+      "decision_index": 31,
+      "seed": 90104,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 20,
+      "seed": 90120,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 10.072648739085377,
+      "decision_index": 30,
+      "seed": 90120,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.14843992476976367,
+      "decision_index": 21,
+      "seed": 90142,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 6.437305758655632,
+      "decision_index": 31,
+      "seed": 90142,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 21,
+      "seed": 90155,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 14.26889182598022,
+      "decision_index": 31,
+      "seed": 90155,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.5620312612029146,
+      "decision_index": 38,
+      "seed": 90160,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 8.936441658901838,
+      "decision_index": 48,
+      "seed": 90160,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 1.7037677706521253,
+      "decision_index": 32,
+      "seed": 90172,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 8.089125714567023,
+      "decision_index": 42,
+      "seed": 90172,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 1.4364027053290414,
+      "decision_index": 51,
+      "seed": 90179,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 7.999926717066037,
+      "decision_index": 61,
+      "seed": 90179,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 1.529322432424017,
+      "decision_index": 32,
+      "seed": 90187,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 7.281715906901453,
+      "decision_index": 42,
+      "seed": 90187,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.0,
+      "decision_index": 39,
+      "seed": 90192,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 5.713256359577031,
+      "decision_index": 49,
+      "seed": 90192,
+      "stratum": "archived_true_high_anchor"
+    },
+    {
+      "archived_behavior_force_N": 0.15432675264076787,
+      "decision_index": 20,
+      "seed": 90197,
+      "stratum": "matched_low_force_control"
+    },
+    {
+      "archived_behavior_force_N": 6.820337418252876,
+      "decision_index": 30,
+      "seed": 90197,
+      "stratum": "archived_true_high_anchor"
+    }
+  ],
+  "status": "FROZEN_BEFORE_G13_PREDICTIONS_OR_TRUE_SOFA_CANDIDATE_FORKS"
+}

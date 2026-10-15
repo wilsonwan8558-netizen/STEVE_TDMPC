@@ -1,0 +1,107 @@
+{
+  "CUDA_VISIBLE_DEVICES": "0",
+  "CUDA_index": 0,
+  "CUDA_name": "NVIDIA GeForce RTX 5090",
+  "config": {
+    "checkpoint": {
+      "directory": "runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints",
+      "interval": 20000,
+      "save_final": true,
+      "save_replay": true
+    },
+    "environment": {
+      "friction": 0.001,
+      "image_frequency": 7.5,
+      "max_episode_steps": 200,
+      "target_branches": [
+        "lcca",
+        "rcca",
+        "lsa",
+        "rsa",
+        "bct",
+        "co"
+      ],
+      "target_threshold": 5.0,
+      "vessel_seed": 30
+    },
+    "evaluation": {
+      "episodes": 10,
+      "log_directory": "runs/geometry_force_tdmpc2_g13_300k_20261014/evaluation",
+      "seed": 1000
+    },
+    "logging": {
+      "directory": "runs/geometry_force_tdmpc2_g13_300k_20261014/logs",
+      "update_interval": 100
+    },
+    "model": {
+      "dropout": 0.01,
+      "enc_dim": 256,
+      "latent_dim": 256,
+      "log_std_max": 2.0,
+      "log_std_min": -10.0,
+      "mlp_dim": 256,
+      "num_bins": 101,
+      "num_enc_layers": 2,
+      "num_q": 5,
+      "simnorm_dim": 8,
+      "vmax": 10.0,
+      "vmin": -10.0
+    },
+    "planning": {
+      "horizon": 3,
+      "iterations": 6,
+      "max_std": 2.0,
+      "min_std": 0.05,
+      "mpc": true,
+      "num_elites": 64,
+      "num_pi_trajs": 24,
+      "num_samples": 512,
+      "temperature": 0.5
+    },
+    "training": {
+      "batch_size": 256,
+      "consistency_coef": 20.0,
+      "device": "cuda:0",
+      "discount_denom": 5.0,
+      "discount_max": 0.995,
+      "discount_min": 0.95,
+      "enc_lr_scale": 0.3,
+      "entropy_coef": 0.0001,
+      "episodic": true,
+      "grad_clip_norm": 20.0,
+      "horizon": 3,
+      "initial_updates": 5000,
+      "lambda_force_train": 0.5,
+      "lr": 0.0003,
+      "replay_capacity": 1000000,
+      "reward_coef": 0.1,
+      "rho": 0.5,
+      "seed": 1,
+      "seed_steps": 5000,
+      "tau": 0.01,
+      "termination_coef": 1.0,
+      "total_steps": 300000,
+      "updates_per_step": 1,
+      "value_coef": 0.1
+    }
+  },
+  "config_yaml_sha256": "806b339f71254aa0cc5fc994c6e59054e449388f043e160eb24760bf382af48a",
+  "geometry_adapter_source_sha256": "0ce85a157ee985d3b72cb4b3bd90e3ce27006514cd06f10e5ad45ec12ea6ccee",
+  "geometry_feature_definition_sha256": "7ce2c61dc33c6d0278bf0d78db25476477c76f6e96abf8c7e90f59c95561fe88",
+  "geometry_feature_source_sha256": "b0082e44da810287d412b3935b60eebb9ea58cae398e98d00e97e1f4e5452b46",
+  "geometry_normalization_sha256": "6699cd1220ae3d8e079492db9cc659bd5fac31e17c68ea3687142fc32439f33b",
+  "joint_model_source_sha256": "d2584083c84d40d7b39737d8f3ed415ca4d44fed5d55ba5f70e0c3a92cc3b3b5",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "selected_checkpoint_candidates": [
+    240000,
+    260000,
+    280000,
+    300000
+  ],
+  "selection_primary": "development navigation success, stable reward, no obvious collapse; force-planning outcomes excluded",
+  "single_primary_model": true,
+  "smoke_cap": null,
+  "status": "FROZEN_BEFORE_ONE_PRIMARY_G13_TRAINING_RUN",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

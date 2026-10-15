@@ -1,0 +1,48 @@
+{
+  "phase": "G12.3",
+  "gate": "Step 14 true-SOFA paired masked-MPPI fork gate",
+  "decision": "FAIL_STOP_BEFORE_CLOSED_LOOP_DEVELOPMENT",
+  "baseline_action_reproduction": "PASS: 16/16 archived states exact, max action absolute difference 0 with rtol 0, atol 1e-6",
+  "force_inactive_invariance": "PASS: 20/20 all-candidate-safe archived states exact action match",
+  "action_change_scope": "PASS: no force-inactive or weight-empty fallback action changed; 10/12 positive-gate states changed action",
+  "parent_integrity": "PASS: 15441 archived reused-scene transitions replayed; all 22 selected parent states, baseline forks, repeated baseline forks, and actual parent transitions matched G2 exactly with maximum observed difference 0",
+  "archived_state_classes": {
+    "FORCE-INACTIVE": 20,
+    "LIGHT-GATE": 3,
+    "MODERATE-GATE": 5,
+    "SEVERE-GATE": 4,
+    "GATE-EMPTY": 14
+  },
+  "paired_fork_selection": "All 12 positive-gate archived states, eight force-inactive controls and two weight-empty controls ranked by descending archived baseline true force; frozen before any G12.3 SOFA fork",
+  "positive_gate_forks": {
+    "state_count": 12,
+    "action_changed_states": 10,
+    "true_force_decrease_states": 6,
+    "true_force_increase_states": 4,
+    "true_force_unchanged_states": 2,
+    "mean_gated_minus_baseline_true_force_N": 0.00426420255800405,
+    "changed_action_mean_gated_minus_baseline_true_force_N": 0.00511704306960486,
+    "baseline_above_F_lim_states": 4,
+    "gated_above_F_lim_states": 4,
+    "above_limit_to_below_limit_conversions": 0,
+    "true_safe_baseline_states": 8,
+    "reward_difference_range": [-0.00013684298086467234, 0.00038372039794921887]
+  },
+  "above_limit_positive_gate_forks": {
+    "state_count": 4,
+    "force_decreased": 1,
+    "force_increased": 2,
+    "force_unchanged": 1,
+    "mean_gated_minus_baseline_true_force_N": 0.011287940359370419,
+    "none_became_below_F_lim": true
+  },
+  "ESS_concern": "The four severe-gate archived states retained 0.0312 to 0.1719 original MPPI weight and had gated ESS 2, 4, 7, and 11 versus baseline ESS approximately 64; this is substantial sample collapse in severe states.",
+  "reasoning": "The original weighted-mean semantics and gate-inactive invariance were recovered, but true-SOFA positive-gate forks did not show credible safety reduction on the critical above-limit subset. Masking raised true force in two of four above-limit states, lowered it only marginally in one, left one unchanged, and converted none below F_lim. Severe masks also collapsed ESS. The predeclared fork gate therefore fails; no development or confirmation is authorized.",
+  "not_inferred": [
+    "No closed-loop safety or navigation conclusion",
+    "No development cohort or seed audit opened",
+    "No confirmation cohort opened",
+    "No A/B/C final classification after confirmation",
+    "No demonstrated G1 false-warning to navigation-degradation causal chain"
+  ]
+}

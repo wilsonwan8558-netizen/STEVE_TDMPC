@@ -1,0 +1,22 @@
+{
+  "F_gate_N": 3.685331040756903,
+  "H_force": 1,
+  "delta_N": 2.1008816303183657,
+  "selected_validation_metrics": {
+    "above_limit_recall": 0.9538461538461538,
+    "below_limit_specificity": 0.817932296431839,
+    "delta_N": 2.1008816303183657,
+    "false_safe_count": 6,
+    "false_safe_rate": 0.046153846153846156,
+    "false_warning_count": 398,
+    "false_warning_rate": 0.18206770356816102,
+    "rows": 2316,
+    "safe_acceptance_rate": 0.7746113989637305,
+    "true_high_rows": 130,
+    "true_safe_rows": 2186,
+    "variant": "G1"
+  },
+  "selected_variant": "G1",
+  "selection_rule": "predeclared in g122_preflight.py before metrics computation",
+  "selection_source": "G12 validation transitions only"
+}

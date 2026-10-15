@@ -1,0 +1,25 @@
+{
+  "status": "ONE_COEFFICIENT_FROZEN_BEFORE_G13_TRAINING",
+  "probe_file": "training_loss_scale_probe.json",
+  "probe_data": "1000 random-policy transitions from training seeds 1-5, five completed 200-step episodes; no validation, development, confirmation, or G12 test data used",
+  "probe_batches": 8,
+  "batch_size": 256,
+  "untrained_mean_original_total_loss": 1.5964923352003098,
+  "untrained_mean_loss_terms": {
+    "consistency_raw": 0.016006734455004334,
+    "consistency_weighted_20": 0.3201346891000867,
+    "reward_raw": 2.692153573036194,
+    "reward_weighted_0_1": 0.2692153573036194,
+    "value_raw": 2.6921536028385162,
+    "value_weighted_0_1": 0.2692153602838516,
+    "termination_raw_and_weighted_1": 0.7379269152879715,
+    "force_huber_raw": 0.17878357879817486
+  },
+  "force_loss": "SmoothL1(beta=1.0 nominal N), rho-weighted across the same three model rollout steps, mean over batch and divided by horizon as for original terms",
+  "selected_lambda_force_train": 0.5,
+  "initial_selected_weighted_force_contribution": 0.08939178939908743,
+  "initial_weighted_force_fraction_of_original_total": 0.05599261233715465,
+  "rationale": "A single 0.5 coefficient gives nontrivial gradient to the new force head and shared encoder/dynamics while its measured initial contribution is about 5.6% of the original total, far below the largest existing weighted terms. Later loss magnitudes will be monitored without coefficient retuning.",
+  "force_target_probe": "409/1000 positive-force steps, 0/1000 above F_lim, Q90 1.452 N, Q99 2.128 N, maximum 2.328 N; high-force learning must arise from later on-policy exploration, not this scale probe",
+  "no_lambda_sweep": true
+}

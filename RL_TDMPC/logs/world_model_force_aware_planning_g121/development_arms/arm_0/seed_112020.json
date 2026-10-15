@@ -1,0 +1,1850 @@
+{
+  "arm": "B0",
+  "episode_length": 54,
+  "episode_reward": 3.6156965202073126,
+  "lambda_F": 0.0,
+  "seed": 112020,
+  "simulation_error": false,
+  "steps": [
+    {
+      "applied_action": [
+        49.97705078125,
+        2.4712178707122803
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 6.5969707031250024,
+      "reward": 0.017677056375374606,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9995411038398743,
+        0.787011981010437
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9995411038398743,
+        0.787011981010437
+      ],
+      "step_index": 0,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -0.4198664724826813,
+        -0.16412536799907684,
+        3.7920994758605957
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.99125671386719,
+        2.7635934352874756
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 13.195816589355463,
+      "reward": 0.026887741552807258,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.999825119972229,
+        0.8801252245903015
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.999825119972229,
+        0.8801252245903015
+      ],
+      "step_index": 1,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -1.8523645401000977,
+        -1.519517183303833,
+        7.323013782501221
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.982513427734375,
+        3.107957601547241
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 19.79350836181642,
+      "reward": 0.01671053336362661,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.999650239944458,
+        0.9897955060005188
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.999650239944458,
+        0.9897955060005188
+      ],
+      "step_index": 2,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -2.86745023727417,
+        -4.392919540405273,
+        11.30160903930664
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.786720275878906,
+        3.0702788829803467
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 26.365355438232456,
+      "reward": 0.038118234101951885,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9957345128059387,
+        0.9777957797050476
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9957345128059387,
+        0.9777957797050476
+      ],
+      "step_index": 3,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -1.6391303539276123,
+        -5.830352306365967,
+        16.94231605529785
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 1.261339757626674,
+      "true_distal_force_mean_N": 0.5136710544714735,
+      "true_force_time_integral_Ns": 0.0678045791902345,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        45.2054443359375,
+        3.132777452468872
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 32.3324740905762,
+      "reward": 0.07393793725899968,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9041088819503784,
+        0.9976998567581177
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9041088819503784,
+        0.9976998567581177
+      ],
+      "step_index": 4,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        0.38700735569000244,
+        -6.35381555557251,
+        22.855926513671875
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.5961735665571314,
+      "true_distal_force_mean_N": 0.3323639679474131,
+      "true_force_time_integral_Ns": 0.04387204376905853,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        47.30860137939453,
+        3.1373894214630127
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 38.57720947265622,
+      "reward": 0.06479860617520615,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9461719989776611,
+        0.9991686344146729
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9461719989776611,
+        0.9991686344146729
+      ],
+      "step_index": 5,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        2.742060422897339,
+        -6.257811546325684,
+        28.711109161376953
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.2011151288191853,
+      "true_distal_force_mean_N": 0.043076219114056395,
+      "true_force_time_integral_Ns": 0.0056860609230554434,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        45.093017578125,
+        3.1263673305511475
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 44.52948779296875,
+      "reward": 0.07521346325235755,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9018603563308716,
+        0.995658278465271
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9018603563308716,
+        0.995658278465271
+      ],
+      "step_index": 6,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        4.869734287261963,
+        -4.936779499053955,
+        34.713653564453125
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        48.043601989746094,
+        3.138493776321411
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 50.87124325561517,
+      "reward": 0.07971995014063055,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9608720541000366,
+        0.9995203018188477
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9608720541000366,
+        0.9995203018188477
+      ],
+      "step_index": 7,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        6.252841472625732,
+        -2.6106483936309814,
+        40.85639572143555
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.82984161376953,
+        -3.1345291137695312
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 57.44878234863269,
+      "reward": 0.05321742155449783,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9965968132019043,
+        -0.9982576370239258
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9965968132019043,
+        -0.9982576370239258
+      ],
+      "step_index": 8,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        6.822977542877197,
+        -1.5328254699707031,
+        46.81529235839844
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.993804931640625,
+        1.6704189777374268
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 64.04796459960927,
+      "reward": 0.0560737466270092,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9998759627342224,
+        0.531980574131012
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9998759627342224,
+        0.531980574131012
+      ],
+      "step_index": 9,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        8.823736190795898,
+        -1.611045241355896,
+        52.624202728271484
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        48.5982666015625,
+        -2.628993034362793
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 70.46293579101565,
+      "reward": 0.0627559968079811,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9719653129577637,
+        -0.8372589349746704
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9719653129577637,
+        -0.8372589349746704
+      ],
+      "step_index": 10,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        11.994122505187988,
+        -2.8262710571289062,
+        58.17235565185547
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.918983459472656,
+        3.0216591358184814
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 77.05224160766603,
+      "reward": 0.06409324558149536,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.998379647731781,
+        0.9623118042945862
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.998379647731781,
+        0.9623118042945862
+      ],
+      "step_index": 11,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        15.352110862731934,
+        -3.083986520767212,
+        63.711639404296875
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.92094421386719,
+        -0.11546206474304199
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 83.6418062438964,
+      "reward": 0.06776984923308135,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9984188675880432,
+        -0.03677133843302727
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9984188675880432,
+        -0.03677133843302727
+      ],
+      "step_index": 12,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        18.77816390991211,
+        -2.480645179748535,
+        69.29622650146484
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.91893768310547,
+        -1.0396230220794678
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 90.23110601806626,
+      "reward": 0.07046567134383906,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9983787536621094,
+        -0.3310900926589966
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9983787536621094,
+        -0.3310900926589966
+      ],
+      "step_index": 13,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        22.25303840637207,
+        -2.205754041671753,
+        74.80043029785156
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.9927978515625,
+        -3.0148725509643555
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 96.83015533447262,
+      "reward": 0.05919111582944254,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9998560547828674,
+        -0.9601504802703857
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9998560547828674,
+        -0.9601504802703857
+      ],
+      "step_index": 14,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        25.522789001464844,
+        -2.9801106452941895,
+        80.43138885498047
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.99646759033203,
+        -3.137235403060913
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 103.42968905639655,
+      "reward": 0.051852362255290815,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9999293088912964,
+        -0.9991195201873779
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9999293088912964,
+        -0.9991195201873779
+      ],
+      "step_index": 15,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        28.348819732666016,
+        -3.9578046798706055,
+        86.42481994628906
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.98187255859375,
+        -3.1301863193511963
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 110.02729623413101,
+      "reward": 0.0390593802322644,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9996374845504761,
+        -0.9968745708465576
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9996374845504761,
+        -0.9968745708465576
+      ],
+      "step_index": 16,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        29.963146209716797,
+        -5.417759895324707,
+        93.00796508789062
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.956092834472656,
+        -1.9026920795440674
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 116.62150048828146,
+      "reward": 0.06570403655223231,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.999121904373169,
+        -0.6059528589248657
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.999121904373169,
+        -0.6059528589248657
+      ],
+      "step_index": 17,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        31.661542892456055,
+        -6.041662693023682,
+        99.55396270751953
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.49477127572800006,
+      "true_distal_force_mean_N": 0.09556561213807736,
+      "true_force_time_integral_Ns": 0.012614660802226212,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.345603942871094,
+        -2.447772741317749
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 123.13512020874033,
+      "reward": 0.0814332226562766,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.986911952495575,
+        -0.7795454263687134
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.986911952495575,
+        -0.7795454263687134
+      ],
+      "step_index": 18,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        32.9791259765625,
+        -5.381085395812988,
+        106.27085876464844
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.2063065030090513,
+      "true_distal_force_mean_N": 0.08485303303261346,
+      "true_force_time_integral_Ns": 0.011200600360304977,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.084617614746094,
+        -3.055445909500122
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 129.61428973388684,
+      "reward": 0.07744323888863988,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9816922545433044,
+        -0.9730719327926636
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9816922545433044,
+        -0.9730719327926636
+      ],
+      "step_index": 19,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        33.313720703125,
+        -5.358402252197266,
+        113.35331726074219
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.1825148894293127,
+      "true_distal_force_mean_N": 0.05590813285037568,
+      "true_force_time_integral_Ns": 0.007379873536249589,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.800636291503906,
+        -3.1287648677825928
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 136.18797372436524,
+      "reward": 0.08268621049795485,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9960126876831055,
+        -0.9964219331741333
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9960126876831055,
+        -0.9964219331741333
+      ],
+      "step_index": 20,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        33.37070083618164,
+        -5.046760082244873,
+        120.50672149658203
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.07178913039401305,
+      "true_distal_force_mean_N": 0.04268142391468212,
+      "true_force_time_integral_Ns": 0.00563394795673804,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.790061950683594,
+        3.1305015087127686
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 142.76026190185542,
+      "reward": 0.07560732638863044,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9958012104034424,
+        0.9969749450683594
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9958012104034424,
+        0.9969749450683594
+      ],
+      "step_index": 21,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        34.730350494384766,
+        -6.229955196380615,
+        126.57334899902344
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        48.383453369140625,
+        0.6905968189239502
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 149.146877746582,
+      "reward": 0.08706767945447723,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9676690101623535,
+        0.21993529796600342
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9676690101623535,
+        0.21993529796600342
+      ],
+      "step_index": 22,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        37.26879119873047,
+        -6.933086395263672,
+        132.21966552734375
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.901153564453125,
+        -3.0888843536376953
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 155.73383001708982,
+      "reward": 0.051252787000410506,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9980230927467346,
+        -0.983721137046814
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9980230927467346,
+        -0.983721137046814
+      ],
+      "step_index": 23,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        39.75779342651367,
+        -6.3194074630737305,
+        138.15158081054688
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.639549255371094,
+        -3.117764949798584
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 162.28625051879862,
+      "reward": 0.010031353269107228,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9927910566329956,
+        -0.9929187297821045
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9927910566329956,
+        -0.9929187297821045
+      ],
+      "step_index": 24,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        41.49345397949219,
+        -5.1742167472839355,
+        144.59783935546875
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.9908447265625,
+        2.157949209213257
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 168.88504202270462,
+      "reward": 0.06373438828011971,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.99981689453125,
+        0.6872448921203613
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.99981689453125,
+        0.6872448921203613
+      ],
+      "step_index": 25,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        40.5089111328125,
+        -10.16036605834961,
+        150.8333740234375
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.66937255859375,
+        -0.8712422847747803
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 175.4413992004388,
+      "reward": 0.07815053161601682,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9933874011039734,
+        -0.27746567130088806
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9933874011039734,
+        -0.27746567130088806
+      ],
+      "step_index": 26,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        37.73984909057617,
+        -15.328201293945312,
+        156.8660125732422
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.912010192871094,
+        1.0838205814361572
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 182.0297845458976,
+      "reward": 0.05639774203013374,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9982402324676514,
+        0.3451656997203827
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9982402324676514,
+        0.3451656997203827
+      ],
+      "step_index": 27,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        33.38395309448242,
+        -19.476938247680664,
+        162.46258544921875
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.250648498535156,
+        0.527087926864624
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 188.53087014770398,
+      "reward": 0.07361778124985165,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9850130677223206,
+        0.1678624153137207
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9850130677223206,
+        0.1678624153137207
+      ],
+      "step_index": 28,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        28.5352783203125,
+        -25.40254783630371,
+        166.27340698242188
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.651336669921875,
+        -1.39157235622406
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 195.08484658813342,
+      "reward": 0.02388195360717674,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9930267333984375,
+        -0.44317594170570374
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9930267333984375,
+        -0.44317594170570374
+      ],
+      "step_index": 29,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        24.799110412597656,
+        -32.5543327331543,
+        168.66404724121094
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        24.65882110595703,
+        2.5448625087738037
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 198.33981097411998,
+      "reward": 0.09132312221897351,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.4931764006614685,
+        0.8104656934738159
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.4931764006614685,
+        0.8104656934738159
+      ],
+      "step_index": 30,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        20.230440139770508,
+        -38.44646072387695,
+        169.19606018066406
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 1.3628201313715702,
+      "true_distal_force_mean_N": 0.5125167434758613,
+      "true_force_time_integral_Ns": 0.0676522101388137,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        -27.093738555908203,
+        2.2204043865203857
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 194.76343748473988,
+      "reward": 0.040661052293342125,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        -0.5418747663497925,
+        0.7071352005004883
+      ],
+      "seed": 112020,
+      "selected_action": [
+        -0.5418747663497925,
+        0.7071352005004883
+      ],
+      "step_index": 31,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        18.16423797607422,
+        -42.48688507080078,
+        168.53781127929688
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.5417800060106077,
+      "true_distal_force_mean_N": 0.27907106815638755,
+      "true_force_time_integral_Ns": 0.03683738099664316,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        38.294151306152344,
+        2.650726556777954
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 199.81826545715188,
+      "reward": 0.02248814683182019,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.7658830285072327,
+        0.8441802859306335
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.7658830285072327,
+        0.8441802859306335
+      ],
+      "step_index": 32,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        17.143840789794922,
+        -45.20547866821289,
+        167.8426971435547
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.3233613738878526,
+      "true_distal_force_mean_N": 0.17996182760173343,
+      "true_force_time_integral_Ns": 0.023754961243428817,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.720664978027344,
+        2.09161639213562
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 206.38139323425122,
+      "reward": 0.035834798389700356,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9944132566452026,
+        0.6661198139190674
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9944132566452026,
+        0.6661198139190674
+      ],
+      "step_index": 33,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        14.132613182067871,
+        -49.94986343383789,
+        165.99371337890625
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.920188903808594,
+        -2.428071975708008
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 212.97085816955376,
+      "reward": 0.08548207250055213,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.998403787612915,
+        -0.7732713222503662
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.998403787612915,
+        -0.7732713222503662
+      ],
+      "step_index": 34,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        11.392498016357422,
+        -55.69459533691406,
+        163.19134521484375
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.903526306152344,
+        -1.4904232025146484
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 219.55812364196595,
+      "reward": -0.010103027134327505,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9980705976486206,
+        -0.4746570289134979
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9980705976486206,
+        -0.4746570289134979
+      ],
+      "step_index": 35,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        10.278651237487793,
+        -61.010196685791016,
+        159.95347595214844
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 2.1509419198770887,
+      "true_distal_force_mean_N": 0.5359085857528021,
+      "true_force_time_integral_Ns": 0.07073993331936988,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.450294494628906,
+        2.7714974880218506
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 226.08556251525692,
+      "reward": 0.0021842265555402206,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9890059232711792,
+        0.8826424479484558
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9890059232711792,
+        0.8826424479484558
+      ],
+      "step_index": 36,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        9.804008483886719,
+        -61.588802337646484,
+        158.6356658935547
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 1.43711822359354,
+      "true_distal_force_mean_N": 0.8126618616923493,
+      "true_force_time_integral_Ns": 0.1072713657433901,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        38.23866271972656,
+        2.7274129390716553
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 231.13306599426068,
+      "reward": 0.003814106709900642,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.7647732496261597,
+        0.8686028122901917
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.7647732496261597,
+        0.8686028122901917
+      ],
+      "step_index": 37,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        9.912405967712402,
+        -62.00372314453125,
+        158.03245544433594
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.89117431640625,
+        3.136362314224243
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 237.71870100402612,
+      "reward": -0.006687212382355057,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9978234171867371,
+        0.9988415837287903
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9978234171867371,
+        0.9988415837287903
+      ],
+      "step_index": 38,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        10.395294189453125,
+        -62.72290802001953,
+        157.47885131835938
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        26.4290771484375,
+        3.131608247756958
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 241.2073391876196,
+      "reward": 0.09851419451791926,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.5285816788673401,
+        0.997327446937561
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.5285816788673401,
+        0.997327446937561
+      ],
+      "step_index": 39,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        8.504593849182129,
+        -65.72969818115234,
+        154.6240997314453
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.46859414543775924,
+      "true_distal_force_mean_N": 0.1377874843850014,
+      "true_force_time_integral_Ns": 0.018187947938820184,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        -13.709674835205078,
+        2.6872684955596924
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 239.39766210937222,
+      "reward": 0.2385114086735277,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        -0.27419349551200867,
+        0.8558180332183838
+      ],
+      "seed": 112020,
+      "selected_action": [
+        -0.27419349551200867,
+        0.8558180332183838
+      ],
+      "step_index": 40,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        2.986832618713379,
+        -69.24295043945312,
+        152.60418701171875
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 1.0320786140348834,
+      "true_distal_force_mean_N": 0.2704702417192522,
+      "true_force_time_integral_Ns": 0.035702071906941295,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        -24.399250030517578,
+        1.915118932723999
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 236.17696110534393,
+      "reward": -0.004286327362060547,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        -0.4879850149154663,
+        0.6099104881286621
+      ],
+      "seed": 112020,
+      "selected_action": [
+        -0.4879850149154663,
+        0.6099104881286621
+      ],
+      "step_index": 41,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -2.485051155090332,
+        -72.55374908447266,
+        150.75340270996094
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": true,
+      "true_distal_force_max_N": 5.46682311912701,
+      "true_distal_force_mean_N": 0.9749351515041393,
+      "true_force_time_integral_Ns": 0.1286914399985464,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        -48.16252899169922,
+        1.9536683559417725
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 229.8195072784394,
+      "reward": 0.03425838470458985,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        -0.9632505774497986,
+        0.6221873164176941
+      ],
+      "seed": 112020,
+      "selected_action": [
+        -0.9632505774497986,
+        0.6221873164176941
+      ],
+      "step_index": 42,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -0.6553989052772522,
+        -72.79420471191406,
+        154.9252471923828
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 1.8522186531095073,
+      "true_distal_force_mean_N": 1.032080561847704,
+      "true_force_time_integral_Ns": 0.13623463416389694,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.92321014404297,
+        2.3792388439178467
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 236.40937101745322,
+      "reward": 0.02905458450317383,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9984642267227173,
+        0.7577193975448608
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9984642267227173,
+        0.7577193975448608
+      ],
+      "step_index": 43,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -2.1825101375579834,
+        -73.5307846069336,
+        157.89599609375
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.8934227859383209,
+      "true_distal_force_mean_N": 0.4890578909280956,
+      "true_force_time_integral_Ns": 0.06455564160250862,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.990081787109375,
+        2.516899824142456
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 243.0080618133518,
+      "reward": 0.03366806030273438,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9998015761375427,
+        0.8015604615211487
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9998015761375427,
+        0.8015604615211487
+      ],
+      "step_index": 44,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -4.930220603942871,
+        -73.25785064697266,
+        160.60116577148438
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 2.8256857147482104,
+      "true_distal_force_mean_N": 1.0056071010980023,
+      "true_force_time_integral_Ns": 0.1327401373449363,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        48.48426055908203,
+        2.7861692905426025
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 249.40798420715078,
+      "reward": 0.020958385467529296,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9696851968765259,
+        0.8873150944709778
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9696851968765259,
+        0.8873150944709778
+      ],
+      "step_index": 45,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -5.873720645904541,
+        -73.13894653320312,
+        162.60223388671875
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 1.8066753931632995,
+      "true_distal_force_mean_N": 0.9549488387580972,
+      "true_force_time_integral_Ns": 0.12605324671606882,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        -49.425254821777344,
+        2.9398372173309326
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 242.88385057067586,
+      "reward": 0.008024616241455078,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        -0.9885050654411316,
+        0.9362539052963257
+      ],
+      "seed": 112020,
+      "selected_action": [
+        -0.9885050654411316,
+        0.9362539052963257
+      ],
+      "step_index": 46,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -7.570932865142822,
+        -72.45950317382812,
+        163.05419921875
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 1.642807549166678,
+      "true_distal_force_mean_N": 0.7490696442372939,
+      "true_force_time_integral_Ns": 0.0988771930393228,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.944679260253906,
+        1.4438564777374268
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 249.47654823302946,
+      "reward": 0.008089513778686523,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9988936185836792,
+        0.45982685685157776
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9988936185836792,
+        0.45982685685157776
+      ],
+      "step_index": 47,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -8.643864631652832,
+        -71.45681762695312,
+        163.1614532470703
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 2.034217664573378,
+      "true_distal_force_mean_N": 0.9678384177958285,
+      "true_force_time_integral_Ns": 0.12775467114904934,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        49.93634796142578,
+        1.7486774921417236
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 256.06814616393757,
+      "reward": -0.010340051651000976,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9987269639968872,
+        0.556903600692749
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9987269639968872,
+        0.556903600692749
+      ],
+      "step_index": 48,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -8.28634262084961,
+        -71.64408874511719,
+        162.32083129882812
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 3.220910772621218,
+      "true_distal_force_mean_N": 2.307061155425583,
+      "true_force_time_integral_Ns": 0.304532072516177,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        40.287933349609375,
+        2.8586528301239014
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 261.3861533660858,
+      "reward": 0.011317644119262695,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.8057585954666138,
+        0.9103989601135254
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.8057585954666138,
+        0.9103989601135254
+      ],
+      "step_index": 49,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -8.697651863098145,
+        -71.4429702758789,
+        163.42262268066406
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": true,
+      "true_distal_force_max_N": 5.796353668214519,
+      "true_distal_force_mean_N": 4.625043200685645,
+      "true_force_time_integral_Ns": 0.6105057024905052,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        32.495201110839844,
+        2.977170705795288
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 265.6755199127171,
+      "reward": 0.016577692031860353,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.6499039530754089,
+        0.948143482208252
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.6499039530754089,
+        0.948143482208252
+      ],
+      "step_index": 50,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -8.778390884399414,
+        -71.07902526855469,
+        164.999267578125
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": true,
+      "true_distal_force_max_N": 7.932422466786094,
+      "true_distal_force_mean_N": 5.274312901553376,
+      "true_force_time_integral_Ns": 0.6962093030050456,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        48.55067443847656,
+        2.1552412509918213
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 272.0842089385956,
+      "reward": 0.026535558700561523,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9710135459899902,
+        0.6863825917243958
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9710135459899902,
+        0.6863825917243958
+      ],
+      "step_index": 51,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -8.978285789489746,
+        -70.25619506835938,
+        166.5704803466797
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        48.56957244873047,
+        0.5115571022033691
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 278.49539250182823,
+      "reward": 0.008520116806030273,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9713914394378662,
+        0.16291627287864685
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9713914394378662,
+        0.16291627287864685
+      ],
+      "step_index": 52,
+      "success_step": false,
+      "terminated": false,
+      "tip_position_mm": [
+        -8.3904390335083,
+        -68.50338745117188,
+        166.4606475830078
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    },
+    {
+      "applied_action": [
+        48.64862823486328,
+        1.396317720413208
+      ],
+      "first_action_L2_difference": 0.0,
+      "first_action_changed_vs_same_state_baseline": false,
+      "insertion_length_mm": 284.9170114288301,
+      "reward": 1.0867448902130128,
+      "rotation_difference": 0.0,
+      "same_state_lambda_zero_action": [
+        0.9729725122451782,
+        0.4446871876716614
+      ],
+      "seed": 112020,
+      "selected_action": [
+        0.9729725122451782,
+        0.4446871876716614
+      ],
+      "step_index": 53,
+      "success_step": true,
+      "terminated": true,
+      "tip_position_mm": [
+        -8.846583366394043,
+        -65.733154296875,
+        174.2803192138672
+      ],
+      "translation_difference": 0.0,
+      "true_above_F_lim": false,
+      "true_distal_force_max_N": 0.0,
+      "true_distal_force_mean_N": 0.0,
+      "true_force_time_integral_Ns": 0.0,
+      "truncated": false
+    }
+  ],
+  "success": true,
+  "terminated": true,
+  "time_to_target_s": 7.128,
+  "truncated": false
+}

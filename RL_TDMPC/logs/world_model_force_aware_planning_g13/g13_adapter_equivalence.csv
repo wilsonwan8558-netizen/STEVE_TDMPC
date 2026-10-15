@@ -1,0 +1,11 @@
+seed,steps,max_force_abs_diff_N,original_task_observation_exact,task_transition_exact,force_target_within_1e_8_N
+90000,59,0.0,True,True,True
+90001,200,0.0,True,True,True
+90002,63,0.0,True,True,True
+90003,54,0.0,True,True,True
+90004,30,0.0,True,True,True
+90005,59,0.0,True,True,True
+90006,58,0.0,True,True,True
+90007,44,0.0,True,True,True
+90008,61,0.0,True,True,True
+90009,64,0.0,True,True,True

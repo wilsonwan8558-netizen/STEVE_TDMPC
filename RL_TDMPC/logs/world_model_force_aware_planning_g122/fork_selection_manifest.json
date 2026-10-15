@@ -1,0 +1,310 @@
+{
+  "F0_empty_semantics": "unconstrained top-scoring sampled candidate",
+  "F1_empty_semantics": "sampled candidate with minimum one-step predicted force",
+  "F_gate_N": 3.685331040756903,
+  "H_force": 1,
+  "baseline_action_semantics": "archived TD-MPC2 final weighted MPPI mean",
+  "delta_N": 2.1008816303183657,
+  "gated_action_semantics": "argmax J_task among predicted-safe final-iteration candidates; top candidate if inactive",
+  "selected_variant": "G1",
+  "selection_rule": "first three seed-ordered validation states in each gate class from candidate_availability_boundary_validation.csv",
+  "states": [
+    {
+      "baseline_applied_mean_action": [
+        0.998809278011322,
+        0.7111046314239502
+      ],
+      "baseline_best_candidate_J_task": 0.9066081643104553,
+      "baseline_best_candidate_action": [
+        1.0,
+        0.6371200084686279
+      ],
+      "baseline_best_candidate_index": 26,
+      "baseline_best_candidate_raw_force_N": 1.5576648712158203,
+      "best_safe_candidate_J_task": 0.9066081643104553,
+      "best_safe_candidate_action": [
+        1.0,
+        0.6371200084686279
+      ],
+      "best_safe_candidate_index": 26,
+      "best_safe_candidate_raw_force_N": 1.5576648712158203,
+      "best_safe_task_loss": 0.0,
+      "candidate_vs_applied_L2": 0.07399420440196991,
+      "decision_index": 42,
+      "gate_class": "GATE-INACTIVE",
+      "min_force_candidate_J_task": 0.8616069555282593,
+      "min_force_candidate_action": [
+        1.0,
+        -1.0
+      ],
+      "min_force_candidate_index": 0,
+      "min_force_candidate_raw_force_N": 1.479201078414917,
+      "safe_candidate_count": 512,
+      "seed": 90000,
+      "state_id": "90000_42"
+    },
+    {
+      "baseline_applied_mean_action": [
+        0.9974843263626099,
+        -0.13701967895030975
+      ],
+      "baseline_best_candidate_J_task": 1.1390646696090698,
+      "baseline_best_candidate_action": [
+        1.0,
+        -0.18970966339111328
+      ],
+      "baseline_best_candidate_index": 495,
+      "baseline_best_candidate_raw_force_N": 1.674241542816162,
+      "best_safe_candidate_J_task": null,
+      "best_safe_candidate_action": null,
+      "best_safe_candidate_index": null,
+      "best_safe_candidate_raw_force_N": null,
+      "best_safe_task_loss": null,
+      "candidate_vs_applied_L2": 0.052750006318092346,
+      "decision_index": 56,
+      "gate_class": "GATE-EMPTY",
+      "min_force_candidate_J_task": 1.130271315574646,
+      "min_force_candidate_action": [
+        0.9604715704917908,
+        -0.5190024375915527
+      ],
+      "min_force_candidate_index": 334,
+      "min_force_candidate_raw_force_N": 1.662853479385376,
+      "safe_candidate_count": 0,
+      "seed": 90002,
+      "state_id": "90002_56"
+    },
+    {
+      "baseline_applied_mean_action": [
+        0.9989208579063416,
+        0.9969218969345093
+      ],
+      "baseline_best_candidate_J_task": 1.0208628177642822,
+      "baseline_best_candidate_action": [
+        1.0,
+        1.0
+      ],
+      "baseline_best_candidate_index": 53,
+      "baseline_best_candidate_raw_force_N": 1.5599591732025146,
+      "best_safe_candidate_J_task": 1.0208628177642822,
+      "best_safe_candidate_action": [
+        1.0,
+        1.0
+      ],
+      "best_safe_candidate_index": 53,
+      "best_safe_candidate_raw_force_N": 1.5599591732025146,
+      "best_safe_task_loss": 0.0,
+      "candidate_vs_applied_L2": 0.003261788748204708,
+      "decision_index": 24,
+      "gate_class": "GATE-INACTIVE",
+      "min_force_candidate_J_task": 1.006422519683838,
+      "min_force_candidate_action": [
+        0.8640271425247192,
+        0.9251997470855713
+      ],
+      "min_force_candidate_index": 364,
+      "min_force_candidate_raw_force_N": 1.535970687866211,
+      "safe_candidate_count": 512,
+      "seed": 90004,
+      "state_id": "90004_24"
+    },
+    {
+      "baseline_applied_mean_action": [
+        -0.7709664702415466,
+        -0.9936602115631104
+      ],
+      "baseline_best_candidate_J_task": 0.5121337175369263,
+      "baseline_best_candidate_action": [
+        -0.8134393692016602,
+        -1.0
+      ],
+      "baseline_best_candidate_index": 250,
+      "baseline_best_candidate_raw_force_N": 1.5995116233825684,
+      "best_safe_candidate_J_task": 0.5121110677719116,
+      "best_safe_candidate_action": [
+        -0.8682347536087036,
+        -0.9990108013153076
+      ],
+      "best_safe_candidate_index": 108,
+      "best_safe_candidate_raw_force_N": 1.5844089984893799,
+      "best_safe_task_loss": 2.2649765014648438e-05,
+      "candidate_vs_applied_L2": 0.042943451553583145,
+      "decision_index": 34,
+      "gate_class": "GATE-ACTIVE",
+      "min_force_candidate_J_task": 0.5081923604011536,
+      "min_force_candidate_action": [
+        -0.9897766709327698,
+        -0.9177325367927551
+      ],
+      "min_force_candidate_index": 173,
+      "min_force_candidate_raw_force_N": 1.5437841415405273,
+      "safe_candidate_count": 126,
+      "seed": 90013,
+      "state_id": "90013_34"
+    },
+    {
+      "baseline_applied_mean_action": [
+        0.9627702236175537,
+        -0.6772513389587402
+      ],
+      "baseline_best_candidate_J_task": 0.6692572832107544,
+      "baseline_best_candidate_action": [
+        1.0,
+        -0.6892141103744507
+      ],
+      "baseline_best_candidate_index": 286,
+      "baseline_best_candidate_raw_force_N": 1.6147267818450928,
+      "best_safe_candidate_J_task": null,
+      "best_safe_candidate_action": null,
+      "best_safe_candidate_index": null,
+      "best_safe_candidate_raw_force_N": null,
+      "best_safe_task_loss": null,
+      "candidate_vs_applied_L2": 0.03910452872514725,
+      "decision_index": 39,
+      "gate_class": "GATE-EMPTY",
+      "min_force_candidate_J_task": 0.644973635673523,
+      "min_force_candidate_action": [
+        0.7834831476211548,
+        -0.6732076406478882
+      ],
+      "min_force_candidate_index": 236,
+      "min_force_candidate_raw_force_N": 1.5898008346557617,
+      "safe_candidate_count": 0,
+      "seed": 90019,
+      "state_id": "90019_39"
+    },
+    {
+      "baseline_applied_mean_action": [
+        0.7080475091934204,
+        -0.5986329317092896
+      ],
+      "baseline_best_candidate_J_task": 1.5831536054611206,
+      "baseline_best_candidate_action": [
+        0.7837203741073608,
+        -0.6027085185050964
+      ],
+      "baseline_best_candidate_index": 69,
+      "baseline_best_candidate_raw_force_N": 1.7579574584960938,
+      "best_safe_candidate_J_task": null,
+      "best_safe_candidate_action": null,
+      "best_safe_candidate_index": null,
+      "best_safe_candidate_raw_force_N": null,
+      "best_safe_task_loss": null,
+      "candidate_vs_applied_L2": 0.07578253746032715,
+      "decision_index": 31,
+      "gate_class": "GATE-EMPTY",
+      "min_force_candidate_J_task": 1.5581490993499756,
+      "min_force_candidate_action": [
+        0.48743507266044617,
+        -0.7207515835762024
+      ],
+      "min_force_candidate_index": 96,
+      "min_force_candidate_raw_force_N": 1.648691177368164,
+      "safe_candidate_count": 0,
+      "seed": 90025,
+      "state_id": "90025_31"
+    },
+    {
+      "baseline_applied_mean_action": [
+        0.9982972145080566,
+        0.8016605973243713
+      ],
+      "baseline_best_candidate_J_task": 0.9404948353767395,
+      "baseline_best_candidate_action": [
+        1.0,
+        0.7095255851745605
+      ],
+      "baseline_best_candidate_index": 438,
+      "baseline_best_candidate_raw_force_N": 1.5893869400024414,
+      "best_safe_candidate_J_task": 0.875007688999176,
+      "best_safe_candidate_action": [
+        1.0,
+        -1.0
+      ],
+      "best_safe_candidate_index": 0,
+      "best_safe_candidate_raw_force_N": 1.492133617401123,
+      "best_safe_task_loss": 0.06548714637756348,
+      "candidate_vs_applied_L2": 0.0921507477760315,
+      "decision_index": 44,
+      "gate_class": "GATE-ACTIVE",
+      "min_force_candidate_J_task": 0.875007688999176,
+      "min_force_candidate_action": [
+        1.0,
+        -1.0
+      ],
+      "min_force_candidate_index": 0,
+      "min_force_candidate_raw_force_N": 1.492133617401123,
+      "safe_candidate_count": 24,
+      "seed": 90044,
+      "state_id": "90044_44"
+    },
+    {
+      "baseline_applied_mean_action": [
+        0.9903066754341125,
+        0.26067018508911133
+      ],
+      "baseline_best_candidate_J_task": 1.312186360359192,
+      "baseline_best_candidate_action": [
+        1.0,
+        0.23499545454978943
+      ],
+      "baseline_best_candidate_index": 190,
+      "baseline_best_candidate_raw_force_N": 1.6330080032348633,
+      "best_safe_candidate_J_task": 1.2988042831420898,
+      "best_safe_candidate_action": [
+        0.8787640929222107,
+        0.33381950855255127
+      ],
+      "best_safe_candidate_index": 89,
+      "best_safe_candidate_raw_force_N": 1.5772418975830078,
+      "best_safe_task_loss": 0.01338207721710205,
+      "candidate_vs_applied_L2": 0.027443621307611465,
+      "decision_index": 30,
+      "gate_class": "GATE-ACTIVE",
+      "min_force_candidate_J_task": 1.284229040145874,
+      "min_force_candidate_action": [
+        0.8382989168167114,
+        0.26344335079193115
+      ],
+      "min_force_candidate_index": 117,
+      "min_force_candidate_raw_force_N": 1.5603013038635254,
+      "safe_candidate_count": 11,
+      "seed": 90045,
+      "state_id": "90045_30"
+    },
+    {
+      "baseline_applied_mean_action": [
+        0.6189415454864502,
+        -0.24534320831298828
+      ],
+      "baseline_best_candidate_J_task": 0.7242661714553833,
+      "baseline_best_candidate_action": [
+        0.5494637489318848,
+        -0.254535973072052
+      ],
+      "baseline_best_candidate_index": 76,
+      "baseline_best_candidate_raw_force_N": 1.5781269073486328,
+      "best_safe_candidate_J_task": 0.7242661714553833,
+      "best_safe_candidate_action": [
+        0.5494637489318848,
+        -0.254535973072052
+      ],
+      "best_safe_candidate_index": 76,
+      "best_safe_candidate_raw_force_N": 1.5781269073486328,
+      "best_safe_task_loss": 0.0,
+      "candidate_vs_applied_L2": 0.07008331269025803,
+      "decision_index": 118,
+      "gate_class": "GATE-INACTIVE",
+      "min_force_candidate_J_task": 0.710121214389801,
+      "min_force_candidate_action": [
+        0.46835076808929443,
+        -0.5010300278663635
+      ],
+      "min_force_candidate_index": 127,
+      "min_force_candidate_raw_force_N": 1.5666041374206543,
+      "safe_candidate_count": 143,
+      "seed": 90075,
+      "state_id": "90075_118"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "phase": "G12.2",
+  "gate": "Step 12 true-SOFA paired plan-fork gate",
+  "decision": "FAIL_STOP_BEFORE_CLOSED_LOOP_DEVELOPMENT",
+  "selected_calibration": "G1",
+  "delta_N": 2.1008816303183657,
+  "F_gate_N": 3.685331040756903,
+  "H_force": 1,
+  "parent_integrity": "PASS: 5619 archived reused-scene transitions replayed; all nine selected parents, baseline forks, repeated baseline forks, and actual parent transitions matched G2 exactly with maximum observed difference 0",
+  "fork_state_selection": "First three seed-ordered validation states in each of GATE-INACTIVE, GATE-ACTIVE, and GATE-EMPTY from the validation boundary candidate audit; frozen before SOFA forks",
+  "gate_active": {
+    "states": ["90013_34", "90044_44", "90045_30"],
+    "baseline_true_force_N": [3.2241646181155743, 0.9830501595463615, 1.7635702274832836],
+    "gated_true_force_N": [3.233409216620613, 0.8470092101154295, 1.8546966295317693],
+    "gated_minus_baseline_true_force_N": [0.009244598505038689, -0.136040949430932, 0.09112640204848567],
+    "reduced_true_force_states": 1,
+    "increased_true_force_states": 2,
+    "baseline_above_F_gate_states": 0,
+    "gated_above_F_gate_states": 0,
+    "task_score_loss_vs_unconstrained_best": [0.000022649765014648438, 0.06548714637756348, 0.01338207721710205]
+  },
+  "gate_empty": {
+    "states": ["90002_56", "90019_39", "90025_31"],
+    "F0_best_candidate_true_force_N": [5.490872329406069, 3.2745519833803507, 1.6191695114624296],
+    "F1_min_predicted_force_true_force_N": [5.553995396685589, 2.1813800622682624, 1.3734912404408677],
+    "interpretation": "F1 lowered true force versus F0 in two of three empty states, but increased it at the only above-limit baseline state; fallback cannot be selected without the development stage"
+  },
+  "planner_semantics_caveat": "Archived B0 applies the final weighted MPPI mean, while the proposed gate applies a sampled candidate. The sampled top candidate differs from the archived action even when the gate is inactive. The true-SOFA comparison preserves this distinction and cannot attribute every gated-vs-B0 difference to safety filtering alone.",
+  "reasoning": "The prespecified Step 12 gate requires credible lower TRUE force in gate-active states. Only one of three frozen active forks reduced true force, the other two increased it, and all three archived baseline forces were already below the gate. The required safety-active causal evidence is therefore absent. No closed-loop development or confirmation is authorized.",
+  "not_inferred": [
+    "No closed-loop safety or navigation conclusion",
+    "No fallback selected",
+    "No development seed cohort opened",
+    "No confirmation cohort opened",
+    "No A/B/C final classification after confirmation"
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "batch_size": 256,
+  "episodes": 5,
+  "force_target_above_F_lim_fraction": 0.0,
+  "force_target_nonzero_fraction": 0.409,
+  "force_target_q50_q90_q99_max_N": [
+    0.0,
+    1.4518594827704059,
+    2.127787259710865,
+    2.3283570321236433
+  ],
+  "loss_terms": {
+    "consistency_loss": {
+      "max": 0.016119010746479034,
+      "mean": 0.016006734455004334,
+      "min": 0.01594952866435051
+    },
+    "force_loss": {
+      "max": 0.18782947957515717,
+      "mean": 0.17878357879817486,
+      "min": 0.17080597579479218
+    },
+    "original_total_loss": {
+      "max": 1.5978025197982788,
+      "mean": 1.5964923352003098,
+      "min": 1.5953567028045654
+    },
+    "reward_loss": {
+      "max": 2.6921539306640625,
+      "mean": 2.692153573036194,
+      "min": 2.6921534538269043
+    },
+    "termination_loss": {
+      "max": 0.7395715117454529,
+      "mean": 0.7379269152879715,
+      "min": 0.7349830865859985
+    },
+    "total_loss": {
+      "max": 1.7839148044586182,
+      "mean": 1.7752759158611298,
+      "min": 1.7665998935699463
+    },
+    "value_loss": {
+      "max": 2.6921539306640625,
+      "mean": 2.6921536028385162,
+      "min": 2.6921534538269043
+    }
+  },
+  "probe_batches": 8,
+  "raw_force_coefficient_for_probe": 1.0,
+  "samples": [
+    {
+      "consistency_loss": 0.01594952866435051,
+      "force_loss": 0.18487690389156342,
+      "original_total_loss": 1.5953567028045654,
+      "reward_loss": 2.6921536922454834,
+      "termination_loss": 0.7379354238510132,
+      "total_loss": 1.78023362159729,
+      "value_loss": 2.6921534538269043
+    },
+    {
+      "consistency_loss": 0.015990909188985825,
+      "force_loss": 0.1725454181432724,
+      "original_total_loss": 1.5978025197982788,
+      "reward_loss": 2.6921534538269043,
+      "termination_loss": 0.7395536303520203,
+      "total_loss": 1.7703479528427124,
+      "value_loss": 2.6921534538269043
+    },
+    {
+      "consistency_loss": 0.01599891483783722,
+      "force_loss": 0.18782947957515717,
+      "original_total_loss": 1.5960853099822998,
+      "reward_loss": 2.6921534538269043,
+      "termination_loss": 0.7376762628555298,
+      "total_loss": 1.7839148044586182,
+      "value_loss": 2.6921536922454834
+    },
+    {
+      "consistency_loss": 0.01601535454392433,
+      "force_loss": 0.17479954659938812,
+      "original_total_loss": 1.5959413051605225,
+      "reward_loss": 2.6921534538269043,
+      "termination_loss": 0.7372034788131714,
+      "total_loss": 1.7707408666610718,
+      "value_loss": 2.6921534538269043
+    },
+    {
+      "consistency_loss": 0.016119010746479034,
+      "force_loss": 0.17080597579479218,
+      "original_total_loss": 1.5957939624786377,
+      "reward_loss": 2.6921534538269043,
+      "termination_loss": 0.7349830865859985,
+      "total_loss": 1.7665998935699463,
+      "value_loss": 2.6921534538269043
+    },
+    {
+      "consistency_loss": 0.015993613749742508,
+      "force_loss": 0.1833532154560089,
+      "original_total_loss": 1.5959681272506714,
+      "reward_loss": 2.6921536922454834,
+      "termination_loss": 0.7376651763916016,
+      "total_loss": 1.779321312904358,
+      "value_loss": 2.6921536922454834
+    },
+    {
+      "consistency_loss": 0.015984410420060158,
+      "force_loss": 0.17742666602134705,
+      "original_total_loss": 1.5976905822753906,
+      "reward_loss": 2.6921539306640625,
+      "termination_loss": 0.7395715117454529,
+      "total_loss": 1.77511727809906,
+      "value_loss": 2.6921539306640625
+    },
+    {
+      "consistency_loss": 0.01600213348865509,
+      "force_loss": 0.17863142490386963,
+      "original_total_loss": 1.5973001718521118,
+      "reward_loss": 2.6921534538269043,
+      "termination_loss": 0.7388267517089844,
+      "total_loss": 1.7759315967559814,
+      "value_loss": 2.6921536922454834
+    }
+  ],
+  "status": "INITIAL_RANDOM_POLICY_TRAINING_SEED_LOSS_MAGNITUDES_NO_UPDATES",
+  "steps": 1000,
+  "training_seed_start": 1
+}

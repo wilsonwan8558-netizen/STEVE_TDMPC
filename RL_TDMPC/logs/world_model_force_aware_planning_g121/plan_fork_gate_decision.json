@@ -1,0 +1,31 @@
+{
+  "phase": "G12.1",
+  "gate": "Step 15 paired true-SOFA one-step plan forks",
+  "decision": "PASS_NARROWLY_FOR_FRESH_PAIRED_DEVELOPMENT_ONLY",
+  "parent_integrity": "PASS: 15474 archived reused-scene parent transitions replayed; baseline fork, repeat fork and parent matched G2 exactly at all three selected states",
+  "selected_states": ["90000_46", "90150_62", "90199_77"],
+  "lambda_F_values": [0.0, 0.04475767085243631, 0.13427301255730892, 0.44757670852436304],
+  "evidence": {
+    "above_limit_state_90000_46": {
+      "baseline_true_force_N": 7.567856727287421,
+      "force_aware_true_force_range_N": [6.834847179058328, 6.837645033980205],
+      "force_reduction_range_N": [0.7302116933072167, 0.7330095482290933],
+      "still_above_F_lim": true,
+      "baseline_reward": 0.022372888368786335,
+      "force_aware_reward_range": [0.011864694746978445, 0.012149941316088472],
+      "navigation_tradeoff": "large reversal of translation and rotation and lower immediate progress, but no termination or catastrophic one-step reward loss"
+    },
+    "below_limit_states_90150_62_and_90199_77": {
+      "baseline_true_force_N": [0.8527733593375904, 1.244026464621744],
+      "force_aware_effect": "small true-force increases at every nonzero weight, despite lower predicted force; all outcomes remain below F_lim",
+      "interpretation": "calibrated head does not reliably rank small within-safe differences"
+    }
+  },
+  "reasoning": "The prespecified gate requires useful true-force reduction on at least some safety-active states without systematic catastrophic task-score loss. This occurred only at the single truly above-limit state, and the safe-state ranking errors limit confidence. The result authorizes only a fresh paired development test, not selection of a weight or a safety claim.",
+  "not_inferred": [
+    "no conversion of an above-limit step to a below-limit step",
+    "no closed-loop safety benefit established",
+    "no lambda_F selected",
+    "no confirmation cohort opened"
+  ]
+}

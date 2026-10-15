@@ -1,0 +1,35 @@
+{
+  "baseline_lambda_zero_exact_archived_action_regression": "PASS_ALL_16",
+  "by_lambda": {
+    "0.0": {
+      "action_changed_states": 0,
+      "force_inactive_changed_states": 0,
+      "predicted_first_action_force_lower_states": 0
+    },
+    "0.04475767085243631": {
+      "action_changed_states": 3,
+      "force_inactive_changed_states": 0,
+      "predicted_first_action_force_lower_states": 3
+    },
+    "0.13427301255730892": {
+      "action_changed_states": 3,
+      "force_inactive_changed_states": 0,
+      "predicted_first_action_force_lower_states": 3
+    },
+    "0.44757670852436304": {
+      "action_changed_states": 3,
+      "force_inactive_changed_states": 0,
+      "predicted_first_action_force_lower_states": 3
+    }
+  },
+  "comparison": "each lambda starts with the same previous optimized mean and identical CPU/CUDA RNG state after exact baseline replay to the parent observation",
+  "lambda_F_values": [
+    0.0,
+    0.04475767085243631,
+    0.13427301255730892,
+    0.44757670852436304
+  ],
+  "selection_semantics": "first action is final weighted optimized-mean action; top final-iteration candidate is separately logged and is not the applied action",
+  "state_count": 16,
+  "status": "FULL_CUDA_MPPI_PAIRED_DEVELOPMENT_STATES_NO_SOFA_ACTION_APPLIED"
+}

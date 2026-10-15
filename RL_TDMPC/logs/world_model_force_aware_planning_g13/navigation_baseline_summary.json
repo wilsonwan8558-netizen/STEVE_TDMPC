@@ -1,0 +1,55 @@
+{
+  "comparison": "paired development seeds, one reused scene per controller; G13 task-only planner",
+  "metrics": {
+    "G13_task_only": {
+      "mean_episode_length": 59.166666666666664,
+      "mean_reward": 3.7092115626936732,
+      "mean_success_only_time_to_target_s": 7.8100000000000005,
+      "simulation_errors": 0,
+      "success_rate": 1.0,
+      "successes": 30,
+      "truncated_episodes": 0
+    },
+    "Generic_frozen": {
+      "mean_episode_length": 77.3,
+      "mean_reward": 3.536686996041088,
+      "mean_success_only_time_to_target_s": 8.404,
+      "simulation_errors": 0,
+      "success_rate": 0.9,
+      "successes": 27,
+      "truncated_episodes": 3
+    }
+  },
+  "seeds": [
+    350000,
+    350001,
+    350002,
+    350003,
+    350004,
+    350005,
+    350006,
+    350007,
+    350008,
+    350009,
+    350010,
+    350011,
+    350012,
+    350013,
+    350014,
+    350015,
+    350016,
+    350017,
+    350018,
+    350019,
+    350020,
+    350021,
+    350022,
+    350023,
+    350024,
+    350025,
+    350026,
+    350027,
+    350028,
+    350029
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "H_force": 1,
+  "arms": {
+    "G12": {
+      "false_safe_count_across_high_parent_forks_including_anchors": 136,
+      "high_parent_mean_within_state_Spearman": 0.5251986087919811,
+      "high_parent_median_pairwise_accuracy": 0.8873739219007761,
+      "high_parents_with_lower_force_alternative_where_min_predicted_sample_reduces_anchor_force": 15,
+      "high_parents_with_safe_alternative_where_min_predicted_sample_is_truly_safe": 0,
+      "mean_chosen_minus_archived_anchor_true_force_N_when_lower_alternative_exists": -0.7602827024963695,
+      "mean_chosen_minus_archived_anchor_true_force_N_when_safe_alternative_exists": null,
+      "median_chosen_minus_archived_anchor_true_force_N_when_lower_alternative_exists": -0.32583893868234615
+    },
+    "G13": {
+      "false_safe_count_across_high_parent_forks_including_anchors": 229,
+      "high_parent_mean_within_state_Spearman": 0.14723919440458874,
+      "high_parent_median_pairwise_accuracy": 0.532677893291704,
+      "high_parents_with_lower_force_alternative_where_min_predicted_sample_reduces_anchor_force": 14,
+      "high_parents_with_safe_alternative_where_min_predicted_sample_is_truly_safe": 0,
+      "mean_chosen_minus_archived_anchor_true_force_N_when_lower_alternative_exists": -1.2216395208112487,
+      "mean_chosen_minus_archived_anchor_true_force_N_when_safe_alternative_exists": null,
+      "median_chosen_minus_archived_anchor_true_force_N_when_lower_alternative_exists": -0.4394046407260852
+    }
+  },
+  "interpretation_caveat": "True-force-enriched archived G2 parents and G13 cold-start normal MPPI samples; this is an off-policy diagnostic, not on-policy prevalence or a closed-loop planner result.",
+  "matched_low_force_control_states": 20,
+  "paired_lower_alternative_states": {
+    "G12_chosen_sample_lower_true_force_than_G13": 9,
+    "G13_chosen_sample_lower_true_force_than_G12": 6,
+    "equal_chosen_sample_true_force": 3,
+    "mean_G13_minus_G12_chosen_true_force_N": -0.4613568183148789,
+    "median_G13_minus_G12_chosen_true_force_N": 0.00047194406092732066
+  },
+  "status": "PAIRED_G12_G13_ARCHIVED_TRUE_HIGH_PARENT_DISCRIMINATION",
+  "true_high_parent_states": 20,
+  "true_high_parents_with_sampled_lower_force_alternative": 18,
+  "true_high_parents_with_sampled_safe_alternative": 0,
+  "true_high_sampled_candidate_outcomes": 640,
+  "true_safe_sampled_candidate_outcomes_at_high_parents": 0
+}

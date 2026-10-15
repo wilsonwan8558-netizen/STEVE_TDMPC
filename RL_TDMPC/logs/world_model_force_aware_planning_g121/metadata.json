@@ -1,0 +1,22 @@
+{
+  "CUDA_VISIBLE_DEVICES": "0",
+  "CUDA_device_index": 0,
+  "CUDA_device_name": "NVIDIA GeForce RTX 5090",
+  "F_lim_N_nominal": 3.685331040756903,
+  "F_lim_interpretation": "simulation statistical reference, not clinical injury threshold",
+  "H_force": 1,
+  "branch": "feature/world-model-force-aware-planning",
+  "force_head_checkpoint_sha256": "b1d8f66b943efdab47c134f7126db0cb361270cabcc1e3e6899914219cd0d7e6",
+  "frozen_simulation": "GenericConstraintSolver, projected Gauss-Seidel, tolerance 1e-4, maxIterations 2000, computeConstraintForces True, mu 0.001, dt 0.006 s",
+  "phase": "G12.1 calibrated one-step force-aware world-model planning",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "status": "COMPLETE_DEVELOPMENT_CLASSIFICATION_C_STOP_NO_CONFIRMATION",
+  "final_classification": "C — ONE-STEP FORCE-AWARE PLANNING IS NOT SUPPORTED UNDER THE FROZEN G12.1 DEVELOPMENT PROTOCOL",
+  "selected_lambda_F": null,
+  "confirmation": "not opened because no nonzero development weight preserved navigation adequately",
+  "report": "PHASE_G121_REPORT.md",
+  "task_planner_horizon": 3,
+  "tdmpc2_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

@@ -1,0 +1,27 @@
+{
+  "H_force": 1,
+  "candidate_forks": 15903,
+  "candidate_sampling": "ALL 512 final normal six-iteration MPPI first actions (24 policy-prior, 488 Gaussian) plus weighted-mean baseline action; no candidate subsampling",
+  "development_seeds": [
+    350000,
+    350001,
+    350002,
+    350003,
+    350004,
+    350005,
+    350006,
+    350007,
+    350008,
+    350009
+  ],
+  "fixed_decision_indices": [
+    10,
+    25,
+    40,
+    60
+  ],
+  "off_policy_archived_high_force_parents": "separate predeclared candidate_state_manifest.json; not mixed with on-policy development prevalence",
+  "selected_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "states": 31,
+  "status": "PASS_NORMAL_G13_MPPI_AND_EXACT_SAME_PARENT_SOFA_FORKS"
+}

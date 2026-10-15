@@ -1,0 +1,31 @@
+{
+  "phase": "G12.1",
+  "status": "DEVELOPMENT_COMPLETE_NO_NONZERO_LAMBDA_SELECTED",
+  "decision": "STOP_CLASSIFICATION_C_NAVIGATION_DEGRADATION_EXCESSIVE",
+  "development_seeds": "112000-112029, frozen before rollout",
+  "selected_lambda_F": null,
+  "tested_lambda_F_values": [0.0, 0.04475767085243631, 0.13427301255730892, 0.44757670852436304],
+  "S_task": 0.013568128645420091,
+  "S_force": 0.03031464414257279,
+  "lambda_base": 0.44757670852436304,
+  "decision_basis": {
+    "baseline_success": "28/30",
+    "nonzero_success_counts_in_weight_order": [10, 7, 2],
+    "paired_baseline_successes_lost_in_weight_order": [18, 21, 26],
+    "paired_baseline_failures_recovered_in_weight_order": [0, 0, 0],
+    "baseline_true_above_F_lim_steps": 114,
+    "nonzero_true_above_F_lim_steps_in_weight_order": [47, 22, 29],
+    "baseline_true_above_F_lim_step_fraction": 0.058163265306122446,
+    "nonzero_true_above_F_lim_step_fractions_in_weight_order": [0.010393631136665192, 0.00448796409628723, 0.005006041774555498],
+    "baseline_high_force_event_count": 57,
+    "nonzero_high_force_event_counts_in_weight_order": [37, 18, 29],
+    "baseline_mean_episode_length_steps": 65.33333333333333,
+    "nonzero_mean_episode_length_steps_in_weight_order": [150.73333333333332, 163.4, 193.1],
+    "same_state_first_action_changed_fractions_in_weight_order": [0.673374613003096, 0.6727866177070584, 0.5779388917659244]
+  },
+  "interpretation": "TRUE-SOFA high-force exposure improves descriptively, including absolute above-limit counts despite longer failed episodes, but all nonzero weights catastrophically impair navigation in this paired development cohort. The smallest weight loses 18 baseline successes. No tested nonzero weight satisfies the joint safety-plus-task criterion. Calibration raises held-out false warnings substantially, and the planner often selects strongly negative translation; their relative contributions are not isolated here.",
+  "confirmation_decision": "NOT_OPENED_DEVELOPMENT_DOES_NOT_SUPPORT_CONTINUATION",
+  "seed_reuse_audit_for_confirmation": "NOT_PERFORMED_BECAUSE_CONFIRMATION_GATE_NOT_REACHED",
+  "pre_confirmation_freeze": "NOT_WRITTEN_NO_SELECTED_LAMBDA",
+  "new_weight_search": "NOT_AUTHORIZED_IN_THIS_PHASE"
+}

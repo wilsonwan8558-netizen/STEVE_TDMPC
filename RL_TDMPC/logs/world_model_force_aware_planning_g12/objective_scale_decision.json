@@ -1,0 +1,69 @@
+{
+  "phase": "W1/G12",
+  "gate": "Step 12 objective-scale audit before any force-aware planner rollout",
+  "decision": "STOP_PROPOSED_WEIGHTS_NUMERICALLY_INAPPROPRIATE",
+  "audits": {
+    "authoritative_final_iteration": "objective_scale_audit_expanded_final.json",
+    "supporting_first_iteration": "objective_scale_audit_expanded_first.json",
+    "preliminary_final_iteration": "objective_scale_audit.json",
+    "preliminary_first_iteration": "objective_scale_audit_initial.json"
+  },
+  "protocol": {
+    "F_lim_N_nominal": 3.685331040756903,
+    "H_force": 2,
+    "cost": "J_force = sum(k=1..2) max(F_hat_k - F_lim, 0)^2, in nominal N^2",
+    "objective": "maximize J_TDMPC2 - lambda_F * J_force",
+    "original_example_lambda_F_values_not_run": [0.0, 0.1, 0.5, 1.0]
+  },
+  "evidence": {
+    "validation_states": 16,
+    "candidates_per_state": 512,
+    "final_iteration_candidate_rows": 8192,
+    "states_with_all_candidate_force_cost_zero": 12,
+    "states_with_median_candidate_force_cost_zero": 13,
+    "state_median_J_TDMPC2_range": [0.27182145416736603, 1.8658143281936646],
+    "state_median_predicted_reward_contribution_range": [-0.04973898455500603, 0.8932693600654602],
+    "state_median_terminal_Q_contribution_range": [0.20784173905849457, 1.248268961906433],
+    "within_state_J_TDMPC2_q95_minus_q05_range": [0.007041752338409424, 0.09883223772048955],
+    "active_state_examples": [
+      {
+        "state_id": "90075_89",
+        "J_TDMPC2_median": 0.6541498005390167,
+        "J_task_q95_minus_q05": 0.011715111136436418,
+        "J_force_median_N2": 0.5564520955085754,
+        "lambda_0p1_median_penalty": 0.05564520955085754,
+        "penalty_to_task_spread_ratio": 4.75
+      },
+      {
+        "state_id": "90000_46",
+        "J_TDMPC2_median": 1.055391788482666,
+        "J_task_q95_minus_q05": 0.015050941705703869,
+        "J_force_median_N2": 14.267244815826416,
+        "lambda_0p1_median_penalty": 1.4267244815826416,
+        "penalty_to_task_spread_ratio": 94.79
+      },
+      {
+        "state_id": "90000_56",
+        "J_TDMPC2_median": 1.8658143281936646,
+        "J_task_q95_minus_q05": 0.09883223772048955,
+        "J_force_median_N2": 22.289838790893555,
+        "lambda_0p1_median_penalty": 2.2289838790893555,
+        "penalty_to_task_spread_ratio": 22.55
+      }
+    ],
+    "depth_2_heldout_RMSE_N": 6.363694528247179,
+    "depth_2_heldout_MAE_N": 3.1943270910243715
+  },
+  "interpretation": "The example nonzero weights are often dominant relative to within-state task discrimination where the proposed cost activates, but the same cost is identically zero across every candidate in most audited states. A single scalar weight cannot repair cost blindness. Two-step latent rollout force error is also substantial. These are offline diagnostics, not a force-aware MPPI or true-SOFA outcome.",
+  "provisional_scale_consistent_lambda_F_set_not_tested": [0.0, 0.0005, 0.001, 0.002],
+  "provisional_set_caveat": "This is a proposed small set for a future protocol decision, not an authorized sweep. It scales the observed active-state penalty toward the within-state task spread but cannot address zero-cost states or model drift. Re-audit before any rollout.",
+  "not_performed_due_to_stop": [
+    "force-aware planner integration or MPPI rerun",
+    "true-SOFA plan forks",
+    "paired closed-loop development",
+    "lambda selection",
+    "seed-reuse audit or confirmation cohort selection",
+    "untouched confirmation",
+    "A/B/C outcome classification"
+  ]
+}

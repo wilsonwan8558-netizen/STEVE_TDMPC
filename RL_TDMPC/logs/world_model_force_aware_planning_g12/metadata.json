@@ -1,0 +1,36 @@
+{
+  "phase": "W1/G12 — world-model force-aware planning",
+  "branch": "feature/world-model-force-aware-planning",
+  "status": "STOPPED_AT_STEP_12_OBJECTIVE_SCALE_GATE",
+  "frozen_tdmpc2_checkpoint": "RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+  "frozen_tdmpc2_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "force_head_checkpoint": "force_head.pt",
+  "force_head_checkpoint_sha256": "b1d8f66b943efdab47c134f7126db0cb361270cabcc1e3e6899914219cd0d7e6",
+  "runtime": {
+    "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+    "torch": "2.7.1+cu128",
+    "torch_cuda": "12.8",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "device_index": 0,
+    "device_name": "NVIDIA GeForce RTX 5090"
+  },
+  "frozen_simulation": {
+    "solver": "GenericConstraintSolver / projected Gauss-Seidel",
+    "tolerance": 0.0001,
+    "max_iterations": 2000,
+    "compute_constraint_forces": true,
+    "contact_friction_mu": 0.001,
+    "sofa_dt_s": 0.006,
+    "distal_region": "first approximately 3 mm",
+    "force_reconstruction": "J_contact^T lambda / 0.006 s",
+    "RL_interval_force": "maximum distal force over 22 SOFA substeps",
+    "F_lim_N_nominal": 3.685331040756903,
+    "F_lim_interpretation": "simulation-derived statistical high-force reference, not a clinical injury threshold"
+  },
+  "source_data": "existing Generic-SOFA G2 true-force transitions joined with frozen CUDA G3 latent features",
+  "head_training": "one conservative head-only fit; encoder, dynamics, original planner and TD-MPC2 checkpoint frozen",
+  "planner_integration": "not implemented due to required objective-scale STOP",
+  "development": "not run",
+  "confirmation": "not run",
+  "report": "PHASE_G12_REPORT.md"
+}

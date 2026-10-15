@@ -1,0 +1,2 @@
+category,total_env_steps,episode,episode_reward,episode_length,success,success_rate,terminated,truncated,simulation_error,replay_size,episode_peak_force_N,episode_above_F_lim_steps
+episodes,10,1,0.03930793391602379,10,False,0.0,False,True,False,10,0.0,0

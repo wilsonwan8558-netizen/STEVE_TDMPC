@@ -1,0 +1,14 @@
+{
+  "F_gate_N": 3.685331040756903,
+  "H_force": 1,
+  "branch": "feature/world-model-force-aware-planning",
+  "cuda_index": 0,
+  "cuda_name": "NVIDIA GeForce RTX 5090",
+  "cuda_visible_devices": "0",
+  "no_SOFA_rollout_in_this_script": true,
+  "phase": "G12.2",
+  "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+  "status": "STOPPED_AT_TRUE_SOFA_PLAN_FORK_GATE; NO_CLOSED_LOOP_DEVELOPMENT",
+  "torch": "2.7.1+cu128",
+  "torch_cuda": "12.8"
+}

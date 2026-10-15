@@ -1,0 +1,81 @@
+{
+  "candidate_navigation_metrics": [
+    {
+      "checkpoint_step": 240000,
+      "mean_episode_length": 73.33333333333333,
+      "mean_reward": 3.5706413410706377,
+      "simulation_errors": 0,
+      "success_rate": 0.9,
+      "successes": 27
+    },
+    {
+      "checkpoint_step": 260000,
+      "mean_episode_length": 59.166666666666664,
+      "mean_reward": 3.7092115626936732,
+      "simulation_errors": 0,
+      "success_rate": 1.0,
+      "successes": 30
+    },
+    {
+      "checkpoint_step": 280000,
+      "mean_episode_length": 62.53333333333333,
+      "mean_reward": 3.6631898831070937,
+      "simulation_errors": 0,
+      "success_rate": 0.9666666666666667,
+      "successes": 29
+    },
+    {
+      "checkpoint_step": 300000,
+      "mean_episode_length": 57.8,
+      "mean_reward": 3.637108269591409,
+      "simulation_errors": 0,
+      "success_rate": 0.9666666666666667,
+      "successes": 29
+    }
+  ],
+  "candidate_steps": [
+    240000,
+    260000,
+    280000,
+    300000
+  ],
+  "force_planning_used_in_selection": false,
+  "normal_task_planner_only": true,
+  "ordered_development_seeds": [
+    350000,
+    350001,
+    350002,
+    350003,
+    350004,
+    350005,
+    350006,
+    350007,
+    350008,
+    350009,
+    350010,
+    350011,
+    350012,
+    350013,
+    350014,
+    350015,
+    350016,
+    350017,
+    350018,
+    350019,
+    350020,
+    350021,
+    350022,
+    350023,
+    350024,
+    350025,
+    350026,
+    350027,
+    350028,
+    350029
+  ],
+  "selected_checkpoint": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_260000.pt",
+  "selected_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "selected_step": 260000,
+  "selection_order": "highest successes, then highest mean reward, then fewest simulation errors, then latest step",
+  "status": "SELECTED_FROM_PREDECLARED_TASK_ONLY_DEVELOPMENT_SET"
+}

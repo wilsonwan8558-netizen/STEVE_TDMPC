@@ -1,0 +1,20 @@
+{
+  "phase": "G13",
+  "branch": "feature/world-model-force-aware-planning",
+  "status": "G13_PART_A_COMPLETE_FORCE_REPRESENTATION_GATE_FAIL_CLASSIFICATION_C_STOP_BEFORE_G14",
+  "augmented_observation_dim": 22,
+  "training_config": "g13_training_config.json",
+  "checkpoint_selection_development_seed_audit": "checkpoint_selection_seed_audit.json",
+  "checkpoint_selection_development_seed_manifest": "checkpoint_selection_seed_manifest.json",
+  "selected_checkpoint_step": 260000,
+  "selected_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "force_representation_gate_decision": "force_representation_gate_decision.json",
+  "phase_report": "PHASE_G13_REPORT.md",
+  "G14_started": false,
+  "frozen_solver": "GenericConstraintSolver ProjectedGaussSeidel tolerance=1e-4 maxIterations=2000 computeConstraintForces=True friction=0.001 dt=0.006 s",
+  "force_target": "maximum distal contact force over all SOFA substeps of the next RL interval, nominal simulation N, distal region first approximately 3 mm, J_contact^T lambda / 0.006 s",
+  "F_lim_N": 3.685331040756903,
+  "F_lim_interpretation": "statistical high-force reference in nominal simulation N; not a clinical injury threshold",
+  "old_tdmpc2_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "old_force_head_sha256": "b1d8f66b943efdab47c134f7126db0cb361270cabcc1e3e6899914219cd0d7e6"
+}

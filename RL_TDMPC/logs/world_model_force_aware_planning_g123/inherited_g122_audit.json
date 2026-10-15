@@ -1,0 +1,12 @@
+{
+  "F_lim_N": 3.685331040756903,
+  "G1_delta_N": 2.1008816303183657,
+  "H_force": 1,
+  "force_head_checkpoint": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/logs/world_model_force_aware_planning_g12/force_head.pt",
+  "force_head_checkpoint_sha256": "b1d8f66b943efdab47c134f7126db0cb361270cabcc1e3e6899914219cd0d7e6",
+  "g122_fork_gate_decision_sha256": "c288978dd47707605924225037ca8e75e3853cca93d478bad490846748ec2f31",
+  "g122_selected_gate_calibration_sha256": "d67c1bec826be403cbd2636436ed92a84b6f827bc86c4810ee8d0fdd75caf1c1",
+  "status": "FROZEN_IDENTITIES_VERIFIED",
+  "tdmpc2_checkpoint": "/tmp/stEVE_safety_head_1e1be81/RL_TDMPC/runs/generic_solver_tdmpc2_baseline_300k_20261006/checkpoints/step_280000.pt",
+  "tdmpc2_checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99"
+}

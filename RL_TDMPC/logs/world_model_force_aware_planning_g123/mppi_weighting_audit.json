@@ -1,0 +1,19 @@
+{
+  "baseline_action_reproduction_source": "G12 archived final-iteration candidate actions and task scores versus G12.1 lambda=0 exact archived applied action",
+  "candidate_generation": "24 policy-prior sequences plus 488 Gaussian-sampled/clipped sequences; six MPPI iterations; horizon three",
+  "candidate_sequences_per_iteration": 512,
+  "candidate_task_score": "nan_to_num(_estimate_value(z_t repeated 512 times, candidate action sequence), nan=0.0); original reward/termination/terminal-Q objective, unchanged",
+  "checkpoint_sha256": "476564f8d301ae0c76c418d8e61a4129037b30de7c6872377b563c70e84acd99",
+  "elite_selection": "torch.topk(values.squeeze(-1), 64) at every iteration; only these 64 have nonzero original MPPI weight",
+  "final_first_action": "eval_mode uses clamp(final mean[0], -1, 1), then act returns float32 numpy; no best-candidate selection",
+  "force_mask_scope_G123": "final-iteration elite weight masking only, after frozen candidate generation/task scoring and MPPI updates; previous_mean remains original task-weighted final mean so candidate sampling and warm-start are unchanged",
+  "normalized_elite_weight": "w_i=u_i/(sum_j u_j + 1e-9); nonelite weight zero",
+  "source": "RL_TDMPC/tdmpc2/agent.py TDMPC2Agent._plan, lines 158-241 in frozen working tree",
+  "source_sha256": "b7ead501ad7607f2ce1b1a3a46c23d2f3e16827302a3d9f8c8862900e6b27ef5",
+  "status": "SOURCE_AND_CHECKPOINT_AUDITED_BEFORE_FORCE_MASK_IMPLEMENTATION",
+  "temperature": 0.5,
+  "unnormalized_elite_weight": "u_i=exp(0.5*(J_task_i-max_elite_J_task))",
+  "variance_update": "std=clamp(sqrt(sum_i w_i*(a_i-mean)^2/(sum_i w_i+1e-9)), min_std=0.05, max_std=2.0)",
+  "warm_start": "mean[0:H-1] initialized from previous_mean[1:H] except at first step; previous_mean becomes final weighted mean",
+  "weighted_mean_action_sequence": "mean=(sum_i w_i*a_i)/(sum_i w_i+1e-9), separately over each horizon step and action dimension"
+}

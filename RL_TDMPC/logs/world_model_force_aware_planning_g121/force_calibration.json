@@ -1,0 +1,13 @@
+{
+  "F_lim_N_nominal": 3.685331040756903,
+  "calibrated_validation_false_safe": 6,
+  "delta_F_N_nominal": 2.1008816303183657,
+  "force_head_checkpoint_sha256": "b1d8f66b943efdab47c134f7126db0cb361270cabcc1e3e6899914219cd0d7e6",
+  "metrics_file": "force_calibration_metrics.csv",
+  "raw_validation_false_safe": 49,
+  "selection_rule": "95th percentile (higher interpolation) of max(F_lim - raw_prediction,0) over validation true-above-limit rows; next representable float upward for strict >F_lim comparison",
+  "selection_split": "G12 validation episodes only; G12 heldout_test used only for post-freeze evaluation",
+  "status": "FROZEN_VALIDATION_ONLY_BEFORE_G121_PLANNING",
+  "target_validation_coverage": 0.95,
+  "validation_above_limit_rows": 130
+}

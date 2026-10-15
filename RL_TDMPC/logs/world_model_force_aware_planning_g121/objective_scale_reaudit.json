@@ -1,0 +1,231 @@
+{
+  "S_force": 0.03031464414257279,
+  "S_task": 0.013568128645420091,
+  "candidates_per_state": 512,
+  "force_active_states": 3,
+  "force_discriminative_states": 3,
+  "force_inactive_states": 13,
+  "lambda_F_values": [
+    0.0,
+    0.04475767085243631,
+    0.13427301255730892,
+    0.44757670852436304
+  ],
+  "lambda_base": 0.44757670852436304,
+  "full_cuda_mppi_reaudit": "planner_mppi_reaudit.json",
+  "full_cuda_mppi_first_action_changes_by_nonzero_lambda": [3, 3, 3],
+  "full_cuda_mppi_force_inactive_first_action_changes_by_nonzero_lambda": [0, 0, 0],
+  "selection_semantics": "same-candidate argmax only, not a full MPPI rerun nor the final optimized-mean first action",
+  "state_summaries": [
+    {
+      "J_task_Q90_minus_Q10": 0.011117589473724543,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90000_21",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.005943691730499134,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90075_12",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.00771275758743295,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90137_22",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.02295409440994267,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90199_30",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.052421712875366344,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90000_56",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.014091783761978172,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90075_28",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.01469951868057251,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90137_16",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.08020995408296588,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90199_47",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.005116581916809082,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90000_31",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.007258152961730935,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90075_89",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.02581677436828622,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90126_174",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.015424188971519426,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90199_35",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.006991422176361173,
+      "c_force_Q90_minus_Q10": 1.1427144230985178,
+      "classification": "FORCE_DISCRIMINATIVE",
+      "nonzero_candidate_fraction": 1.0,
+      "state_id": "90000_46",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0511452360273751,
+        "0.13427301255730892": 0.15343570808212528,
+        "0.44757670852436304": 0.511452360273751
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.062011432647705034,
+      "c_force_Q90_minus_Q10": 0.0,
+      "classification": "FORCE_INACTIVE",
+      "nonzero_candidate_fraction": 0.0,
+      "state_id": "90060_43",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0,
+        "0.13427301255730892": 0.0,
+        "0.44757670852436304": 0.0
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.01304447352886201,
+      "c_force_Q90_minus_Q10": 0.03031464414257279,
+      "classification": "FORCE_DISCRIMINATIVE",
+      "nonzero_candidate_fraction": 1.0,
+      "state_id": "90150_62",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0013568128645420092,
+        "0.13427301255730892": 0.004070438593626028,
+        "0.44757670852436304": 0.013568128645420091
+      }
+    },
+    {
+      "J_task_Q90_minus_Q10": 0.00654142498970034,
+      "c_force_Q90_minus_Q10": 0.01027501216208293,
+      "classification": "FORCE_DISCRIMINATIVE",
+      "nonzero_candidate_fraction": 1.0,
+      "state_id": "90199_77",
+      "weighted_cost_spread_by_lambda": {
+        "0.0": 0.0,
+        "0.04475767085243631": 0.0004598856123552877,
+        "0.13427301255730892": 0.0013796568370658632,
+        "0.44757670852436304": 0.004598856123552877
+      }
+    }
+  ],
+  "states": 16,
+  "status": "OFFLINE_ORIGINAL_CANDIDATE_REAUDIT_NOT_FORCE_AWARE_MPPI"
+}

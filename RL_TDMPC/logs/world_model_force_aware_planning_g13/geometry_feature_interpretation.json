@@ -1,0 +1,17 @@
+{
+  "status": "VALIDATED_WITH_EXPLICIT_GEOMETRIC_PROXY_CAVEAT",
+  "clearance_definition": "signed radius-minus-distance to the best centerline segment across the union of BranchWithRadii tubes; positive inside the modeled tube and negative outside every modeled tube",
+  "not_an_exact_mesh_wall_signed_distance": true,
+  "why_negative_values_can_coexist_with_zero_contact_force": "The static centerline-radius tube approximation is not identical to the SOFA collision mesh or contact constraint state. It is a current-state geometric descriptor, not a measured contact-force surrogate.",
+  "representative_in_lumen_wall_directed_state": {
+    "seed": 90004,
+    "decision_index": 22,
+    "tip_proxy_clearance_mm": 0.5512639880180359,
+    "sin_wire_minus_vessel_angle": -0.9984432584816989,
+    "cos_wire_minus_vessel_angle": 0.05577687327600195,
+    "local_lumen_radius_mm": 7.792320508155348,
+    "next_interval_force_N_diagnostic_only": 1.9524623533514545
+  },
+  "original_max_absolute_sine_exemplar_caveat": "The automatic maximum-|sin| exemplar in geometry_feature_validation.csv is angularly wall-directed but has negative proxy clearance; the in-lumen example above is the physically clearer interpretation.",
+  "continuity_caveat": "Large finite jumps in the projected angle can occur when nearest centerline segment or tracked distal direction changes; repeated queries at a fixed state were bitwise identical, and original task transitions reproduced exactly."
+}

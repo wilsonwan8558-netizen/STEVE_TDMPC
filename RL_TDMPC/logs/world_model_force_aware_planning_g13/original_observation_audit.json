@@ -1,0 +1,20 @@
+{
+  "status": "AUDITED_BEFORE_G13_OBSERVATION_MODIFICATION",
+  "source": "RL_TDMPC/envs/steve_env.py StEVEEnv.__init__, _flatten_observation, reset, step",
+  "source_sha256": "ee340640bcc546b17a5effd6caf01f0d80a435c1f1e984a8a211d98395b24cfe",
+  "tracking_source": "eve/observation/tracking2d.py Tracking2D._evenly_distributed_tracking",
+  "tracking_source_sha256": "a68d5c50e4f3fc0feb1a53879db46318c862ee5e521a14df41a90f3acacf12f7",
+  "normalization_source": "eve/observation/wrapper/normalizetracking2depisode.py NormalizeTracking2DEpisode._normalize",
+  "normalization_source_sha256": "df1fa3a5cb51a8c6431d9e30bf06131c3eaa5739415d597e85958eba06fd8d92",
+  "fluoroscopy_source": "eve/intervention/fluoroscopy/trackingonly.py TrackingOnly.tracking2d",
+  "fluoroscopy_source_sha256": "37e0600a6930219c3b47f95f441fefe76ad5507554956dd1aff77f816ce918d3",
+  "observation_dim": 14,
+  "layout": ["p0_x", "p0_y", "p1_x", "p1_y", "p2_x", "p2_y", "p3_x", "p3_y", "p4_x", "p4_y", "target_x", "target_y", "sin_rotation", "cos_rotation"],
+  "tracking_points": "Tracking2D samples five points starting at fluoroscopy.tracking2d[0], nominal 1.0 mm spacing along projected 2D guidewire tracking; if insufficient projected length it repeats the last point. Fluoroscopy projects current SofaBeamAdapter.dof_positions to tracking 3D with image_rot_zx=[20,5] and then discards the tracking-frame y coordinate.",
+  "normalization": "Position and target 2D coordinates each use NormalizeTracking2DEpisode with 2*((coord - episode_tracking2d_low)/(episode_tracking2d_high - episode_tracking2d_low))-1. _flatten_observation concatenates position, target, rotation in that order and clips the final 14-vector to [-1,1].",
+  "rotation": "eve.observation.Rotations yields sine and cosine of current device axial rotation; it is not the projected distal wire tangent.",
+  "units_before_normalization": "tracking-frame projected mm for position/target",
+  "current_only": true,
+  "initial_degeneracy": "At reset seed 90000 all first three projected distal tracking points coincide, so a wire tangent and bend are undefined without an explicit validity convention.",
+  "vessel_geometry_available": "AorticArch BranchWithRadii provides current static vessel-coordinate centerline samples and per-sample radii; the Generic scene mesh is derived from these branches. This is a centerline-radius lumen geometry query, not a future or solver-state quantity."
+}

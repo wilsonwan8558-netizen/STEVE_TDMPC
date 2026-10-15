@@ -1,0 +1,16 @@
+{
+  "status": "PREDECLARED_BEFORE_BROADER_GEOMETRY_VALIDATION",
+  "source": "RL_TDMPC/envs/geometry_features.py GeometryFeatureExtractor",
+  "original_observation_dim": 14,
+  "augmented_observation_dim": 22,
+  "layout": ["original_p0_x", "original_p0_y", "original_p1_x", "original_p1_y", "original_p2_x", "original_p2_y", "original_p3_x", "original_p3_y", "original_p4_x", "original_p4_y", "original_target_x", "original_target_y", "original_sin_rotation", "original_cos_rotation", "d0_normalized", "d1_normalized", "d2_normalized", "sin_delta_theta", "cos_delta_theta", "kappa_distal_normalized", "r_local_normalized", "direction_valid"],
+  "extra_eighth_geometry_scalar_reason": "The first distal projected tracking points coincide at reset, so a direction and bend are mathematically undefined. A direction_valid bit distinguishes the neutral angle fallback from a measured aligned state.",
+  "distal_point_alignment": "Current fluoroscopy.tracking2d and tracking3d are sampled together using the exact Tracking2D 1.0 mm projected arclength algorithm for p0,p1,p2. The generated 2D samples are checked against the current raw Tracking2D observation at every call with absolute tolerance 1e-4 mm. No previous or future state is read.",
+  "d0_d1_d2": "Signed centerline-radius lumen clearance in vessel-coordinate mm for the paired current 3D distal samples. For every segment of every BranchWithRadii branch, project the point onto the clamped segment, linearly interpolate radius, compute radius minus 3D point-to-segment distance, and take the maximum signed clearance across segments. Positive is inside a represented lumen tube, zero approximates the wall, negative is outside all represented tubes. This is a current-geometry centerline-tube proxy, not exact triangle-mesh signed distance or measured contact force.",
+  "r_local": "Interpolated branch centerline radius in mm at the segment supplying maximal signed clearance for p0. It is a local lumen-size descriptor, not guidewire radius.",
+  "delta_theta": "Signed projected 2D angle theta_wire - theta_vessel. Wire tangent points from p1 to p0. Vessel tangent follows the selected BranchWithRadii segment's stored coordinate order, projected with the same fluoroscopy transform. sin=2D cross(vessel_unit,wire_unit), cos=dot(vessel_unit,wire_unit). Branch selection is deterministic max signed clearance; ties use first branch/segment storage order.",
+  "kappa_distal": "Unsigned bend angle arccos(dot(unit(p0-p1),unit(p1-p2))) in radians, divided by pi. This is a compact bend-angle proxy from existing tracking points, not inverse-length curvature or beam-state reconstruction.",
+  "direction_degeneracy": "When projected p0-p1 or selected vessel tangent has norm <=1e-6 mm, set sin_delta_theta=0, cos_delta_theta=1, direction_valid=0. When p0-p1 or p1-p2 is degenerate, set bend angle=0. Otherwise direction_valid=1.",
+  "source_data": ["current guidewire dof positions through read-only fluoroscopy tracking projection", "current static AorticArch BranchWithRadii centerlines and radii", "current raw Tracking2D observation for alignment check"],
+  "excluded": ["current reconstructed force", "future force/contact state", "post-action contact multipliers", "solver warm-start/internal arrays", "future vessel geometry", "future guidewire configuration"]
+}

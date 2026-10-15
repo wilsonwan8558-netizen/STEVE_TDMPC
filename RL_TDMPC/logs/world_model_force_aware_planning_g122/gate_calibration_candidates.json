@@ -1,0 +1,16 @@
+{
+  "G0": {
+    "definition": "raw",
+    "delta_N": 0
+  },
+  "G1": {
+    "definition": "raw plus frozen G12.1 full calibration",
+    "delta_N": 2.1008816303183657
+  },
+  "G2": {
+    "definition": "raw plus 80th percentile (higher interpolation) of max(F_lim - raw, 0) among validation true-high rows, nextafter upward",
+    "delta_N": 1.4631850065161804
+  },
+  "predeclared_selection_rule": "Select G2 if validation false-safe count is <= 50% of G0 and false-warning count <= 50% of G1; else G1 if its false-safe count is <= 50% of G0; otherwise stop. Navigation outcomes excluded.",
+  "validation_only": true
+}
