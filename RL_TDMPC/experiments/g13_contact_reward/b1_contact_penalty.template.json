@@ -1,0 +1,16 @@
+{
+  "status": "TEMPLATE_ONLY_NOT_FROZEN_OR_ENABLED",
+  "arm": "B1",
+  "source_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "reward_mode": "task_minus_fixed_normalized_contact_exposure",
+  "contact_exposure_metric": "distal_force_time_integral_Ns",
+  "contact_penalty_beta": null,
+  "contact_exposure_scale_Ns": null,
+  "auxiliary_force_head_coefficient": 0.5,
+  "training_seed": null,
+  "max_additional_environment_steps": null,
+  "updates_per_environment_step": 1,
+  "eval_snapshot_steps": [],
+  "formula_for_future_protocol": "r_train = r_task - beta * (distal_force_time_integral_Ns / fixed_training_only_scale_Ns)",
+  "comment": "Inactive hook only. Beta and scale must be fixed from training-only G13 data before a separately authorized B1 implementation/pilot. No MPPI contact penalty, extra contact head, or auxiliary-loss change."
+}

@@ -1,0 +1,31 @@
+{
+  "status": "FOUNDATION_READY_BUT_B1_PILOT_NOT_LAUNCH_READY",
+  "baseline_equivalence": "PASS",
+  "B0_original_task_continuation_audit": "PASS_NO_TRAINING",
+  "B0_reward": "r_train = original raw G13 task reward",
+  "B1_future_reward": "r_train = original raw G13 task reward - fixed_beta * (validated Generic distal force FTI_Ns / fixed_training_only_scale_Ns)",
+  "B1_activated": false,
+  "B1_training_implemented": false,
+  "B1_beta_selected": false,
+  "B1_scale_selected": false,
+  "auxiliary_force_head_in_both_arms": "Original lambda_force_train=0.5 Huber loss, same G13Agent architecture and update function; do not remove or duplicate it.",
+  "double_counting_guard": "No additional MPPI contact penalty, contact-aware reranking, new Contact Head, or force penalty inside the auxiliary force-head loss. The only future B1 task-objective difference is the one fixed navigation reward penalty.",
+  "historical_replay_integrity_issue": {
+    "complete_episode_replay_available": true,
+    "historical_replay_transitions": 259987,
+    "stored_reward_semantics": "raw original task reward",
+    "stored_force_label_semantics": "maximum of 22 distal contact-force substeps in nominal N, not FTI",
+    "contact_FTI_Ns_labels_available": false,
+    "consequence": "The historical G13 replay cannot be silently mixed with B1 shaped rewards or exactly relabeled for an FTI penalty from peak-only labels. B1 must use a separately audited replay-label strategy with paired B0/B1 consistency before training. Do not invent missing historical FTI."
+  },
+  "additional_launch_prerequisites": [
+    "Fix beta and FTI normalization from training-only G13 data before any pilot; do not transfer the G1 F2C calibration by assumption.",
+    "Choose and validate matched, reward-consistent B0/B1 replay initialization without fabricating historical FTI labels.",
+    "Validate episode-boundary scene replay and Python/NumPy/PyTorch/CUDA RNG restoration against a separately authorized bounded SOFA resume smoke; F2H did not train or exercise a live resume.",
+    "Audit and freeze unused prospective development/evaluation seeds and matched target states; exclude F2G 1400000-1400023 from independent confirmation.",
+    "Freeze a primary terminal-budget checkpoint and stop criteria in advance; no favorable intermediate-checkpoint selection."
+  ],
+  "ready_for_bounded_matched_contact_reward_pilot_now": false,
+  "ready_for_next_protocol_and_replay_label_design_stage": true,
+  "interpretation": "The G13 source/checkpoint/telemetry foundation is recovered, but this F2H task intentionally stops before B1 implementation or training; F2G also did not prove long-term continuation stability."
+}

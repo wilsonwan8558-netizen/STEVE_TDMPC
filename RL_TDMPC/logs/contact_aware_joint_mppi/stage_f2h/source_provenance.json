@@ -1,0 +1,66 @@
+{
+  "status": "CORE_SOURCE_CONTENT_MATCHED_WITH_EXPLICIT_CAVEATS",
+  "primary_reference": "F2F_BRANCH_COMPATIBILITY_REPORT.md in the current research worktree",
+  "f2g_reference": "F2G_FINAL_REPORT.md in the current research worktree",
+  "new_worktree_commit": "d2638d14ce57a288c3bd13e1c67a22d14eb86da0",
+  "interpretation_of_commit": "First checked post-training commit with content-matched frozen G13 core files; not proof of the exact Git HEAD or every runner byte during the 2026-10-14 training process.",
+  "checkpoint": {
+    "path": "/home/bizon/Desktop/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_260000.pt",
+    "sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+    "format_version": 2,
+    "algorithm": "Geometry-Force-TD-MPC2",
+    "total_environment_steps": 260000,
+    "model_update_count": 260000,
+    "observation_dimension": 22,
+    "joint_action_dimension": 2,
+    "historical_complete_episode_replay_transitions": 259987,
+    "historical_complete_episodes": 3800,
+    "eligible_horizon_3_sequences": 252387,
+    "optimizer_and_global_rng_state_available": true,
+    "missing_original_partial_episode_steps": 13,
+    "original_SOFA_scene_snapshot_available": false
+  },
+  "frozen_training_config_sha256": "806b339f71254aa0cc5fc994c6e59054e449388f043e160eb24760bf382af48a",
+  "content_matched_source_sha256": {
+    "RL_TDMPC/experiments/world_model_g13/g13_model.py": "d2584083c84d40d7b39737d8f3ed415ca4d44fed5d55ba5f70e0c3a92cc3b3b5",
+    "RL_TDMPC/experiments/world_model_g13/g13_env.py": "0ce85a157ee985d3b72cb4b3bd90e3ce27006514cd06f10e5ad45ec12ea6ccee",
+    "RL_TDMPC/envs/geometry_features.py": "b0082e44da810287d412b3935b60eebb9ea58cae398e98d00e97e1f4e5452b46"
+  },
+  "unfrozen_training_runner_sha256_at_new_commit": "fb85605ea1425b10ed2e34c0923be89f0f307b0ba8b7b906e06f343d536b8370",
+  "unfrozen_runner_caveat": "The executed historical g13_train.py bytes were not recorded in the pre-training freeze. This commit's runner was audited but cannot be declared byte-identical to the original process.",
+  "observation_layout": {
+    "0_to_9": "five normalized projected guidewire tracking points (2D each)",
+    "10_to_11": "normalized projected target (2D)",
+    "12_to_13": "device rotation sine and cosine",
+    "14_to_16": "three normalized distal signed centerline-radius clearance proxies",
+    "17_to_18": "projected distal wire-versus-vessel tangent sine and cosine",
+    "19": "distal bend angle divided by pi",
+    "20": "normalized local centerline radius",
+    "21": "direction-validity bit"
+  },
+  "action_layout": "normalized insertion/translation and axial rotation, each clipped to [-1,1] and mapped to JShaped limits",
+  "model_and_planner": "256D latent, five Q networks, 101-bin value/reward, H=3, six MPPI iterations, 512 candidates, 64 elites, 24 policy-prior trajectories; ordinary task reward plus terminal Q score, no contact-cost MPPI term",
+  "objective": "Original raw TargetReached + 0.01 PathLengthDelta task reward and original G13 TD-MPC2 losses plus lambda_force_train=0.5 next-latent force-head Huber loss. The auxiliary loss backpropagates through the shared encoder and dynamics.",
+  "generic_SOFA": {
+    "solver": "GenericConstraintSolver ProjectedGaussSeidel",
+    "solver_tolerance": 0.0001,
+    "solver_max_iterations": 2000,
+    "compute_constraint_forces": true,
+    "friction_mu": 0.001,
+    "dt_seconds": 0.006,
+    "substeps_per_control": 22,
+    "collision_contact_distance_mm": 0.3,
+    "collision_alarm_distance_mm": 0.5,
+    "force_source_sha256": {
+      "substep_monitor.py": "744759896f36d284c9ba039a537a9f5334a5e6f5d99752f036062ae55ced3534",
+      "force_reconstruction.py": "76c920ce5122cb8da97ba100851985267e734b2877fc41ab6726217cdb13fa26",
+      "sofabeamadapter.py": "f6e397c8f43cfe0d32d4d5e0b834ae6f8f0ebb7119a2f3f5756ef47aa5e27b67"
+    }
+  },
+  "force_telemetry": "Validated passive Generic G2 3 mm distal force reconstruction; G13 force-head target is next-control-interval maximum substep nominal N, while the environment also reports interval FTI in nominal N*s.",
+  "remaining_provenance_limits": [
+    "Exact historical training-time runner bytes and process Git HEAD were not SHA-frozen.",
+    "Exact historical SOFA/BeamAdapter binary identity was not recorded.",
+    "No original mid-episode physical scene snapshot exists at step 260000."
+  ]
+}

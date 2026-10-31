@@ -1,0 +1,23 @@
+{
+  "stage": "F2H",
+  "status": "COMPLETE_FOUNDATION_ESTABLISHED_NO_TRAINING",
+  "new_worktree": "/home/bizon/Desktop/stEVE_g13_contact_reward",
+  "branch": "feature/g13-contact-reward",
+  "base_commit": "d2638d14ce57a288c3bd13e1c67a22d14eb86da0",
+  "source_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "baseline_equivalence": "PASS",
+  "historical_10_seed_reproduction_steps": 591,
+  "historical_10_seed_max_reward_difference": 0.0,
+  "f2g_first_case_initial_observation_and_action_trace": "EXACT_MATCH",
+  "force_telemetry_invariant": "PASS_22_SUBSTEPS_AND_FTI_ALIGNMENT",
+  "B0_continuation_runner_audit": "PASS_NO_TRAINING",
+  "runner_unit_tests": "5_PASSED",
+  "B1_reward_training_activated": false,
+  "model_training_performed": false,
+  "full_navigation_benchmark_performed": false,
+  "ready_for_bounded_matched_contact_reward_pilot_now": false,
+  "pilot_readiness_reason": "B1 FTI reward/replay semantics, training-only beta/scale, prospective seeds, and live episode-boundary resume validation remain to be frozen and tested. F2G showed non-monotonic B0 continuation performance.",
+  "next_stage": "Separately authorize and validate reward-consistent matched replay/FTI labels, calibrate and freeze B1 penalty on training-only data, audit new seeds, then run a bounded B0/B1 pilot with a B0 stability gate.",
+  "commit_created": false,
+  "push_performed": false
+}

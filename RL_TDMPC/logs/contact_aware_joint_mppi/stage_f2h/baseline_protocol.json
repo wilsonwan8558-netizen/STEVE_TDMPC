@@ -1,0 +1,18 @@
+{
+  "stage": "F2H",
+  "status": "FROZEN_BEFORE_ZERO_UPDATE_ROLLOUT",
+  "branch": "feature/g13-contact-reward",
+  "source_commit": "d2638d14ce57a288c3bd13e1c67a22d14eb86da0",
+  "checkpoint": "/home/bizon/Desktop/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_260000.pt",
+  "checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "historical_gate_seeds": [350000, 350001, 350002, 350003, 350004, 350005, 350006, 350007, 350008, 350009],
+  "historical_reference": "RL_TDMPC/logs/world_model_force_aware_planning_g13/navigation_checkpoint_candidates.csv",
+  "historical_comparison": "One reused scene, ascending seeds, exact success and length, reward absolute tolerance 1e-6; stop on first mismatch.",
+  "f2g_regression_seed": 1400000,
+  "f2g_reference_root": "/home/bizon/Desktop/stEVE_sofa_physics/RL_TDMPC/logs/contact_aware_joint_mppi/stage_f2g",
+  "f2g_action_comparison": "Fresh scene, exact action sequence and task outcome versus unchanged G13 F2G baseline on only the first F2G case; this is regression, not new independent confirmation.",
+  "model_probe": "Repeat F2G fixed 22D replay-observation candidate-score, latent, reward-logit, Q, and action hash probe exactly.",
+  "telemetry": "For each step, require 22 SOFA substeps, finite nonnegative force, FTI consistency with the 22 passive monitor substep magnitudes at dt=0.006 s, and no simulation error.",
+  "runtime": "CUDA_VISIBLE_DEVICES=0, steve_tdmpc conda environment, Generic SOFA; no CPU fallback",
+  "stop_rule": "No continuation runner work or future-pilot readiness claim if historical gate, F2G action/model regression, or force telemetry invariants fail."
+}

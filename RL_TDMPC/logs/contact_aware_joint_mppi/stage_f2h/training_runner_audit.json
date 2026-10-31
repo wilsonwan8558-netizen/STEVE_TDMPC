@@ -1,0 +1,51 @@
+{
+  "B1_training_supported_in_F2H": false,
+  "action_dim": 2,
+  "arm": "B0",
+  "checkpoint_config_matches_archived_training_freeze": true,
+  "configuration_status": "TEMPLATE_ONLY_NOT_FROZEN_OR_ENABLED",
+  "execution_enabled": false,
+  "mid_episode_original_scene_available": false,
+  "mode": "AUDIT_NO_TRAINING",
+  "model_optimizer_state_entries": 100,
+  "observation_dim": 22,
+  "optimizer_model_lr_groups": [
+    8.999999999999999e-05,
+    0.0003,
+    0.0003,
+    0.0003,
+    0.0003,
+    0.0003
+  ],
+  "optimizer_policy_lr_groups": [
+    0.0003
+  ],
+  "original_auxiliary_force_loss_coefficient": 0.5,
+  "original_task_only_planning": true,
+  "policy_optimizer_state_entries": 10,
+  "replay": {
+    "contact_FTI_labels_available": false,
+    "eligible_H3_sequences": 252387,
+    "episodes": 3800,
+    "sampler_rng_restored_from_checkpoint": true,
+    "stored_episode_fields": [
+      "actions",
+      "forces",
+      "observations",
+      "rewards",
+      "terminated"
+    ],
+    "transitions": 259987
+  },
+  "runtime": {
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+    "torch": "2.7.1+cu128",
+    "torch_cuda": "12.8"
+  },
+  "source_checkpoint": "/home/bizon/Desktop/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_260000.pt",
+  "source_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "source_has_global_rng_state": true,
+  "status": "PASS",
+  "update_count": 260000
+}

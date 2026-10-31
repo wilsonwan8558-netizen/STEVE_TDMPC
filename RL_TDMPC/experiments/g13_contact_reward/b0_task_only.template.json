@@ -1,0 +1,14 @@
+{
+  "status": "TEMPLATE_ONLY_NOT_FROZEN_OR_ENABLED",
+  "arm": "B0",
+  "source_checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "reward_mode": "original_task_only",
+  "contact_penalty_beta": 0.0,
+  "contact_exposure_scale_Ns": null,
+  "auxiliary_force_head_coefficient": 0.5,
+  "training_seed": null,
+  "max_additional_environment_steps": null,
+  "updates_per_environment_step": 1,
+  "eval_snapshot_steps": [],
+  "comment": "B0 preserves the original G13 raw task reward, original force-head auxiliary loss, and ordinary task-only MPPI. Fill and freeze a prospective protocol before any execution."
+}

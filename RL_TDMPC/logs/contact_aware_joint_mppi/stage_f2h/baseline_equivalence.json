@@ -1,0 +1,192 @@
+{
+  "checkpoint_sha256": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "f2g_action_and_telemetry_regression": {
+    "contact_FTI_nominal_Ns": 3.1183368040933237,
+    "initial_target_tracking3d_mm": [
+      -4.914914608001709,
+      -33.16091537475586,
+      211.6203155517578
+    ],
+    "matches_f2g": {
+      "actions_exact": true,
+      "initial_observation_sha256": true,
+      "length": true,
+      "reward": true,
+      "success": true
+    },
+    "peak_force_nominal_N": 5.560736279608703,
+    "reward": 3.582948972921688,
+    "scope": "Regression only; reused F2G case is not an independent confirmation.",
+    "seed": 1400000,
+    "status": "PASS",
+    "steps": 49,
+    "success": 1
+  },
+  "historical_gate": {
+    "archived_steps_checked": 591,
+    "max_reward_abs_diff": 0.0,
+    "reproduced_steps_checked": 591,
+    "rows": [
+      {
+        "archived_length": 37,
+        "archived_reward": 3.164289203721807,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 0.22000573219557484,
+        "episode_peak_force_nominal_N": 2.19831634868671,
+        "length": 37,
+        "match": true,
+        "reward": 3.164289203721807,
+        "reward_abs_diff": 0.0,
+        "seed": 350000,
+        "success": 1
+      },
+      {
+        "archived_length": 61,
+        "archived_reward": 4.148119789767955,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 4.84404284589942,
+        "episode_peak_force_nominal_N": 7.753142795653027,
+        "length": 61,
+        "match": true,
+        "reward": 4.148119789767955,
+        "reward_abs_diff": 0.0,
+        "seed": 350001,
+        "success": 1
+      },
+      {
+        "archived_length": 75,
+        "archived_reward": 3.8363977894337467,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 5.557486767109226,
+        "episode_peak_force_nominal_N": 7.443503669758812,
+        "length": 75,
+        "match": true,
+        "reward": 3.8363977894337467,
+        "reward_abs_diff": 0.0,
+        "seed": 350002,
+        "success": 1
+      },
+      {
+        "archived_length": 44,
+        "archived_reward": 3.4347487286913903,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 4.147078096682635,
+        "episode_peak_force_nominal_N": 8.611213896820617,
+        "length": 44,
+        "match": true,
+        "reward": 3.4347487286913903,
+        "reward_abs_diff": 0.0,
+        "seed": 350003,
+        "success": 1
+      },
+      {
+        "archived_length": 50,
+        "archived_reward": 3.6848366625709943,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 4.376978988480247,
+        "episode_peak_force_nominal_N": 6.554590068865265,
+        "length": 50,
+        "match": true,
+        "reward": 3.6848366625709943,
+        "reward_abs_diff": 0.0,
+        "seed": 350004,
+        "success": 1
+      },
+      {
+        "archived_length": 130,
+        "archived_reward": 3.73403004386342,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 35.29767020502395,
+        "episode_peak_force_nominal_N": 9.125227627025502,
+        "length": 130,
+        "match": true,
+        "reward": 3.73403004386342,
+        "reward_abs_diff": 0.0,
+        "seed": 350005,
+        "success": 1
+      },
+      {
+        "archived_length": 50,
+        "archived_reward": 3.5260458450988192,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 2.9183965515393813,
+        "episode_peak_force_nominal_N": 5.038554600443929,
+        "length": 50,
+        "match": true,
+        "reward": 3.5260458450988192,
+        "reward_abs_diff": 0.0,
+        "seed": 350006,
+        "success": 1
+      },
+      {
+        "archived_length": 52,
+        "archived_reward": 3.5746145325815215,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 4.66545063362607,
+        "episode_peak_force_nominal_N": 7.185216411403037,
+        "length": 52,
+        "match": true,
+        "reward": 3.5746145325815215,
+        "reward_abs_diff": 0.0,
+        "seed": 350007,
+        "success": 1
+      },
+      {
+        "archived_length": 37,
+        "archived_reward": 3.1737874695230057,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 0.3398977801876275,
+        "episode_peak_force_nominal_N": 2.436693769751438,
+        "length": 37,
+        "match": true,
+        "reward": 3.1737874695230057,
+        "reward_abs_diff": 0.0,
+        "seed": 350008,
+        "success": 1
+      },
+      {
+        "archived_length": 55,
+        "archived_reward": 3.8156397517123057,
+        "archived_success": 1,
+        "episode_contact_FTI_nominal_Ns": 4.487539617076813,
+        "episode_peak_force_nominal_N": 7.11170964804549,
+        "length": 55,
+        "match": true,
+        "reward": 3.8156397517123057,
+        "reward_abs_diff": 0.0,
+        "seed": 350009,
+        "success": 1
+      }
+    ],
+    "status": "PASS"
+  },
+  "model_probe": {
+    "matches_f2g": {
+      "candidate_score_sha256": true,
+      "latent_sha256": true,
+      "q_sha256": true,
+      "reward_logits_sha256": true,
+      "selected_joint_action": true
+    },
+    "observed": {
+      "candidate_score_sha256": "36b2f9ad97a0390a1ce2b223ef2752a453e368b752e2f8f8233f119f665f52fb",
+      "latent_sha256": "8d4f690a3110cc51e9ca498b6300f7b1caa119db217e13a9f832a1b0953e6867",
+      "q_sha256": "c9e5603e37719724a83875af78f8512343e20d43d2460d46861750f5d9a52d07",
+      "reward_logits_sha256": "46333730edeaab679625f68e9496e8aa369746193f4d317bf721dfb88c309ca4",
+      "selected_joint_action": [
+        0.9999603033065796,
+        0.9059869050979614
+      ]
+    },
+    "status": "PASS"
+  },
+  "runtime": {
+    "eve_origin": "/home/bizon/Desktop/stEVE_g13_contact_reward/eve/__init__.py",
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "python": "/home/bizon/anaconda3/envs/steve_tdmpc/bin/python",
+    "torch": "2.7.1+cu128",
+    "torch_cuda": "12.8"
+  },
+  "source_commit": "d2638d14ce57a288c3bd13e1c67a22d14eb86da0",
+  "status": "PASS"
+}

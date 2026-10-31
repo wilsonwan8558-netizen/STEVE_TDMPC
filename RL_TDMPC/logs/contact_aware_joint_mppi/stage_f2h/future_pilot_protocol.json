@@ -1,0 +1,51 @@
+{
+  "status": "DRAFT_NOT_FROZEN_NOT_EXECUTABLE",
+  "stage": "FUTURE_MATCHED_G13_CONTACT_REWARD_PILOT",
+  "starting_checkpoint_sha256_for_both_arms": "b2bba8be2e2722886c20952b15712deaa31ab612825999f1b3469a34fd6ef7be",
+  "controller": "unchanged 22D/2D G13 TD-MPC2, original H=3 task-only MPPI, unchanged Generic SOFA",
+  "arms": {
+    "B0": "Original raw G13 task reward and original lambda=0.5 auxiliary force-head loss",
+    "B1": "Same G13 architecture, optimizer starting state, auxiliary force-head loss and MPPI; only training navigation reward differs by one fixed normalized Generic distal-force FTI penalty"
+  },
+  "contact_penalty_definition": "r_train = r_task - beta * (distal_force_time_integral_Ns / scale_Ns), where beta and scale_Ns must be fixed from training-only G13 data before rollout",
+  "contact_penalty_beta": null,
+  "contact_exposure_scale_Ns": null,
+  "training_seed_pairs": null,
+  "development_evaluation_seeds": null,
+  "untouched_confirmation_seeds": null,
+  "seed_freeze_prerequisite": "Audit every proposed seed against prior G0-G17/F2A-F2H training, validation, development, diagnostic, fork, planner-state and confirmation artifacts before a new pilot. Do not automatically replace conflicts.",
+  "excluded_independent_confirmation_cases": {
+    "F2G_prospective_evaluation_seeds": "1400000-1400023",
+    "G13_historical_checkpoint_selection_development_seeds": "350000-350029",
+    "F2H_regression_seed": 1400000
+  },
+  "matched_training": {
+    "same_initial_G13_model_optimizer_and_target_Q": true,
+    "same_additional_environment_step_budget": true,
+    "same_optimizer_learning_rates_and_update_to_data_ratio": true,
+    "same_target_seed_and_initial_target_coordinates_checked_per_pair": true,
+    "same_Generic_SOFA_settings_and_force_monitor": true,
+    "separate_replay_buffers": true,
+    "replay_label_strategy": "BLOCKED_PENDING_DESIGN: G13 historical replay has raw task rewards and peak-force labels but not per-step FTI, so B1 FTI-shaped replay cannot be initialized by silently relabeling it. The B0/B1 strategy must be specified and checked before rollout.",
+    "matched_initial_data_if_used": "Must be the same prospectively collected G13 observations/actions/task rewards/FTI labels, segregated per arm and predeclared; no evaluation-case experience.",
+    "training_budget_steps_per_arm": null,
+    "independent_training_seed_count": null
+  },
+  "intermediate_checkpoints": "Predeclare exact additional-step snapshots (for evaluation only) and separate restartable episode-boundary checkpoints; evaluate every scheduled snapshot, but select no favorable intermediate checkpoint. Primary comparison is the predeclared terminal-budget checkpoint.",
+  "evaluation": {
+    "scene_lifecycle": "One fresh Generic SOFA scene per checkpoint/evaluation arm, reused across identical ascending seeds; replay preceding seeds on interrupted evaluation, never skip ahead with a fresh scene.",
+    "task_metrics": ["navigation success", "episode length", "successful-episode length", "final target distance", "raw task reward", "truncation and simulation-error counts"],
+    "force_metrics": ["distal peak nominal N", "per-step distal force FTI nominal N*s", "episode cumulative FTI", "contact-exposure fraction", "contact-event count and duration"],
+    "joint_action_metrics": ["insertion action distribution", "rotation action distribution", "positive insertion fraction", "insertion and rotation action changes"],
+    "training_diagnostics": ["replay size and eligible sequences", "gradient-update count", "optimizer state/LR", "model and value drift", "task and auxiliary force losses"],
+    "paired_uncertainty": "Episode-paired confidence intervals grouped by independent evaluation seed; report training seeds separately."
+  },
+  "scientific_stop_rules_before_future_run": [
+    "Stop if zero-update B0/B1 behavior or checkpoint integrity differs from unchanged G13.",
+    "Stop if paired target identity or Generic force telemetry validity fails.",
+    "Stop if reward labels in either replay disagree with the declared arm semantics.",
+    "Report any B0 navigation degradation without blaming the B1 penalty.",
+    "Do not tune beta, replay, learning rate or select an intermediate checkpoint on the final/confirmation set."
+  ],
+  "F2H_execution": "No model training, B1 implementation, full navigation benchmark, or confirmation run."
+}

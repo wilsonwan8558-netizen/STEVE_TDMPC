@@ -1,0 +1,43 @@
+{
+  "status": "ISOLATED_UNCOMMITTED_G13_FOUNDATION",
+  "source_worktree": "/home/bizon/Desktop/stEVE_safety_head_1e1be81",
+  "source_worktree_modified_by_F2H": false,
+  "current_research_worktree": "/home/bizon/Desktop/stEVE_sofa_physics",
+  "current_research_worktree_had_preexisting_changes": true,
+  "current_research_worktree_modified_by_F2H": false,
+  "new_worktree": "/home/bizon/Desktop/stEVE_g13_contact_reward",
+  "new_branch": "feature/g13-contact-reward",
+  "base_commit": "d2638d14ce57a288c3bd13e1c67a22d14eb86da0",
+  "historical_checkpoint_copied_or_modified": false,
+  "historical_checkpoint_location": "/home/bizon/Desktop/stEVE_safety_head_1e1be81/RL_TDMPC/runs/geometry_force_tdmpc2_g13_300k_20261014/checkpoints/step_260000.pt",
+  "frozen_components_preserved_from_base_commit": [
+    "RL_TDMPC/experiments/world_model_g13/g13_config.yaml",
+    "RL_TDMPC/experiments/world_model_g13/g13_model.py",
+    "RL_TDMPC/experiments/world_model_g13/g13_env.py",
+    "RL_TDMPC/envs/geometry_features.py",
+    "RL_TDMPC/envs/steve_env.py",
+    "RL_TDMPC/tdmpc2/agent.py",
+    "RL_TDMPC/tdmpc2/networks.py",
+    "RL_TDMPC/tdmpc2/replay_buffer.py",
+    "RL_TDMPC/experiments/generic_solver_g2/substep_monitor.py",
+    "RL_TDMPC/experiments/generic_solver_g2/force_reconstruction.py",
+    "eve/intervention/simulation/sofabeamadapter.py"
+  ],
+  "new_experiment_files": [
+    "RL_TDMPC/experiments/g13_contact_reward/verify_baseline.py",
+    "RL_TDMPC/experiments/g13_contact_reward/continue_g13.py",
+    "RL_TDMPC/experiments/g13_contact_reward/b0_task_only.template.json",
+    "RL_TDMPC/experiments/g13_contact_reward/b1_contact_penalty.template.json",
+    "RL_TDMPC/experiments/g13_contact_reward/test_continue_g13.py"
+  ],
+  "excluded_migrations": [
+    "G16.1 fuzzy safety filter",
+    "G17 fuzzy/risk-adaptive MPPI",
+    "F2B failed independent Contact Head reranking",
+    "experimental CBF and Lagrangian modifications"
+  ],
+  "production_G13_numerics_changed": false,
+  "SOFA_physics_changed": false,
+  "commit_created": false,
+  "push_performed": false
+}
